@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import ContentCard from '@/components/ContentCard';
-import heroImage from '@/assets/hero-robot.jpg';
+import heroImage from '@/assets/ssv2hero.svg';
 
 const Index = () => {
   return (
@@ -13,7 +13,7 @@ const Index = () => {
       <Navbar />
       
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16" style={{ backgroundImage: `url(${heroImage})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
         {/* Animated Background Elements */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-pulse" />
@@ -27,8 +27,9 @@ const Index = () => {
               initial={{ opacity: 0, x: -50 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8 }}
+              className="glass-card p-16 text-center"
             >
-              <h1 className="text-5xl md:text-7xl font-orbitron font-bold mb-6 neon-glow">
+              <h1 className="text-2xl md:text-4xl font-orbitron font-bold mb-6 neon-glow">
                 SmartSentinels
               </h1>
               <p className="text-2xl md:text-3xl text-foreground mb-4 font-orbitron">
@@ -53,26 +54,6 @@ const Index = () => {
                   </Button>
                 </Link>
               </div>
-            </motion.div>
-
-            {/* Hero Image */}
-            <motion.div
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="relative"
-            >
-              <div className="relative glass-card p-4 float-animation">
-                <img
-                  src={heroImage}
-                  alt="SmartSentinels AI Robot"
-                  className="rounded-xl w-full h-auto object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent rounded-xl" />
-              </div>
-              {/* Decorative Elements */}
-              <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/20 rounded-full blur-3xl animate-pulse" />
-              <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-primary/20 rounded-full blur-3xl animate-pulse delay-700" />
             </motion.div>
           </div>
         </div>

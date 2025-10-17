@@ -125,7 +125,7 @@ const HubDashboard = () => {
               </p>
             </div>
           </TabsContent>
-          
+
           <TabsContent value="agents" className="mt-6">
             <div className="text-center py-12">
               <Bot size={48} className="mx-auto text-muted-foreground mb-4" />
@@ -135,7 +135,7 @@ const HubDashboard = () => {
               </p>
             </div>
           </TabsContent>
-          
+
           <TabsContent value="rewards" className="mt-6">
             <div className="text-center py-12">
               <Award size={48} className="mx-auto text-muted-foreground mb-4" />
@@ -145,7 +145,7 @@ const HubDashboard = () => {
               </p>
             </div>
           </TabsContent>
-          
+
           <TabsContent value="activity" className="mt-6">
             <div className="text-center py-12">
               <Wallet size={48} className="mx-auto text-muted-foreground mb-4" />
@@ -172,9 +172,9 @@ const ComingSoon = ({ title }: { title: string }) => {
 
 const Hub = () => {
   return (
-    <div className="min-h-screen flex gradient-animate">
+    <div className="min-h-screen flex gradient-animate overflow-x-hidden">
       <Sidebar />
-      
+
       <main className="flex-1 overflow-y-auto">
         <div className="max-w-7xl mx-auto p-6 lg:p-8">
           <Routes>

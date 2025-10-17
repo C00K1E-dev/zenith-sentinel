@@ -38,6 +38,8 @@ const Navbar = () => {
               <Link
                 key={link.name}
                 to={link.path}
+                target={link.name === 'Hub' ? '_blank' : undefined}
+                rel={link.name === 'Hub' ? 'noopener noreferrer' : undefined}
                 className={`transition-colors duration-200 ${
                   isActive(link.path)
                     ? 'text-primary neon-glow'
@@ -50,7 +52,7 @@ const Navbar = () => {
             <ConnectWallet 
               theme="dark"
               btnTitle="Connect Wallet"
-              className="!bg-primary !text-primary-foreground !rounded-lg !font-medium hover:!opacity-90 transition-opacity"
+              className="!bg-cyan-500/20 !text-white !border !border-cyan-400/30 !rounded-lg !font-medium hover:!bg-cyan-500/30 hover:!border-cyan-400/50 transition-all !backdrop-blur-sm !px-3 !py-2 !text-sm"
             />
           </div>
 
@@ -72,6 +74,8 @@ const Navbar = () => {
               <Link
                 key={link.name}
                 to={link.path}
+                target={link.name === 'Hub' ? '_blank' : undefined}
+                rel={link.name === 'Hub' ? 'noopener noreferrer' : undefined}
                 onClick={() => setIsOpen(false)}
                 className={`block px-4 py-2 rounded-lg transition-colors ${
                   isActive(link.path)
@@ -86,7 +90,7 @@ const Navbar = () => {
               <ConnectWallet 
                 theme="dark"
                 btnTitle="Connect Wallet"
-                className="!w-full !bg-primary !text-primary-foreground !rounded-lg !font-medium"
+                className="!w-full !bg-cyan-500/20 !text-white !border !border-cyan-400/30 !rounded-lg !font-medium hover:!bg-cyan-500/30 hover:!border-cyan-400/50 transition-all !backdrop-blur-sm !py-2"
               />
             </div>
           </div>

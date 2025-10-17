@@ -104,7 +104,7 @@
   }
   
   .glass-card-hover {
-    @apply glass-card transition-all duration-300 hover:bg-white/10 hover:border-primary/30 hover:shadow-[0_0_30px_rgba(248,244,66,0.3)];
+    @apply glass-card transition-all duration-300 hover:bg-white/10 hover:border-primary/30 hover:shadow-[0_0_15px_rgba(248,244,66,0.15)];
   }
   
   /* Neon Glow Effects */
@@ -160,6 +160,45 @@
                   0 0 40px rgba(248, 244, 66, 0.4);
     }
   }
+}
+
+/* Thirdweb ConnectWallet Overrides */
+.tw-balance {
+  @apply text-white !important;
+}
+
+.tw-balance-amount {
+  @apply text-white !important;
+}
+
+.tw-balance-symbol {
+  @apply text-white/80 !important;
+}
+
+/* Additional Thirdweb component overrides for better readability */
+.tw-connected-wallet__balance {
+  @apply text-white !important;
+}
+
+.tw-connected-wallet__address {
+  @apply text-white/80 !important;
+}
+
+/* Make connected wallet button more compact */
+.tw-connected-wallet {
+  @apply !max-h-10 !py-2 !px-3 !text-sm !leading-tight;
+}
+
+.tw-connected-wallet__container {
+  @apply !max-h-10 !py-1;
+}
+
+.tw-connected-wallet__balance-container {
+  @apply !text-xs !leading-tight;
+}
+
+.tw-connected-wallet__address-container {
+  @apply !text-xs !leading-tight !truncate;
 }
 
 @layer base {

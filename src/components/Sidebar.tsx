@@ -12,6 +12,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Wallet,
+  Award,
+  HardDrive,
 } from 'lucide-react';
 import { ConnectWallet } from '@thirdweb-dev/react';
 import { cn } from '@/lib/utils';
@@ -28,6 +30,7 @@ const Sidebar = () => {
   const location = useLocation();
 
   const menuItems: SidebarItem[] = [
+    { name: 'General Stats', path: '/hub', icon: BarChart3 },
     { name: 'Seed Funding / Token Sale', path: '/hub/funding', icon: DollarSign },
     { name: 'NFTs & iNFTs Hub', path: '/hub/nfts', icon: ImageIcon },
     { name: 'AI Audit - Smart Contract', path: '/hub/audit', icon: Shield },
@@ -35,7 +38,13 @@ const Sidebar = () => {
     { name: 'Create Agent', path: '/hub/create-agent', icon: Bot, badge: 'Soon' },
     { name: 'Marketplace', path: '/hub/marketplace', icon: Store, badge: 'Soon' },
     { name: 'Staking', path: '/hub/staking', icon: Coins, badge: 'Soon' },
-    { name: 'General Stats', path: '/hub', icon: BarChart3 },
+  ];
+
+  const myStatsItems: SidebarItem[] = [
+    { name: 'My NFTs', path: '/hub/nfts', icon: ImageIcon },
+    { name: 'My Agents', path: '/hub/create-agent', icon: Bot },
+    { name: 'My Devices', path: '/hub/devices', icon: HardDrive },
+    { name: 'My Rewards', path: '/hub/rewards', icon: Award },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -43,7 +52,7 @@ const Sidebar = () => {
   return (
     <aside
       className={cn(
-        'glass-card border-r neon-border transition-all duration-300 h-screen sticky top-0 flex flex-col',
+        'glass-card border-r border-yellow-400/20 transition-all duration-300 h-screen sticky top-0 flex flex-col overflow-hidden',
         collapsed ? 'w-20' : 'w-64'
       )}
     >
@@ -67,8 +76,69 @@ const Sidebar = () => {
         )}
       </div>
 
+      {/* Wallet Connection */}
+      <div className="px-4 pt-4 pb-4">
+        {!collapsed ? (
+          <ConnectWallet
+            theme="dark"
+            btnTitle="Connect Wallet"
+            className="!w-full !bg-cyan-500/20 !text-white !border !border-cyan-400/30 !rounded-lg !font-medium hover:!bg-cyan-500/30 hover:!border-cyan-400/50 transition-all !backdrop-blur-sm !py-2"
+          />
+        ) : (
+          <button className="w-full glass-card-hover p-2 rounded-lg flex items-center justify-center mb-2">
+            <Wallet size={20} className="text-primary" />
+          </button>
+        )}
+      </div>
+
+      {/* My Stats Section */}
+      <div className="px-4 pt-3 pb-2">
+        {!collapsed && (
+          <h3 className="text-xs font-orbitron font-bold text-primary/70 uppercase tracking-wider mb-2">
+            My Stats
+          </h3>
+        )}
+        <div className="space-y-1">
+          {myStatsItems.map((item) => {
+            const Icon = item.icon;
+            const active = isActive(item.path);
+
+            return (
+              <Link
+                key={item.name}
+                to={item.path}
+                className={cn(
+                  'flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 group relative text-sm',
+                  active
+                    ? 'bg-primary/20 text-primary border border-primary/30'
+                    : 'text-muted-foreground hover:bg-white/5 hover:text-foreground',
+                  collapsed && 'justify-center px-2'
+                )}
+              >
+                <Icon size={16} className={cn(active && 'text-primary')} />
+                {!collapsed && (
+                  <>
+                    <span className="flex-1">{item.name}</span>
+                  </>
+                )}
+
+                {/* Tooltip for collapsed state */}
+                {collapsed && (
+                  <div className="absolute left-full ml-2 px-3 py-2 bg-card border border-white/10 rounded-lg text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+                    {item.name}
+                  </div>
+                )}
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Separator */}
+      <div className="border-t border-white/10 mx-4 mb-2"></div>
+
       {/* Menu Items */}
-      <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+      <nav className="flex-1 px-4 pt-3 pb-4 space-y-2 overflow-y-auto overflow-x-hidden">
         {menuItems.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.path);
@@ -79,8 +149,9 @@ const Sidebar = () => {
               to={item.path}
               className={cn(
                 'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group relative',
+                item.name === 'Seed Funding / Token Sale' && 'mt-1',
                 active
-                  ? 'bg-primary/20 text-primary neon-border'
+                  ? 'bg-primary/20 text-primary border border-primary/30'
                   : 'text-muted-foreground hover:bg-white/5 hover:text-foreground',
                 collapsed && 'justify-center'
               )}
@@ -112,21 +183,6 @@ const Sidebar = () => {
           );
         })}
       </nav>
-
-      {/* Wallet Connection */}
-      <div className="p-4 border-t border-white/10">
-        {!collapsed ? (
-          <ConnectWallet
-            theme="dark"
-            btnTitle="Connect Wallet"
-            className="!w-full !bg-primary !text-primary-foreground !rounded-lg !font-medium hover:!opacity-90 transition-opacity"
-          />
-        ) : (
-          <button className="w-full glass-card-hover p-2 rounded-lg flex items-center justify-center">
-            <Wallet size={20} className="text-primary" />
-          </button>
-        )}
-      </div>
     </aside>
   );
 };
