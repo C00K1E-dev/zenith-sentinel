@@ -11,15 +11,15 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 const App = () => (
-  <ThirdwebProvider
-    activeChain="ethereum"
-    clientId={import.meta.env.VITE_THIRDWEB_CLIENT_ID}
-  >
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
+      <ThirdwebProvider
+        activeChain="ethereum"
+        clientId={import.meta.env.VITE_THIRDWEB_CLIENT_ID}
+      >
         <BrowserRouter>
+          <Toaster />
+          <Sonner />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/hub/*" element={<Hub />} />
@@ -27,9 +27,9 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
-  </ThirdwebProvider>
+      </ThirdwebProvider>
+    </TooltipProvider>
+  </QueryClientProvider>
 );
 
 export default App;
