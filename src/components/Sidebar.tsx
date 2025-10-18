@@ -31,8 +31,12 @@ interface SidebarItem {
   state?: any;
 }
 
-const Sidebar = () => {
-  const [collapsed, setCollapsed] = useState(false);
+interface SidebarProps {
+  collapsed: boolean;
+  setCollapsed: (collapsed: boolean) => void;
+}
+
+const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
   const location = useLocation();
   const { connect } = useConnectModal();
 
@@ -64,7 +68,7 @@ const Sidebar = () => {
   return (
     <aside
       className={cn(
-        'glass-card border-r border-yellow-400/20 transition-all duration-300 h-screen sticky top-0 flex flex-col overflow-hidden',
+        'glass-card border-r border-yellow-400/20 transition-all duration-300 h-screen fixed left-0 top-0 flex flex-col overflow-hidden z-50',
         collapsed ? 'w-20' : 'w-68'
       )}
     >
