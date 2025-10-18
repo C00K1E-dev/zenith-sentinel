@@ -211,7 +211,7 @@ const hubStyles = `
     }
 
     .audit-dashboard-widget h4 {
-        color: var(--tg-primary-color);
+        color: hsl(var(--primary));
         margin-bottom: 16px;
         font-size: 1.1rem;
         display: flex;
@@ -243,14 +243,14 @@ const hubStyles = `
 
     .audit-action-btn:hover {
         background: rgba(250, 249, 86, 0.2);
-        color: var(--tg-primary-color);
+        color: hsl(var(--primary));
         border-color: rgba(250, 249, 86, 0.4);
         transform: translateY(-1px);
     }
 
     .audit-action-btn.active {
         background: rgba(250, 249, 86, 0.15);
-        color: var(--tg-primary-color);
+        color: hsl(var(--primary));
         border-color: rgba(250, 249, 86, 0.5);
         box-shadow: 0 0 10px rgba(250, 249, 86, 0.2);
         position: relative;
@@ -263,7 +263,7 @@ const hubStyles = `
         top: 0;
         bottom: 0;
         width: 3px;
-        background: var(--tg-primary-color);
+        background: hsl(var(--primary));
         border-radius: 0 3px 3px 0;
     }
 
@@ -313,7 +313,7 @@ const hubStyles = `
         display: block;
         font-size: 1.4rem;
         font-weight: 700;
-        color: var(--tg-primary-color);
+        color: hsl(var(--primary));
         margin-bottom: 4px;
         word-break: break-word;
         overflow-wrap: break-word;
@@ -407,7 +407,7 @@ const hubStyles = `
         width: 10px;
         height: 10px;
         margin: 0 5px;
-        background-color: var(--tg-primary-color);
+        background-color: hsl(var(--primary));
         border-radius: 50%;
         animation: bounce 1.4s infinite ease-in-out both;
     }
@@ -467,7 +467,7 @@ const hubStyles = `
 
     .audit-wallet-action-btn:hover:not(:disabled) {
         background: rgba(250, 249, 86, 0.2);
-        color: var(--tg-primary-color);
+        color: hsl(var(--primary));
         border-color: rgba(250, 249, 86, 0.4);
         transform: translateY(-1px);
     }
@@ -1898,6 +1898,54 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
     <div className="glass-card p-6">
       <h1 className="text-3xl font-orbitron font-bold mb-4 neon-glow">AI Audit - Smart Contract Analysis</h1>
       <div className="space-y-4">
+        {/* AI Training Information */}
+        <div className="audit-training-info" style={{
+          background: '#1f1f1f',
+          border: '1px solid rgba(250, 249, 86, 0.3)',
+          borderRadius: '12px',
+          padding: '20px',
+          marginBottom: '24px',
+          textAlign: 'center',
+          boxShadow: '0 4px 12px rgba(250, 249, 86, 0.1)'
+        }}>
+          <h4 style={{
+            color: 'hsl(var(--primary))',
+            marginBottom: '12px',
+            fontSize: '1.1rem',
+            fontWeight: '600',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px'
+          }}>
+            <span style={{ color: 'hsl(var(--primary))' }}>
+              <Brain size={20} />
+            </span>
+            SmartSentinels AI Training
+          </h4>
+          <div style={{
+            color: '#ffffff',
+            fontSize: '0.9rem',
+            lineHeight: '1.6',
+            maxWidth: '800px',
+            margin: '0 auto'
+          }}>
+            <p style={{ marginBottom: '12px' }}>
+              <strong style={{ color: 'hsl(var(--primary))' }}>Research-Driven Training:</strong> <span style={{ color: '#ffffff' }}>This AI agent was trained on comprehensive security research from the</span>
+              <a href="https://entethalliance.github.io/eta-registry/security-levels-spec.html#sec-2-unicode"
+                 target="_blank"
+                 rel="noopener noreferrer"
+                 style={{ color: 'hsl(var(--primary))', textDecoration: 'underline', marginLeft: '4px' }}>
+                Ethereum Technical Alliance (ETA) Registry
+              </a>
+              <span style={{ color: '#ffffff' }}>, ensuring industry-standard vulnerability detection.</span>
+            </p>
+            <p style={{ marginBottom: '12px' }}>
+              <strong style={{ color: 'hsl(var(--primary))' }}>SWC Registry Integration:</strong> <span style={{ color: '#ffffff' }}>Trained on all <span style={{ color: 'hsl(var(--primary))' }}>37 Smart Contract Weakness Classification</span> (SWC) vulnerabilities
+              with detailed analysis patterns and remediation strategies.</span>
+            </p>
+          </div>
+        </div>
         <div>
           <label className="block text-sm font-medium mb-2 font-orbitron">Paste Solidity Code:</label>
           <Textarea
