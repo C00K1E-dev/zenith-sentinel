@@ -5,6 +5,9 @@ import { Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import ContentCard from '@/components/ContentCard';
+import Roadmap from '@/components/Roadmap';
+import Team from '@/components/Team';
+import FAQ from '@/components/FAQ';
 import heroImage from '@/assets/ssv2hero.svg';
 
 const Index = () => {
@@ -43,14 +46,11 @@ const Index = () => {
                 and you hold the key to the future of decentralized intelligence.
               </p>
               
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Button variant="hero" size="lg" className="group">
-                  Join the Network
-                  <ArrowRight className="group-hover:translate-x-1 transition-transform" />
-                </Button>
-                <Link to="/hub">
-                  <Button variant="glass" size="lg">
-                    Launch Hub
+              <div className="flex justify-center">
+                <Link to="/hub" target="_blank" rel="noopener noreferrer">
+                  <Button variant="hero" size="lg" className="group">
+                    Join the Network
+                    <ArrowRight className="group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </Link>
               </div>
@@ -93,6 +93,15 @@ const Index = () => {
           />
         </div>
 
+        {/* Roadmap Section */}
+        <Roadmap />
+
+        {/* Team Section */}
+        <Team />
+
+        {/* FAQ Section */}
+        <FAQ />
+
         {/* Closing CTA */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -107,7 +116,7 @@ const Index = () => {
           <p className="text-xl text-muted-foreground mb-8">
             Where AI works, devices earn, and you hold the key.
           </p>
-          <Link to="/hub">
+          <Link to="/hub" target="_blank" rel="noopener noreferrer">
             <Button variant="hero" size="lg" className="group">
               Get Started Now
               <ArrowRight className="group-hover:translate-x-1 transition-transform" />

@@ -1,10 +1,29 @@
-import { Twitter, MessageCircle, Github } from 'lucide-react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faXTwitter, faTiktok, faTelegram } from '@fortawesome/free-brands-svg-icons';
+import { Github, Linkedin } from 'lucide-react';
+import ssIcon from '@/assets/ss-icon.svg';
+
+// Twitter Icon Component
+const TwitterIcon = ({ size, className }: { size?: number; className?: string }) => (
+  <FontAwesomeIcon icon={faXTwitter} className={className} />
+);
+
+// TikTok Icon Component
+const TikTokIcon = ({ size, className }: { size?: number; className?: string }) => (
+  <FontAwesomeIcon icon={faTiktok} className={className} />
+);
+
+// Telegram Icon Component
+const TelegramIcon = ({ size, className }: { size?: number; className?: string }) => (
+  <FontAwesomeIcon icon={faTelegram} className={className} />
+);
 
 const Footer = () => {
   const socialLinks = [
-    { icon: Twitter, label: 'Twitter', href: '#' },
-    { icon: MessageCircle, label: 'Discord', href: '#' },
-    { icon: Github, label: 'GitHub', href: '#' },
+    { icon: TwitterIcon, label: 'X (Twitter)', href: '#' },
+    { icon: TelegramIcon, label: 'Telegram', href: 'https://t.me/SmartSentinelsCommunity' },
+    { icon: Linkedin, label: 'LinkedIn', href: 'https://www.linkedin.com/company/smartsentinels/' },
+    { icon: TikTokIcon, label: 'TikTok', href: 'https://www.tiktok.com/@smartsentinels_official' },
   ];
 
   return (
@@ -14,9 +33,7 @@ const Footer = () => {
           {/* Logo & Copyright */}
           <div className="flex flex-col items-center md:items-start">
             <div className="flex items-center space-x-2 mb-2">
-              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-                <span className="text-primary-foreground font-orbitron font-bold">SS</span>
-              </div>
+              <img src={ssIcon} alt="SmartSentinels" className="w-8 h-8" />
               <span className="font-orbitron font-bold text-foreground">SmartSentinels</span>
             </div>
             <p className="text-sm text-muted-foreground">
@@ -33,6 +50,8 @@ const Footer = () => {
                   key={social.label}
                   href={social.href}
                   aria-label={social.label}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="glass-card-hover p-3 rounded-lg"
                 >
                   <Icon size={20} className="text-muted-foreground hover:text-primary transition-colors" />

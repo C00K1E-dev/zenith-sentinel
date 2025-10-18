@@ -1,8 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { ConnectWallet } from '@thirdweb-dev/react';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -10,13 +8,34 @@ const Navbar = () => {
 
   const navLinks = [
     { name: 'Home', path: '/' },
-    { name: 'Hub', path: '/hub' },
     { name: 'Roadmap', path: '#roadmap' },
     { name: 'Team', path: '#team' },
-    { name: 'Whitepaper', path: '#whitepaper' },
+    { name: 'Documents', path: '#whitepaper' },
+    { name: 'Hub', path: '/hub' },
   ];
 
-  const isActive = (path: string) => location.pathname === path;
+  const isActive = (path: string) => {
+    if (path.startsWith('#')) {
+      return location.hash === path;
+    }
+    return location.pathname === path;
+  };
+
+  const handleNavClick = (path: string, e: React.MouseEvent) => {
+    if (path.startsWith('#')) {
+      e.preventDefault();
+      const element = document.querySelector(path);
+      if (element) {
+        element.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
+        // Update URL hash without triggering navigation
+        window.history.pushState(null, '', path);
+      }
+      setIsOpen(false);
+    }
+  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass-card border-b neon-border">
@@ -24,9 +43,11 @@ const Navbar = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
-            <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-orbitron font-bold text-xl">SS</span>
-            </div>
+            <img 
+              src="/src/assets/ss-icon.svg" 
+              alt="SmartSentinels Logo" 
+              className="w-10 h-10"
+            />
             <span className="font-orbitron font-bold text-xl text-foreground neon-glow">
               SmartSentinels
             </span>
@@ -34,26 +55,46 @@ const Navbar = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            {navLinks.map((link) => (
-              <Link
-                key={link.name}
-                to={link.path}
-                target={link.name === 'Hub' ? '_blank' : undefined}
-                rel={link.name === 'Hub' ? 'noopener noreferrer' : undefined}
-                className={`transition-colors duration-200 ${
-                  isActive(link.path)
-                    ? 'text-primary neon-glow'
-                    : 'text-muted-foreground hover:text-primary'
-                }`}
-              >
-                {link.name}
-              </Link>
-            ))}
-            <ConnectWallet 
-              theme="dark"
-              btnTitle="Connect Wallet"
-              className="!bg-cyan-500/20 !text-white !border !border-cyan-400/30 !rounded-lg !font-medium hover:!bg-cyan-500/30 hover:!border-cyan-400/50 transition-all !backdrop-blur-sm !px-3 !py-2 !text-sm"
-            />
+            {navLinks.map((link) => {
+              if (link.name === 'Hub') {
+                return (
+                  <Link
+                    key={link.name}
+                    to={link.path}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-primary hover:bg-primary/90 transition-colors duration-200"
+                  >
+                    <span className="text-primary-foreground font-orbitron font-bold text-sm neon-glow">
+                      {link.name}
+                    </span>
+                  </Link>
+                );
+              }
+
+              if (link.path.startsWith('#')) {
+                return (
+                  <a
+                    key={link.name}
+                    href={link.path}
+                    onClick={(e) => handleNavClick(link.path, e)}
+                    className="transition-colors duration-200 text-primary hover:text-primary neon-glow"
+                  >
+                    {link.name}
+                  </a>
+                );
+              }
+
+              return (
+                <Link
+                  key={link.name}
+                  to={link.path}
+                  className="transition-colors duration-200 text-primary hover:text-primary neon-glow"
+                >
+                  {link.name}
+                </Link>
+              );
+            })}
           </div>
 
           {/* Mobile Menu Button */}
@@ -70,29 +111,50 @@ const Navbar = () => {
       {isOpen && (
         <div className="md:hidden glass-card border-t border-white/10">
           <div className="px-4 pt-2 pb-4 space-y-2">
-            {navLinks.map((link) => (
-              <Link
-                key={link.name}
-                to={link.path}
-                target={link.name === 'Hub' ? '_blank' : undefined}
-                rel={link.name === 'Hub' ? 'noopener noreferrer' : undefined}
-                onClick={() => setIsOpen(false)}
-                className={`block px-4 py-2 rounded-lg transition-colors ${
-                  isActive(link.path)
-                    ? 'bg-primary/20 text-primary'
-                    : 'text-muted-foreground hover:bg-white/5'
-                }`}
-              >
-                {link.name}
-              </Link>
-            ))}
-            <div className="pt-2">
-              <ConnectWallet 
-                theme="dark"
-                btnTitle="Connect Wallet"
-                className="!w-full !bg-cyan-500/20 !text-white !border !border-cyan-400/30 !rounded-lg !font-medium hover:!bg-cyan-500/30 hover:!border-cyan-400/50 transition-all !backdrop-blur-sm !py-2"
-              />
-            </div>
+            {navLinks.map((link) => {
+              if (link.name === 'Hub') {
+                return (
+                  <Link
+                    key={link.name}
+                    to={link.path}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center justify-center space-x-2 px-4 py-2 rounded-lg bg-primary hover:bg-primary/90 transition-colors duration-200"
+                  >
+                    <span className="text-primary-foreground font-orbitron font-bold text-sm neon-glow">
+                      {link.name}
+                    </span>
+                  </Link>
+                );
+              }
+
+              if (link.path.startsWith('#')) {
+                return (
+                  <a
+                    key={link.name}
+                    href={link.path}
+                    onClick={(e) => handleNavClick(link.path, e)}
+                    className="block px-4 py-2 rounded-lg transition-colors text-primary hover:bg-white/5 neon-glow"
+                  >
+                    {link.name}
+                  </a>
+                );
+              }
+
+              return (
+                <Link
+                  key={link.name}
+                  to={link.path}
+                  target={link.name === 'Hub' ? '_blank' : undefined}
+                  rel={link.name === 'Hub' ? 'noopener noreferrer' : undefined}
+                  onClick={() => setIsOpen(false)}
+                  className="block px-4 py-2 rounded-lg transition-colors text-primary hover:bg-white/5 neon-glow"
+                >
+                  {link.name}
+                </Link>
+              );
+            })}
           </div>
         </div>
       )}

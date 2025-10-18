@@ -70,9 +70,11 @@ const Sidebar = () => {
           <h2 className="font-orbitron font-bold text-lg neon-glow">SmartSentinels Hub</h2>
         )}
         {collapsed && (
-          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center mx-auto">
-            <span className="text-primary-foreground font-orbitron font-bold text-sm">SS</span>
-          </div>
+          <img 
+            src="/src/assets/ss-icon.svg" 
+            alt="SmartSentinels Logo" 
+            className="w-8 h-8 mx-auto"
+          />
         )}
       </div>
 
