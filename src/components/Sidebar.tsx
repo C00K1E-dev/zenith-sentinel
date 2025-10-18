@@ -93,22 +93,22 @@ const Sidebar = () => {
 
       {/* Wallet Connection */}
       <div className="px-4 pt-4 pb-4">
-        {!collapsed ? (
-          <button
-            onClick={() => connect({ client: thirdwebClient })}
-            className="w-full flex items-center justify-center px-3 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_20px_rgba(248,244,66,0.5)] hover:shadow-[0_0_30px_rgba(248,244,66,0.7)] font-orbitron font-bold transition-all duration-200"
-          >
-            <span className="text-primary-foreground font-orbitron font-bold text-sm neon-glow">
-              Connect Wallet
-            </span>
-          </button>
-        ) : (
-          <button
-            onClick={() => connect({ client: thirdwebClient })}
-            className="w-full flex items-center justify-center px-3 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_20px_rgba(248,244,66,0.5)] hover:shadow-[0_0_30px_rgba(248,244,66,0.7)] font-orbitron font-bold transition-all duration-200 mb-2">
-            <Wallet size={20} className="text-primary-foreground" />
-          </button>
-        )}
+          {!collapsed ? (
+            <button
+              onClick={() => connect({ client: thirdwebClient })}
+              className="w-full flex items-center justify-center px-3 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_20px_rgba(248,244,66,0.5)] hover:shadow-[0_0_30px_rgba(248,244,66,0.7)] font-orbitron font-bold transition-all duration-200"
+            >
+              <span className="text-primary-foreground font-orbitron font-bold text-sm neon-glow">
+                Connect Wallet
+              </span>
+            </button>
+          ) : (
+            <button
+              onClick={() => connect({ client: thirdwebClient })}
+              className="w-full flex items-center justify-center px-3 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_20px_rgba(248,244,66,0.5)] hover:shadow-[0_0_30px_rgba(248,244,66,0.7)] font-orbitron font-bold transition-all duration-200 mb-2">
+              <Wallet size={20} className="text-primary-foreground" />
+            </button>
+          )}
       </div>
 
       {/* My Stats Section */}
