@@ -3,7 +3,7 @@ import { DollarSign, TrendingUp, Users, Clock } from 'lucide-react';
 import StatCard from '@/components/StatCard';
 import { Button } from '@/components/ui/button';
 
-const HubFunding = () => {
+const SidebarSeedFundingTokenSale = () => {
   return (
     <div className="space-y-8">
       <motion.div
@@ -70,4 +70,4 @@ const HubFunding = () => {
   );
 };
 
-export default HubFunding;
+export default SidebarSeedFundingTokenSale;

@@ -28,6 +28,7 @@ interface SidebarItem {
   path: string;
   icon: any;
   badge?: string;
+  state?: any;
 }
 
 const Sidebar = () => {
@@ -36,7 +37,7 @@ const Sidebar = () => {
   const { connect } = useConnectModal();
 
   const menuItems: SidebarItem[] = [
-    { name: 'General Stats', path: '/hub', icon: BarChart3 },
+    { name: 'General Stats', path: '/hub/general-stats', icon: BarChart3 },
     { name: 'Seed Funding / Token Sale', path: '/hub/funding', icon: DollarSign },
     { name: 'NFTs & iNFTs Hub', path: '/hub/nfts', icon: ImageIcon },
     { name: 'AI Audit - Smart Contract', path: '/hub/audit', icon: Shield },
@@ -47,25 +48,30 @@ const Sidebar = () => {
   ];
 
   const myStatsItems: SidebarItem[] = [
-    { name: 'My NFTs', path: '/hub/nfts', icon: ImageIcon },
-    { name: 'My Agents', path: '/hub/create-agent', icon: Bot },
-    { name: 'My Devices', path: '/hub/devices', icon: HardDrive },
-    { name: 'My Rewards', path: '/hub/rewards', icon: Award },
+    { name: 'My NFTs', path: '/hub/my-nfts', icon: ImageIcon },
+    { name: 'My Agents', path: '/hub/my-agents', icon: Bot },
+    { name: 'My Devices', path: '/hub/my-devices', icon: HardDrive },
+    { name: 'My Rewards', path: '/hub/my-rewards', icon: Award },
   ];
 
-  const isActive = (path: string) => location.pathname === path;
+  const isActive = (path: string) => {
+    if (path === '/hub/general-stats') {
+      return location.pathname === '/hub' || location.pathname === '/hub/general-stats';
+    }
+    return location.pathname === path;
+  };
 
   return (
     <aside
       className={cn(
         'glass-card border-r border-yellow-400/20 transition-all duration-300 h-screen sticky top-0 flex flex-col overflow-hidden',
-        collapsed ? 'w-20' : 'w-72'
+        collapsed ? 'w-20' : 'w-68'
       )}
     >
       {/* Toggle Button */}
       <button
         onClick={() => setCollapsed(!collapsed)}
-        className="absolute -right-3 top-6 glass-card-hover p-1.5 rounded-full neon-border z-10"
+        className="absolute -right-3 top-6 glass-card-hover p-1.5 rounded-full neon-border z-10 hover:shadow-[0_0_30px_rgba(248,244,66,0.8)]"
       >
         {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
       </button>
@@ -79,7 +85,7 @@ const Sidebar = () => {
               alt="SmartSentinels Logo"
               className="w-8 h-8"
             />
-            <h2 className="font-orbitron font-bold text-lg neon-glow whitespace-nowrap">SmartSentinels Hub</h2>
+            <h2 className="font-orbitron font-bold text-lg neon-glow whitespace-nowrap">SmartSentinels</h2>
           </div>
         )}
         {collapsed && (
@@ -95,7 +101,13 @@ const Sidebar = () => {
       <div className="px-4 pt-4 pb-4">
           {!collapsed ? (
             <button
-              onClick={() => connect({ client: thirdwebClient })}
+              onClick={async () => {
+                try {
+                  await connect({ client: thirdwebClient });
+                } catch (error) {
+                  console.error('Wallet connection failed:', error);
+                }
+              }}
               className="w-full flex items-center justify-center px-3 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_20px_rgba(248,244,66,0.5)] hover:shadow-[0_0_30px_rgba(248,244,66,0.7)] font-orbitron font-bold transition-all duration-200"
             >
               <span className="text-primary-foreground font-orbitron font-bold text-sm neon-glow">
@@ -104,7 +116,13 @@ const Sidebar = () => {
             </button>
           ) : (
             <button
-              onClick={() => connect({ client: thirdwebClient })}
+              onClick={async () => {
+                try {
+                  await connect({ client: thirdwebClient });
+                } catch (error) {
+                  console.error('Wallet connection failed:', error);
+                }
+              }}
               className="w-full flex items-center justify-center px-3 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_20px_rgba(248,244,66,0.5)] hover:shadow-[0_0_30px_rgba(248,244,66,0.7)] font-orbitron font-bold transition-all duration-200 mb-2">
               <Wallet size={20} className="text-primary-foreground" />
             </button>

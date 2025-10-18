@@ -182,4 +182,5 @@
     50% { transform: translateX(60px) translateY(-30px) rotate(0deg); }
     75% { transform: translateX(30px) translateY(-15px) rotate(-5deg); }
   }
+  
 }
