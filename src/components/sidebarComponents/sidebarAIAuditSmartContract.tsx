@@ -9,6 +9,77 @@ import { parseUnits, formatUnits, keccak256, toHex, createPublicClient, http } f
 import { bscTestnet } from 'viem/chains';
 import { SSTL_TOKEN_ADDRESS, SSTL_TOKEN_ABI, AUDIT_GATEWAY_ADDRESS, AUDIT_GATEWAY_ABI, POUW_POOL_ADDRESS, POUW_POOL_ABI } from "../../contracts/index";
 
+// --- Circular Progress Component for Security Score ---
+interface CircularProgressProps {
+  score: number;
+  size?: number;
+  strokeWidth?: number;
+}
+
+const CircularProgress: React.FC<CircularProgressProps> = ({ 
+  score, 
+  size = 80, 
+  strokeWidth = 6 
+}) => {
+  const radius = (size - strokeWidth) / 2;
+  const circumference = radius * 2 * Math.PI;
+  const strokeDasharray = circumference;
+  const strokeDashoffset = circumference - (score / 100) * circumference;
+
+  // Color logic based on score
+  const getColor = (score: number) => {
+    if (score >= 90) return '#10B981'; // Green
+    if (score >= 80) return '#F59E0B'; // Yellow/Orange
+    if (score >= 60) return '#F97316'; // Orange
+    return '#EF4444'; // Red
+  };
+
+  const color = getColor(score);
+
+  return (
+    <div className="relative inline-flex items-center justify-center">
+      <svg width={size} height={size}>
+        {/* Background circle */}
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke="#374151"
+          strokeWidth={strokeWidth}
+          fill="transparent"
+        />
+        {/* Progress circle */}
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke={color}
+          strokeWidth={strokeWidth}
+          fill="transparent"
+          strokeDasharray={strokeDasharray}
+          strokeDashoffset={strokeDashoffset}
+          strokeLinecap="round"
+          className="transition-all duration-500 ease-out"
+          style={{
+            filter: `drop-shadow(0 0 6px ${color}40)`,
+            transform: 'rotate(-90deg)',
+            transformOrigin: 'center',
+          }}
+        />
+      </svg>
+      {/* Score text in center */}
+      <div className="absolute inset-0 flex items-center justify-center">
+        <span 
+          className="font-bold text-sm"
+          style={{ color }}
+        >
+          {score}/100
+        </span>
+      </div>
+    </div>
+  );
+};
+
 // --- TYPE DEFINITIONS ---
 interface VulnerabilityBreakdown {
     Critical: number;
@@ -50,7 +121,7 @@ const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 const API_MODEL = "gemini-2.0-flash";
 const API_URL_TEMPLATE = `https://generativelanguage.googleapis.com/v1beta/models/${API_MODEL}:generateContent?key=`;
 // Logo URL - Using SVG for perfect scaling
-const LOGO_URL = "/assets/img/logo/logo.svg";
+const LOGO_URL = "/ss-icon.svg";
 
 // Payment Configuration - BSC TESTNET (DEPLOYED ✅)
 const BSC_TESTNET_CHAIN_ID = 97;
@@ -622,6 +693,66 @@ const generateAuditHTML = (auditData: AuditData): string => {
         </div>
     `;
 
+    // Generate SVG circular progress for the full report
+    const generateCircularProgressSVG = (score: number): string => {
+        const size = 120;
+        const strokeWidth = 8;
+        const radius = (size - strokeWidth) / 2;
+        const circumference = radius * 2 * Math.PI;
+        const strokeDasharray = circumference;
+        const strokeDashoffset = circumference - (score / 100) * circumference;
+
+        // Color logic based on score
+        const getColor = (score: number) => {
+            if (score >= 90) return '#10B981'; // Green
+            if (score >= 80) return '#F59E0B'; // Yellow/Orange
+            if (score >= 60) return '#F97316'; // Orange
+            return '#EF4444'; // Red
+        };
+
+        const color = getColor(score);
+
+        return `
+            <svg width="${size}" height="${size}" style="filter: drop-shadow(0 0 6px ${color}40);">
+                <!-- Background circle -->
+                <circle
+                    cx="${size / 2}"
+                    cy="${size / 2}"
+                    r="${radius}"
+                    stroke="#374151"
+                    stroke-width="${strokeWidth}"
+                    fill="transparent"
+                />
+                <!-- Progress circle -->
+                <circle
+                    cx="${size / 2}"
+                    cy="${size / 2}"
+                    r="${radius}"
+                    stroke="${color}"
+                    stroke-width="${strokeWidth}"
+                    fill="transparent"
+                    stroke-dasharray="${strokeDasharray}"
+                    stroke-dashoffset="${strokeDashoffset}"
+                    stroke-linecap="round"
+                    style="transition: all 0.5s ease-out; transform: rotate(-90deg); transform-origin: center;"
+                />
+                <!-- Score text in center -->
+                <text
+                    x="${size / 2}"
+                    y="${size / 2}"
+                    text-anchor="middle"
+                    dominant-baseline="middle"
+                    fill="${color}"
+                    font-size="18"
+                    font-weight="bold"
+                    font-family="Inter, sans-serif"
+                >
+                    ${score}/100
+                </text>
+            </svg>
+        `;
+    };
+
     const scoreColor = auditData.securityScore >= 90 ? '#4CAF50' : auditData.securityScore >= 80 ? '#FFC107' : '#F44336';
     const totalVulnerabilities = Object.values(auditData.vulnerabilityBreakdown).reduce((acc: number, count: number) => acc + count, 0);
     const scoreClass = auditData.securityScore >= 90 ? 'score-high' : auditData.securityScore >= 80 ? 'score-medium' : 'score-low';
@@ -647,22 +778,22 @@ const generateAuditHTML = (auditData: AuditData): string => {
         
         /* Responsive Logo */
         .logo-img {
-            height: 120px;
+            height: 50px;
             width: auto;
-            max-width: 450px;
+            max-width: 200px;
             object-fit: contain;
         }
         
         @media (min-width: 640px) {
-            .logo-img { height: 150px; max-width: 520px; }
+            .logo-img { height: 60px; max-width: 220px; }
         }
         
         @media (min-width: 768px) {
-            .logo-img { height: 180px; max-width: 600px; }
+            .logo-img { height: 70px; max-width: 250px; }
         }
         
         @media (min-width: 1024px) {
-            .logo-img { height: 220px; max-width: 700px; }
+            .logo-img { height: 80px; max-width: 280px; }
         }
         
         .header-bg { 
@@ -784,6 +915,25 @@ const generateAuditHTML = (auditData: AuditData): string => {
         
         @media (min-width: 1024px) {
             .report-title { font-size: 2.5rem; }
+        }
+        
+        /* Inline Logo */
+        .inline-logo {
+            height: 1.25rem;
+            width: auto;
+            object-fit: contain;
+        }
+        
+        @media (min-width: 640px) {
+            .inline-logo { height: 1.5rem; }
+        }
+        
+        @media (min-width: 768px) {
+            .inline-logo { height: 2rem; }
+        }
+        
+        @media (min-width: 1024px) {
+            .inline-logo { height: 2.5rem; }
         }
         
         /* Responsive Section Headers */
@@ -1035,11 +1185,6 @@ const generateAuditHTML = (auditData: AuditData): string => {
                 }
             }
             
-            .gap-2 { gap: 0.5rem !important; }
-            .gap-3 { gap: 0.75rem !important; }
-            .gap-4 { gap: 1rem !important; }
-            
-            /* Optimize pills for print - keep vertical design */
             .pill-container {
                 margin-bottom: 0 !important;
                 padding: 0.5rem !important;
@@ -1052,7 +1197,7 @@ const generateAuditHTML = (auditData: AuditData): string => {
             
             /* Adjust logo for print */
             .logo-img {
-                max-height: 100px !important;
+                max-height: 45px !important;
                 margin-bottom: 1rem !important;
             }
             
@@ -1196,8 +1341,10 @@ const generateAuditHTML = (auditData: AuditData): string => {
 <body class="bg-[#1F1F1F]">
 
     <header class="text-center header-bg rounded-none sm:rounded-t-xl mb-4 sm:mb-6 md:mb-8">
-        <img src="${LOGO_URL}" alt="SmartSentinels Logo" class="logo-img mx-auto -mb-6 sm:-mb-8 md:-mb-10"/>
-        <h1 class="report-title font-extrabold text-neon neon-header px-2">SMARTSENTINELS AI AUDIT REPORT</h1>
+        <div class="flex items-center justify-center gap-3 px-2">
+            <img src="${LOGO_URL}" alt="SmartSentinels Logo" class="inline-logo"/>
+            <h1 class="report-title font-extrabold text-neon neon-header">SMARTSENTINELS AI AUDIT REPORT</h1>
+        </div>
     </header>
 
     <div class="container-responsive">
@@ -1225,16 +1372,14 @@ const generateAuditHTML = (auditData: AuditData): string => {
                 </div>
             </div>
 
-            <div class="lg:col-span-2 score-box p-4 sm:p-5 md:p-6 rounded-xl border border-gray-700 flex flex-col md:flex-row items-center justify-between gap-4">
-                <div class="w-full md:w-3/4">
+            <div class="lg:col-span-2 score-box p-4 sm:p-5 md:p-6 rounded-xl border border-gray-700 flex items-center gap-6">
+                <div class="flex-1">
                     <h2 class="section-header font-bold text-neon mb-3 sm:mb-4">Security Score</h2>
                     <p class="text-gray-300 text-xs sm:text-sm leading-relaxed">${auditData.overallAssessment || 'The contract demonstrates a high level of security. Minor issues identified, mainly related to gas optimization and design considerations, but no critical vulnerabilities found.'}</p>
                 </div>
-                <div class="text-center w-full md:w-1/4 flex-shrink-0">
-                    <div class="score-circle">
-                        ${auditData.securityScore ? auditData.securityScore.toFixed(0) : 0}/100
-                    </div>
-                    <div class="score-status text-${scoreColor === '#4CAF50' ? 'green' : scoreColor === '#FFC107' ? 'yellow' : 'red'}-400 font-bold">
+                <div class="flex-shrink-0 text-center">
+                    ${generateCircularProgressSVG(auditData.securityScore || 0)}
+                    <div class="score-status text-${scoreColor === '#4CAF50' ? 'green' : scoreColor === '#FFC107' ? 'yellow' : 'red'}-400 font-bold mt-2">
                         ${auditData.securityScore >= 90 ? 'EXCELLENT' : auditData.securityScore >= 80 ? 'GOOD' : 'NEEDS IMPROVEMENT'}
                     </div>
                 </div>
@@ -1273,7 +1418,7 @@ const generateAuditHTML = (auditData: AuditData): string => {
             
             <!-- SmartSentinels Authentication Seal - Right Side -->
             <div class="flex-shrink-0">
-                <img src="/assets/img/holo/ssHolo.png" alt="SmartSentinels Verified" class="ss-seal" title="Verified SmartSentinels Audit Report" />
+                <img src="/ssHoloNew.svg" alt="SmartSentinels Verified" class="ss-seal" title="Verified SmartSentinels Audit Report" />
             </div>
         </div>
     </footer>
@@ -1623,7 +1768,47 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
             const structuredData = await callGeminiApi(payload);
             structuredData.transactionHash = 'free-audit-' + Date.now(); // Mock transaction hash for free audits
 
-            setAuditData(structuredData);
+            // Always calculate vulnerability breakdown from vulnerabilities array since AI may not count correctly
+            const breakdown = {
+                Critical: 0,
+                High: 0,
+                Medium: 0,
+                Low: 0,
+                Informational: 0,
+                Gas: 0
+            };
+
+            console.log('AI response structure:', structuredData);
+            console.log('Vulnerabilities exists:', !!structuredData.vulnerabilities);
+            console.log('Vulnerabilities is array:', Array.isArray(structuredData.vulnerabilities));
+
+            if (structuredData.vulnerabilities && Array.isArray(structuredData.vulnerabilities)) {
+                console.log('Vulnerabilities array:', structuredData.vulnerabilities);
+                structuredData.vulnerabilities.forEach((vuln: any, index: number) => {
+                    const severity = vuln.severity;
+                    console.log(`Vulnerability ${index}:`, vuln);
+                    console.log(`Severity value: "${severity}"`);
+                    const severityLower = severity?.toLowerCase();
+                    console.log(`Severity lowercase: "${severityLower}"`);
+                    if (severityLower === 'critical') breakdown.Critical++;
+                    else if (severityLower === 'high') breakdown.High++;
+                    else if (severityLower === 'medium') breakdown.Medium++;
+                    else if (severityLower === 'low') breakdown.Low++;
+                    else if (severityLower === 'informational') breakdown.Informational++;
+                    else if (severityLower === 'gas') breakdown.Gas++;
+                    else console.log('Unknown severity:', severity);
+                });
+            }
+
+            console.log('Final breakdown before setting:', breakdown);
+
+            // Always override the AI's breakdown with our calculation
+            const correctedData = {
+                ...structuredData,
+                vulnerabilityBreakdown: { ...breakdown }
+            };
+
+            setAuditData(correctedData);
             setAuditSubmitted(true);
             setStatusMessage('Audit completed successfully!');
         } catch (error: any) {
@@ -1654,7 +1839,47 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
         const structuredData = await callGeminiApi(payload);
         structuredData.transactionHash = txHash;
 
-        setAuditData(structuredData);
+        // Always calculate vulnerability breakdown from vulnerabilities array since AI may not count correctly
+        const breakdown = {
+            Critical: 0,
+            High: 0,
+            Medium: 0,
+            Low: 0,
+            Informational: 0,
+            Gas: 0
+        };
+
+        console.log('AI response structure:', structuredData);
+        console.log('Vulnerabilities exists:', !!structuredData.vulnerabilities);
+        console.log('Vulnerabilities is array:', Array.isArray(structuredData.vulnerabilities));
+
+        if (structuredData.vulnerabilities && Array.isArray(structuredData.vulnerabilities)) {
+            console.log('Vulnerabilities array:', structuredData.vulnerabilities);
+            structuredData.vulnerabilities.forEach((vuln: any, index: number) => {
+                const severity = vuln.severity;
+                console.log(`Vulnerability ${index}:`, vuln);
+                console.log(`Severity value: "${severity}"`);
+                const severityLower = severity?.toLowerCase();
+                console.log(`Severity lowercase: "${severityLower}"`);
+                if (severityLower === 'critical') breakdown.Critical++;
+                else if (severityLower === 'high') breakdown.High++;
+                else if (severityLower === 'medium') breakdown.Medium++;
+                else if (severityLower === 'low') breakdown.Low++;
+                else if (severityLower === 'informational') breakdown.Informational++;
+                else if (severityLower === 'gas') breakdown.Gas++;
+                else console.log('Unknown severity:', severity);
+            });
+        }
+
+        console.log('Final breakdown before setting:', breakdown);
+
+        // Always override the AI's breakdown with our calculation
+        const correctedData = {
+            ...structuredData,
+            vulnerabilityBreakdown: { ...breakdown }
+        };
+
+        setAuditData(correctedData);
         setIsLoading(false);
         setIsProcessing(false);
         setAuditSubmitted(true);
@@ -1714,9 +1939,9 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
                 </div>
                 <div>
                   <p className="text-sm text-gray-400">Security Score:</p>
-                  <p className={`font-bold ${auditData.securityScore >= 80 ? 'text-green-400' : auditData.securityScore >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
-                    {auditData.securityScore}/100
-                  </p>
+                  <div className="flex items-center justify-center mt-2">
+                    <CircularProgress score={auditData.securityScore} />
+                  </div>
                 </div>
               </div>
 
