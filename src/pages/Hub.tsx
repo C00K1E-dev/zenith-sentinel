@@ -15,7 +15,7 @@ import SidebarStaking from '@/components/sidebarComponents/sidebarStaking';
 
 const Hub = () => {
   return (
-    <div className="min-h-screen flex gradient-animate overflow-x-hidden relative">
+    <div className="min-h-screen flex gradient-animate overflow-x-hidden relative overflow-y-auto">
       {/* Blockchain & AI Themed Background Elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         {/* Circuit Board Pattern */}
@@ -112,7 +112,7 @@ const Hub = () => {
 
       <Sidebar />
 
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1">
         <div className="max-w-7xl mx-auto p-6 lg:p-8">
           <Routes>
             <Route index element={<SidebarGeneralStats />} />
