@@ -1,0 +1,758 @@
+import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
+import { Upload, Play, FileText, Wrench, Brain, DollarSign, CheckCircle, Award, Loader2, Wallet, AlertTriangle, X, Search } from 'lucide-react';
+
+// --- IMPORTS FOR WALLET AND TOKEN TRANSFER ---
+import { useAccount, useWriteContract, useWaitForTransactionReceipt, useReadContract } from 'wagmi';
+import { parseUnits, formatUnits, keccak256, toHex, createPublicClient, http } from 'viem';
+import { bscTestnet } from 'viem/chains';
+import { SSTL_TOKEN_ADDRESS, SSTL_TOKEN_ABI, AUDIT_GATEWAY_ADDRESS, AUDIT_GATEWAY_ABI, POUW_POOL_ADDRESS, POUW_POOL_ABI } from "../contracts/index";
+
+// --- TYPE DEFINITIONS ---
+interface VulnerabilityBreakdown {
+    Critical: number;
+    High: number;
+    Medium: number;
+    Low: number;
+    Informational: number;
+    Gas: number;
+}
+
+interface Vulnerability {
+    swcId?: string;
+    severity: "Critical" | "High" | "Medium" | "Low" | "Informational" | "Gas";
+    title: string;
+    description: string;
+    lineNumbers?: number[];
+}
+
+interface AuditData {
+    contractName: string;
+    version: string;
+    securityScore: number;
+    overallAssessment: string;
+    vulnerabilityBreakdown: VulnerabilityBreakdown;
+    vulnerabilities: Vulnerability[];
+    transactionHash?: string;
+}
+
+interface RemediationState {
+    title: string;
+    code: string;
+    loading: boolean;
+}
+
+// --- CONFIGURATION CONSTANTS ---
+// Using the specified API Key from environment
+const GEMINI_API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+// Switching to the more robust 'flash' model to handle complex structured output requests
+const API_MODEL = "gemini-2.0-flash";
+const API_URL_TEMPLATE = `https://generativelanguage.googleapis.com/v1beta/models/${API_MODEL}:generateContent?key=`;
+// Logo URL - Using SVG for perfect scaling
+const LOGO_URL = "/assets/img/logo/logo.svg";
+
+// Payment Configuration - BSC TESTNET (DEPLOYED ✅)
+const BSC_TESTNET_CHAIN_ID = 97;
+const SSTL_CONTRACT = SSTL_TOKEN_ADDRESS as `0x${string}`;
+const PAYMENT_RECIPIENT = '0x46e451d555ebCB4ccE5087555a07F6e69D017b05' as `0x${string}`; // Your Wallet (AI Agent Creator)
+const AUDIT_COST = '1000'; // 1000 SSTL tokens (matches deployed contract)
+
+// --- HUB-STYLE CSS (Matching SmartSentinels Hub Widgets) ---
+const hubStyles = `
+    .audit-dashboard-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 24px;
+        margin-top: 32px;
+    }
+
+    /* Responsive breakpoints */
+    @media (min-width: 320px) {
+        .audit-dashboard-grid {
+            grid-template-columns: 1fr;
+            gap: 16px;
+            margin-top: 24px;
+        }
+        .audit-dashboard-widget {
+            padding: 16px;
+        }
+    }
+
+    @media (min-width: 375px) {
+        .audit-dashboard-widget {
+            padding: 18px;
+        }
+    }
+
+    @media (min-width: 425px) {
+        .audit-dashboard-widget {
+            padding: 20px;
+        }
+    }
+
+    @media (min-width: 768px) {
+        .audit-dashboard-grid {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        .audit-dashboard-widget {
+            padding: 22px;
+        }
+    }
+
+    @media (min-width: 1024px) {
+        .audit-dashboard-grid {
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+        .audit-dashboard-widget {
+            padding: 24px;
+        }
+    }
+
+    @media (min-width: 1440px) {
+        .audit-dashboard-widget {
+            padding: 28px;
+        }
+    }
+
+    @media (min-width: 2160px) {
+        .audit-dashboard-widget {
+            padding: 32px;
+        }
+    }
+
+    .audit-dashboard-widget {
+        background: #191919;
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.07);
+        transition: all 0.2s;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        overflow: hidden;
+    }
+
+    .audit-dashboard-widget:hover {
+        border-color: rgba(250, 249, 86, 0.3);
+        transform: translateY(-2px);
+    }
+
+    .audit-dashboard-widget h4 {
+        color: var(--tg-primary-color);
+        margin-bottom: 16px;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .audit-action-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .audit-action-btn {
+        background: rgba(255,255,255,0.1);
+        color: #fff;
+        border: 1px solid rgba(255,255,255,0.2);
+        padding: 12px 16px;
+        border-radius: 6px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 0.9rem;
+        position: relative;
+    }
+
+    .audit-action-btn:hover {
+        background: rgba(250, 249, 86, 0.2);
+        color: var(--tg-primary-color);
+        border-color: rgba(250, 249, 86, 0.4);
+        transform: translateY(-1px);
+    }
+
+    .audit-action-btn.active {
+        background: rgba(250, 249, 86, 0.15);
+        color: var(--tg-primary-color);
+        border-color: rgba(250, 249, 86, 0.5);
+        box-shadow: 0 0 10px rgba(250, 249, 86, 0.2);
+        position: relative;
+    }
+
+    .audit-action-btn.active::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 3px;
+        background: var(--tg-primary-color);
+        border-radius: 0 3px 3px 0;
+    }
+
+    .audit-action-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .audit-stats-content {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        width: 100%;
+        max-width: 100%;
+        overflow: hidden;
+    }
+
+    .audit-stat-item {
+        text-align: center;
+        padding: 12px 8px;
+        background: rgba(255,255,255,0.03);
+        border-radius: 8px;
+        border: 1px solid rgba(255,255,255,0.05);
+        overflow: hidden;
+        min-width: 0;
+    }
+    
+    @media (max-width: 425px) {
+        .audit-stat-item {
+            padding: 10px 6px;
+        }
+    }
+    
+    @media (max-width: 375px) {
+        .audit-stat-item {
+            padding: 8px 6px;
+        }
+    }
+    
+    @media (max-width: 320px) {
+        .audit-stat-item {
+            padding: 8px 4px;
+        }
+    }
+
+    .audit-stat-number {
+        display: block;
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: var(--tg-primary-color);
+        margin-bottom: 4px;
+        word-break: break-word;
+        overflow-wrap: break-word;
+        hyphens: auto;
+        max-width: 100%;
+    }
+    
+    @media (max-width: 425px) {
+        .audit-stat-number {
+            font-size: 1.2rem;
+        }
+    }
+    
+    @media (max-width: 375px) {
+        .audit-stat-number {
+            font-size: 1.1rem;
+        }
+    }
+    
+    @media (max-width: 320px) {
+        .audit-stat-number {
+            font-size: 1rem;
+        }
+    }
+
+    .audit-stat-label {
+        color: #b0b0b0;
+        font-size: 0.75rem;
+        font-weight: 500;
+        word-break: break-word;
+    }
+    
+    @media (max-width: 425px) {
+        .audit-stat-label {
+            font-size: 0.7rem;
+        }
+    }
+    
+    @media (max-width: 375px) {
+        .audit-stat-label {
+            font-size: 0.65rem;
+        }
+    }
+    
+    @media (max-width: 320px) {
+        .audit-stat-label {
+            font-size: 0.6rem;
+        }
+    }
+
+    .audit-textarea {
+        width: 100%;
+        padding: 12px;
+        border-radius: 6px;
+        background-color: rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255,255,255,0.1);
+        outline: none;
+        font-size: 0.875rem;
+        color: #fff;
+        font-family: 'Courier New', monospace;
+        resize: none;
+        transition: all 0.2s;
+    }
+
+    /* Responsive background image adjustments */
+    @media (min-width: 480px) {
+    }
+
+    @media (min-width: 768px) {
+    }
+
+    @media (min-width: 1024px) {
+        .audit-textarea {
+            background-size: 20%;
+        }
+    }
+
+    .audit-textarea:focus {
+        border-color: rgba(250, 249, 86, 0.5);
+        box-shadow: 0 0 0 2px rgba(250, 249, 86, 0.1);
+    }
+
+    .audit-loader-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 50px;
+    }
+
+    .audit-dot {
+        width: 10px;
+        height: 10px;
+        margin: 0 5px;
+        background-color: var(--tg-primary-color);
+        border-radius: 50%;
+        animation: bounce 1.4s infinite ease-in-out both;
+    }
+
+    .audit-dot:nth-child(1) { animation-delay: -0.32s; }
+    .audit-dot:nth-child(2) { animation-delay: -0.16s; }
+
+    @keyframes bounce {
+        0%, 80%, 100% { transform: scale(0); }
+        40% { transform: scale(1.0); }
+    }
+
+    .audit-status-message {
+        font-size: 1rem;
+        margin-bottom: 2rem;
+        text-align: center;
+        color: #e0e0e0;
+        line-height: 1.6;
+        min-height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+    }
+
+    .audit-remediation-card {
+        background: rgba(255,255,255,0.03);
+        border-radius: 8px;
+        padding: 16px;
+        margin-top: 16px;
+        border: 1px solid rgba(250, 249, 86, 0.2);
+    }
+    .audit-remediation-pre {
+        margin-top: 8px;
+        padding: 12px;
+        background: rgba(0,0,0,0.5);
+        border-radius: 4px;
+        font-size: 0.75rem;
+        overflow-x: auto;
+        color: #4CAF50;
+    }
+
+    /* Wallet Action Button Styles - Matching SmartSentinels Hub */
+    .audit-wallet-action-btn {
+        background: rgba(255,255,255,0.1);
+        color: #fff;
+        border: 1px solid rgba(255,255,255,0.2);
+        border-radius: 6px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        transition: all 0.2s;
+        font-weight: 500;
+    }
+
+    .audit-wallet-action-btn:hover:not(:disabled) {
+        background: rgba(250, 249, 86, 0.2);
+        color: var(--tg-primary-color);
+        border-color: rgba(250, 249, 86, 0.4);
+        transform: translateY(-1px);
+    }
+
+    .audit-wallet-action-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    /* Payment Button Styles */
+    .audit-action-button {
+        width: 100%;
+        transition: all 0.2s ease;
+    }
+    
+    .audit-action-button:not(:disabled):hover {
+        transform: translateY(-1px);
+        filter: brightness(1.1);
+    }
+    
+    @media (max-width: 768px) {
+        .audit-action-button {
+            font-size: 0.9rem;
+            padding: 10px 14px;
+        }
+    }
+    
+    @media (max-width: 425px) {
+        .audit-action-button {
+            font-size: 0.85rem;
+            padding: 10px 12px;
+        }
+    }
+    
+    /* Wallet Status Box Responsive */
+    @media (max-width: 425px) {
+        .audit-dashboard-widget > div[style*="rgba(10, 218, 185"],
+        .audit-dashboard-widget > div[style*="rgba(250, 249, 86"] {
+            padding: 10px !important;
+            font-size: 0.8rem !important;
+        }
+    }
+`;
+
+// --- 1. JSON SCHEMA DEFINITION (Deterministic Output) ---
+// Note: This structure is critical for PoUW consistency.
+
+const AUDIT_REPORT_SCHEMA = {
+    type: "OBJECT",
+    properties: {
+        contractName: { type: "STRING" },
+        version: { type: "STRING", description: "The Solidity pragma version used." },
+        securityScore: { type: "NUMBER", description: "Calculated score from 0 to 100." },
+        overallAssessment: { type: "STRING", description: "A two-paragraph summary of the contract's security posture and key takeaways." },
+        vulnerabilityBreakdown: {
+            type: "OBJECT",
+            properties: {
+                Critical: { type: "NUMBER" },
+                High: { type: "NUMBER" },
+                Medium: { type: "NUMBER" },
+                Low: { type: "NUMBER" },
+                Informational: { type: "NUMBER" },
+                Gas: { type: "NUMBER" },
+            },
+        },
+        vulnerabilities: {
+            type: "ARRAY",
+            items: {
+                type: "OBJECT",
+                properties: {
+                    swcId: { type: "STRING", description: "The standard SWC ID (e.g., SWC-107) or 'N/A' if custom." },
+                    severity: { type: "STRING", enum: ["Critical", "High", "Medium", "Low", "Informational", "Gas"] },
+                    title: { type: "STRING", description: "A concise title for the finding (e.g., Reentrancy Vulnerability)." },
+                    description: { type: "STRING", description: "Detailed explanation of the issue." },
+                    lineNumbers: { type: "ARRAY", items: { type: "INTEGER" }, description: "Array of line numbers where the issue occurs." },
+                },
+                required: ["severity", "title", "description"],
+            },
+        },
+    },
+    required: ["contractName", "securityScore", "vulnerabilityBreakdown", "vulnerabilities"],
+};
+
+  const systemPrompt = useMemo(() => {
+    return (
+        "You are a specialized Smart Contract Static Analysis Engine for the SmartSentinels PoUW network. " +
+        "Your task is to analyze the provided Solidity code and generate ONLY a single, deterministic JSON object " +
+        "that strictly adheres to the provided schema. You MUST use a low temperature for maximum consistency." +
+        "\n\n--- AUTHORITATIVE RESEARCH SOURCES ---" +
+        "\n• Primary Research Source: EEA EthTrust Security Levels Specification v-after-2" +
+        "\n• Reference: https://entethalliance.github.io/eta-registry/security-levels-spec.html" +
+        "\n• This specification defines comprehensive security requirements for smart contract auditing" +
+        "\n• Use the following security levels and requirements as your authoritative guide:" +
+        "\n\n--- EEA ETHTRUST SECURITY LEVELS OVERVIEW ---" +
+        "\n• Level S: Automated static analysis requirements (most can be checked by tools)" +
+        "\n• Level M: Manual review requirements (requires human judgment)" +
+        "\n• Level Q: Comprehensive business logic and documentation review" +
+        "\n\n--- KEY SECURITY REQUIREMENTS FROM ETA REGISTRY ---" +
+        "\n\nLEVEL S REQUIREMENTS:" +
+        "\n• External Calls: Check return values, use Checks-Effects-Interactions pattern" +
+        "\n• No delegatecall(): Prohibit unless protected and documented" +
+        "\n• No tx.origin: Use msg.sender for authorization instead" +
+        "\n• No exact balance checks: Avoid == comparisons with balances" +
+        "\n• No abi.encodePacked() with consecutive variable length args: Prevents hash collisions" +
+        "\n• No selfdestruct(): Prohibit unless protected and documented" +
+        "\n• No assembly {}: Prohibit unless protected and documented" +
+        "\n• Compiler bugs: Check for known Solidity compiler vulnerabilities" +
+        "\n• Floating pragma: Avoid ^ or >= in pragma statements" +
+        "\n• Modern compiler: Use Solidity 0.8.0+ for built-in overflow protection" +
+        "\n\nLEVEL M REQUIREMENTS:" +
+        "\n• Handle external call errors: Properly manage call failures" +
+        "\n• Protect external calls: Only call audited, controlled contracts" +
+        "\n• Avoid read-only reentrancy: Protect against state reading during reentrancy" +
+        "\n• Document special code: Explain use of assembly, external calls, etc." +
+        "\n• Safe overflow/underflow: Guard arithmetic when needed" +
+        "\n• Sources of randomness: Use cryptographically secure randomness" +
+        "\n• Don't misuse block data: Avoid block.timestamp/block.number for critical logic" +
+        "\n• Proper signature verification: Validate signatures correctly" +
+        "\n• No improper signature replay: Protect against signature reuse" +
+        "\n• Homoglyph attacks: Check for misleading Unicode characters" +
+        "\n\nLEVEL Q REQUIREMENTS:" +
+        "\n• Document contract logic: Provide detailed business logic specification" +
+        "\n• Document system architecture: Explain overall system design" +
+        "\n• Document threat models: Identify and analyze potential attack vectors" +
+        "\n• Implement as documented: Code must match documentation" +
+        "\n• Enforce least privilege: Access controls must be minimal necessary" +
+        "\n• Verify external calls: Ensure called contracts are safe" +
+        "\n• Process all inputs: Validate and handle all possible inputs" +
+        "\n• State changes trigger events: Emit events for all state modifications" +
+        "\n• Protect against MEV: Mitigate miner extractable value attacks" +
+        "\n• Protect against ordering attacks: Prevent transaction reordering exploits" +
+        "\n• Protect against oracle failure: Handle oracle malfunctions" +
+        "\n• Code linting: Follow Solidity best practices" +
+        "\n\n--- SWC VULNERABILITY CLASSIFICATION ---" +
+        "\nUse the following SWC (Smart Contract Weakness Classification) registry as your primary reference:" +
+        "\n• SWC-136: Unencrypted Private Data On-Chain - Check for private data stored on-chain without encryption" +
+        "\n• SWC-135: Code With No Effects - Check for unreachable code or statements with no effect" +
+        "\n• SWC-134: Message call with hardcoded gas amount - Check for .call{ gas: 12345 } with fixed gas values" +
+        "\n• SWC-133: Hash Collisions With Multiple Variable Length Arguments - Check for abi.encodePacked in hash functions" +
+        "\n• SWC-132: Unexpected Ether balance - Check for contracts that unexpectedly receive ether" +
+        "\n• SWC-131: Presence of unused variables - Check for declared but unused variables" +
+        "\n• SWC-130: Right-To-Left-Override control character (U+202E) - Check for U+202E character in strings" +
+        "\n• SWC-129: Typographical Error - Check for common typos in function/variable names" +
+        "\n• SWC-128: DoS With Block Gas Limit - Check for unbounded loops that can exceed gas limits" +
+        "\n• SWC-127: Arbitrary Jump with Function Type Variable - Check for function pointers used for jumps" +
+        "\n• SWC-126: Insufficient Gas Griefing - Check for operations that can be griefed with insufficient gas" +
+        "\n• SWC-125: Incorrect Inheritance Order - Check for inheritance order issues" +
+        "\n• SWC-124: Write to Arbitrary Storage Location - Check for assembly or direct storage manipulation" +
+        "\n• SWC-123: Requirement Violation - Check for violated business logic requirements" +
+        "\n• SWC-122: Lack of Proper Signature Verification - Check for improper ecrecover usage" +
+        "\n• SWC-121: Missing Protection against Signature Replay Attacks - Check for missing nonce validation" +
+        "\n• SWC-120: Weak Sources of Randomness from Chain Attributes - Check for block.timestamp, block.number, etc. used for randomness" +
+        "\n• SWC-119: Shadowing State Variables - Check for local variables shadowing state variables" +
+        "\n• SWC-118: Incorrect Constructor Name - Check for function constructor() instead of constructor()" +
+        "\n• SWC-117: Signature Malleability - Check for signature malleability issues" +
+        "\n• SWC-116: Block values as a proxy for time - Check for block.timestamp used for time-dependent logic" +
+        "\n• SWC-115: Authorization through tx.origin - Check for authentication using tx.origin" +
+        "\n• SWC-114: Transaction Order Dependence - Check for front-running vulnerabilities" +
+        "\n• SWC-113: DoS with Failed Call - Check for require() on external calls that can fail" +
+        "\n• SWC-112: Delegatecall to Untrusted Callee - Check for delegatecall to user-controlled addresses" +
+        "\n• SWC-111: Use of Deprecated Solidity Functions - Check for suicide, sha3, callcode usage" +
+        "\n• SWC-110: Assert Violation - Check for assert() usage that can consume all gas" +
+        "\n• SWC-109: Uninitialized Storage Pointer - Check for uninitialized storage variables" +
+        "\n• SWC-108: State Variable Default Visibility - Check for state variables without explicit visibility" +
+        "\n• SWC-107: Reentrancy - Check for external calls before state updates" +
+        "\n• SWC-106: Unprotected SELFDESTRUCT Instruction - Check for selfdestruct without access control" +
+        "\n• SWC-105: Unprotected Ether Withdrawal - Check for send/transfer without proper checks" +
+        "\n• SWC-104: Unchecked Call Return Value - Check for missing return value checks on low-level calls" +
+        "\n• SWC-103: Floating Pragma - Check for pragma statements using ^ or >=" +
+        "\n• SWC-102: Outdated Compiler Version - Check for compiler versions older than 0.8.0" +
+        "\n• SWC-101: Integer Overflow and Underflow - Check for arithmetic operations without SafeMath (pre-0.8.0)" +
+        "\n• SWC-100: Function Default Visibility - Check for functions without explicit visibility modifiers" +
+        "\n\n--- ANALYSIS METHODOLOGY ---" +
+        "\n1. CALCULATE SCORE: Start at 100. Subtract points: Critical=-20, High=-10, Medium=-4, Low=-2, Informational=-0.5, Gas=-0.2. The final score MUST be calculated." +
+        "\n2. VULNERABILITIES: For each finding, provide the SWC ID, title, description, and the line numbers." +
+        "\n3. CROSS-REFERENCE: Compare findings against ETA registry requirements and SWC classifications." +
+        "\n4. COMPREHENSIVE: Check for all SWC vulnerabilities and ETA security level requirements."
+    );
+  }, []);
+
+  const AUDIT_REPORT_SCHEMA = {
+    type: "OBJECT",
+    properties: {
+        contractName: { type: "STRING" },
+        version: { type: "STRING", description: "The Solidity pragma version used." },
+        securityScore: { type: "NUMBER", description: "Calculated score from 0 to 100." },
+        overallAssessment: { type: "STRING", description: "A two-paragraph summary of the contract's security posture and key takeaways." },
+        vulnerabilityBreakdown: {
+            type: "OBJECT",
+            properties: {
+                Critical: { type: "NUMBER" },
+                High: { type: "NUMBER" },
+                Medium: { type: "NUMBER" },
+                Low: { type: "NUMBER" },
+                Informational: { type: "NUMBER" },
+                Gas: { type: "NUMBER" },
+            },
+        },
+        vulnerabilities: {
+            type: "ARRAY",
+            items: {
+                type: "OBJECT",
+                properties: {
+                    swcId: { type: "STRING", description: "The standard SWC ID (e.g., SWC-107) or 'N/A' if custom." },
+                    severity: { type: "STRING", enum: ["Critical", "High", "Medium", "Low", "Informational", "Gas"] },
+                    title: { type: "STRING", description: "A concise title for the finding (e.g., Reentrancy Vulnerability)." },
+                    description: { type: "STRING", description: "Detailed explanation of the issue." },
+                    lineNumbers: { type: "ARRAY", items: { type: "INTEGER" }, description: "Array of line numbers where the issue occurs." },
+                },
+                required: ["severity", "title", "description"],
+            },
+        },
+    },
+    required: ["contractName", "securityScore", "vulnerabilityBreakdown", "vulnerabilities"],
+  };
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const result = e.target?.result;
+            if (typeof result === 'string') {
+                setCode(result);
+                setAuditData(null);
+                setAuditSubmitted(false);
+                setTransactionHash(undefined);
+                setPaymentMessage(null);
+                setIsApproved(false);
+                setIsProcessing(false);
+                setRemediation({ title: '', code: '', loading: false });
+                // Reset the file input so the same file can be uploaded again
+                event.target.value = '';
+            }
+        };
+        reader.readAsText(file);
+    }
+  };
+
+  const callGeminiApi = async (payload: { contents: any[], systemInstruction: { parts: { text: string }[] } }): Promise<any> => {
+    let attempt = 0;
+    const maxRetries = 3;
+    let delay = 2000;
+
+    const apiUrl = API_URL_TEMPLATE + GEMINI_API_KEY;
+
+    while (attempt < maxRetries) {
+        try {
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: payload.contents,
+                    systemInstruction: payload.systemInstruction,
+                    generationConfig: {
+                        temperature: 0.0,    // Purely deterministic
+                        topP: 0.1,           // Restrictive sampling
+                        topK: 1,             // Most probable token only
+                        candidateCount: 1,
+                        maxOutputTokens: 8192,
+                        responseMimeType: "application/json",
+                        responseSchema: AUDIT_REPORT_SCHEMA,
+                    },
+                })
+            });
+
+            if (!response.ok) {
+                if (response.status === 400) {
+                    throw new Error(`CRITICAL: HTTP 400 Payload Error. Check schema size or contract length.`);
+                }
+                if (response.status === 429 || response.status >= 500) {
+                    throw new Error(`Retrying due to API status: ${response.status}`);
+                }
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            const content = result.candidates?.[0]?.content?.parts?.[0]?.text;
+
+            if (!content) {
+                const reason = result.candidates?.[0]?.finishReason || 'Unknown failure.';
+                throw new Error(`AI generated no content. Reason: ${reason}`);
+            }
+
+            const auditData = JSON.parse(content.trim());
+            return auditData;
+
+        } catch (error) {
+            attempt++;
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            if (attempt < maxRetries && errorMessage.includes("Retrying")) {
+                await new Promise(res => setTimeout(res, delay));
+                delay *= 2;
+            } else {
+                console.error("Gemini API call failed:", error);
+                throw new Error(`Audit agent failed. Final error: ${errorMessage}.`);
+            }
+        }
+    }
+    throw new Error("Max retries reached without successful API call.");
+  };
+
+  const handleRunAudit = useCallback(async (txHash: `0x${string}`) => {
+    console.log('🎯 handleRunAudit called');
+    setIsLoading(true);
+    setStatusMessage("AI Agent analyzing contract...");
+
+    try {
+        const payload = {
+            contents: [{ parts: [{ text: `Analyze: \n${code}` }] }],
+            systemInstruction: { parts: [{ text: systemPrompt }] },
+        };
+
+        const structuredData = await callGeminiApi(payload);
+        structuredData.transactionHash = txHash;
+
+        setAuditData(structuredData);
+        setIsLoading(false);
+        setIsProcessing(false);
+        setAuditSubmitted(true);
+        setPaymentMessage(null);
+        setStatusMessage("Audit complete!");
+        
+    } catch (error: any) {
+        console.error("Audit error:", error);
+        setStatusMessage(`Audit failed: ${error.message}`);
+        setIsLoading(false);
+        setIsProcessing(false);
+    }
+  }, [code, systemPrompt]);
+
+  return (
+    <div className="glass-card p-6">
+      <h1 className="text-3xl font-orbitron font-bold mb-4 neon-glow">AI Audit - Smart Contract Analysis</h1>
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium mb-2 font-orbitron">Paste Solidity Code:</label>
+          <Textarea
+            placeholder="Paste your Solidity code here or upload .sol file..."
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            className="w-full min-h-[200px]"
+          />
+        </div>
+        <div className="w-fit">
+          <input type="file" id="file-upload-ts" accept=".sol" style={{ display: 'none' }} onChange={handleFileUpload} />
+          <label htmlFor="file-upload-ts" className="flex items-center gap-2 px-4 py-2 border border-input rounded-md bg-background hover:bg-[#f8f422] hover:text-[#1f1f1f] cursor-pointer text-sm font-orbitron">
+            <Upload size={14} />
+            Upload .sol File
+          </label>
+        </div>
+        <div className="flex justify-center">
+          <Button variant="hero" className="font-orbitron" onClick={() => handleRunAudit("0x1234567890abcdef" as `0x${string}`)}>Audit Contract</Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default SidebarAIAuditSmartContract;
