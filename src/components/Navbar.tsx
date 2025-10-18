@@ -10,7 +10,7 @@ const Navbar = () => {
     { name: 'Home', path: '/' },
     { name: 'Roadmap', path: '#roadmap' },
     { name: 'Team', path: '#team' },
-    { name: 'Documents', path: '#whitepaper' },
+    { name: 'Documents', path: '/documents' },
     { name: 'Hub', path: '/hub' },
   ];
 
@@ -44,7 +44,7 @@ const Navbar = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
             <img 
-              src="/src/assets/ss-icon.svg" 
+              src="/ss-icon.svg" 
               alt="SmartSentinels Logo" 
               className="w-10 h-10"
             />
@@ -63,7 +63,7 @@ const Navbar = () => {
                     to={link.path}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-primary hover:bg-primary/90 transition-colors duration-200"
+                    className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_20px_rgba(248,244,66,0.5)] hover:shadow-[0_0_30px_rgba(248,244,66,0.7)] font-orbitron font-bold transition-all duration-200"
                   >
                     <span className="text-primary-foreground font-orbitron font-bold text-sm neon-glow">
                       {link.name}

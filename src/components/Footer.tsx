@@ -1,7 +1,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faXTwitter, faTiktok, faTelegram } from '@fortawesome/free-brands-svg-icons';
 import { Github, Linkedin } from 'lucide-react';
-import ssIcon from '@/assets/ss-icon.svg';
+const ssIcon = "/ss-icon.svg";
 
 // Twitter Icon Component
 const TwitterIcon = ({ size, className }: { size?: number; className?: string }) => (
@@ -36,9 +36,31 @@ const Footer = () => {
               <img src={ssIcon} alt="SmartSentinels" className="w-8 h-8" />
               <span className="font-orbitron font-bold text-foreground">SmartSentinels</span>
             </div>
-            <p className="text-sm text-muted-foreground">
-              © SmartSentinels 2025 — All Rights Reserved
-            </p>
+            <div className="flex flex-col md:flex-row items-center md:items-start space-y-2 md:space-y-0 md:space-x-6">
+              <p className="text-sm text-muted-foreground">
+                © SmartSentinels 2025 — All Rights Reserved
+              </p>
+              <div className="flex items-center space-x-6">
+                <a
+                  href="#"
+                  className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                >
+                  Terms and Conditions
+                </a>
+                <a
+                  href="#"
+                  className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                >
+                  Privacy Policy
+                </a>
+                <a
+                  href="#"
+                  className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                >
+                  Disclaimer
+                </a>
+              </div>
+            </div>
           </div>
 
           {/* Social Links */}

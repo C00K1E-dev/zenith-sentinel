@@ -15,8 +15,13 @@ import {
   Award,
   HardDrive,
 } from 'lucide-react';
-import { ConnectWallet } from '@thirdweb-dev/react';
+import { createThirdwebClient } from "thirdweb";
+import { useConnectModal, ConnectButton } from "thirdweb/react";
 import { cn } from '@/lib/utils';
+
+const thirdwebClient = createThirdwebClient({
+  clientId: import.meta.env.VITE_THIRDWEB_CLIENT_ID,
+});
 
 interface SidebarItem {
   name: string;
@@ -28,6 +33,7 @@ interface SidebarItem {
 const Sidebar = () => {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
+  const { connect } = useConnectModal();
 
   const menuItems: SidebarItem[] = [
     { name: 'General Stats', path: '/hub', icon: BarChart3 },
@@ -53,7 +59,7 @@ const Sidebar = () => {
     <aside
       className={cn(
         'glass-card border-r border-yellow-400/20 transition-all duration-300 h-screen sticky top-0 flex flex-col overflow-hidden',
-        collapsed ? 'w-20' : 'w-64'
+        collapsed ? 'w-20' : 'w-72'
       )}
     >
       {/* Toggle Button */}
@@ -67,12 +73,19 @@ const Sidebar = () => {
       {/* Sidebar Header */}
       <div className="p-4 border-b border-white/10">
         {!collapsed && (
-          <h2 className="font-orbitron font-bold text-lg neon-glow">SmartSentinels Hub</h2>
+          <div className="flex items-center gap-3">
+            <img
+              src="/ss-icon.svg"
+              alt="SmartSentinels Logo"
+              className="w-8 h-8"
+            />
+            <h2 className="font-orbitron font-bold text-lg neon-glow whitespace-nowrap">SmartSentinels Hub</h2>
+          </div>
         )}
         {collapsed && (
-          <img 
-            src="/src/assets/ss-icon.svg" 
-            alt="SmartSentinels Logo" 
+          <img
+            src="/ss-icon.svg"
+            alt="SmartSentinels Logo"
             className="w-8 h-8 mx-auto"
           />
         )}
@@ -81,14 +94,19 @@ const Sidebar = () => {
       {/* Wallet Connection */}
       <div className="px-4 pt-4 pb-4">
         {!collapsed ? (
-          <ConnectWallet
-            theme="dark"
-            btnTitle="Connect Wallet"
-            className="!w-full !bg-cyan-500/20 !text-white !border !border-cyan-400/30 !rounded-lg !font-medium hover:!bg-cyan-500/30 hover:!border-cyan-400/50 transition-all !backdrop-blur-sm !py-2"
-          />
+          <button
+            onClick={() => connect({ client: thirdwebClient })}
+            className="w-full flex items-center justify-center px-3 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_20px_rgba(248,244,66,0.5)] hover:shadow-[0_0_30px_rgba(248,244,66,0.7)] font-orbitron font-bold transition-all duration-200"
+          >
+            <span className="text-primary-foreground font-orbitron font-bold text-sm neon-glow">
+              Connect Wallet
+            </span>
+          </button>
         ) : (
-          <button className="w-full glass-card-hover p-2 rounded-lg flex items-center justify-center mb-2">
-            <Wallet size={20} className="text-primary" />
+          <button
+            onClick={() => connect({ client: thirdwebClient })}
+            className="w-full flex items-center justify-center px-3 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_20px_rgba(248,244,66,0.5)] hover:shadow-[0_0_30px_rgba(248,244,66,0.7)] font-orbitron font-bold transition-all duration-200 mb-2">
+            <Wallet size={20} className="text-primary-foreground" />
           </button>
         )}
       </div>
