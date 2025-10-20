@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { useActiveAccount, useSendTransaction, useReadContract } from "thirdweb/react";
-import { prepareContractCall, getContract, createThirdwebClient } from "thirdweb";
+import { prepareContractCall, getContract, createThirdwebClient, readContract } from "thirdweb";
 import { bsc } from "thirdweb/chains";
 import { parseEther } from "viem";
 import { GENESIS_ABI, GENESIS_CONTRACT_ADDRESS, GENESIS_CHAIN_ID } from "../contracts/index";
@@ -81,22 +81,35 @@ export default function GenesisMint({ onMinted }: { onMinted?: (args: { tokenId?
   // For now, we'll use a simple timeout to simulate waiting for the transaction
   // In a real implementation, you'd use thirdweb's transaction receipt hooks
 
-  useEffect(() => {
-    if (!mintTxHash || !address) return;
-    // For now, we'll use a simple approach to get the token ID
-    // In a real implementation, you'd parse the transaction receipt
-    // For simplicity, we'll assume the token ID is available after a delay
-    const timer = setTimeout(() => {
-      // This is a placeholder - in real implementation you'd parse the receipt
-      // For now, we'll just trigger the callback with a dummy token ID
-      if (mintTxHash && !lastMintedTokenId) {
-        // You might want to fetch the latest token ID from the contract
-        // For now, we'll use a placeholder
-        setLastMintedTokenId(BigInt(1)); // Placeholder
-      }
-    }, 5000); // Wait 5 seconds for transaction to be mined
+  const { data: totalSupply, isLoading: isSupplyLoading } = useReadContract({
+    contract: genesisContract,
+    method: 'totalSupply',
+    abi: GENESIS_ABI,
+  } as any);
 
-    return () => clearTimeout(timer);
+  // Effect to handle successful mint
+  useEffect(() => {
+    if (!mintTxHash || !address || !totalSupply || typeof totalSupply !== 'bigint') return;
+
+    const handleMintSuccess = async () => {
+      try {
+        setLastMintedTokenId(totalSupply);
+        
+        if (onMinted) {
+          const baseURI = `https://smartsentinels.net/metadata/genesis/`;
+          onMinted({
+            tokenId: totalSupply as bigint,
+            txHash: mintTxHash,
+            imageUrl: `${baseURI}${(totalSupply as bigint).toString()}`
+          });
+        }
+      } catch (error) {
+        console.error('Error handling mint success:', error);
+        setAuthMessage('Mint successful but error fetching NFT details.');
+      }
+    };
+
+    handleMintSuccess();
   }, [mintTxHash, address, lastMintedTokenId]);
 
   // Fetch image URL from metadata and trigger onMinted callback

@@ -5,6 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThirdwebProvider } from "thirdweb/react";
 import { WagmiProvider, createConfig, http } from 'wagmi';
+import { MetaTags } from './components/MetaTags';
+import { HelmetProvider } from 'react-helmet-async';
 import { bsc, bscTestnet } from 'wagmi/chains';
 import { injected } from 'wagmi/connectors';
 import Index from "./pages/Index";
@@ -26,11 +28,13 @@ const config = createConfig({
 });
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
+  <HelmetProvider>
+    <QueryClientProvider client={queryClient}>
     <WagmiProvider config={config}>
       <ThirdwebProvider>
         <TooltipProvider>
           <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+            <MetaTags />
             <Toaster />
             <Sonner />
             <Routes>
@@ -45,6 +49,7 @@ const App = () => (
       </ThirdwebProvider>
     </WagmiProvider>
   </QueryClientProvider>
+  </HelmetProvider>
 );
 
 export default App;

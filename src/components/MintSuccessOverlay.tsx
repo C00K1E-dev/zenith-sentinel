@@ -28,10 +28,25 @@ const MintSuccessOverlay: React.FC<MintSuccessOverlayProps> = ({
 
   const [imageError, setImageError] = useState(false);
 
+  const IPFS_GATEWAYS = [
+    'https://ipfs.io/ipfs/',
+    'https://cloudflare-ipfs.com/ipfs/',
+    'https://gateway.pinata.cloud/ipfs/'
+  ];
+
+  const getIPFSUrl = (url: string) => {
+    if (!url) return '/assets/AIAudit.mp4';
+    if (url.startsWith('ipfs://')) {
+      const hash = url.replace('ipfs://', '');
+      return `${IPFS_GATEWAYS[0]}${hash}`;
+    }
+    return url;
+  };
+
   useEffect(() => {
     console.log('MintSuccessOverlay imageUrl effect:', { isOpen, imageUrl });
     if (isOpen && imageUrl) {
-      setMediaUrl(imageUrl);
+      setMediaUrl(getIPFSUrl(imageUrl));
       setLoading(false);
       setImageError(false); // Reset error state when URL changes
     } else if (isOpen) {
@@ -43,8 +58,23 @@ const MintSuccessOverlay: React.FC<MintSuccessOverlayProps> = ({
 
   const handleImageError = () => {
     console.log('Image failed to load:', mediaUrl);
+    
+    // Try next IPFS gateway if current URL is from IPFS
+    if (imageUrl?.startsWith('ipfs://')) {
+      const currentGateway = IPFS_GATEWAYS.find(gateway => mediaUrl.startsWith(gateway));
+      const currentIndex = currentGateway ? IPFS_GATEWAYS.indexOf(currentGateway) : -1;
+      
+      if (currentIndex < IPFS_GATEWAYS.length - 1) {
+        // Try next gateway
+        const hash = imageUrl.replace('ipfs://', '');
+        const nextGateway = IPFS_GATEWAYS[currentIndex + 1];
+        setMediaUrl(`${nextGateway}${hash}`);
+        return;
+      }
+    }
+    
+    // If all gateways failed or not an IPFS URL, fallback to default
     setImageError(true);
-    // Fallback to default image
     setMediaUrl('/assets/AIAudit.mp4');
     setLoading(false);
   };

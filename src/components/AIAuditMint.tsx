@@ -42,6 +42,7 @@ export default function AIAuditMint({ onMinted }: { onMinted?: (args: { tokenId?
    const [authMessage, setAuthMessage] = useState("");
    const [minting, setMinting] = useState(false);
    const [approving, setApproving] = useState(false);
+   const [error, setError] = useState<string | null>(null);
    const [mintTxHash, setMintTxHash] = useState<string | null>(null);
    const [lastKnownTokenId, setLastKnownTokenId] = useState<bigint>(BigInt(20)); // Start from 20 since user mentioned minting 20
    const [lastMintedTokenId, setLastMintedTokenId] = useState<bigint | null>(null);
@@ -91,11 +92,12 @@ export default function AIAuditMint({ onMinted }: { onMinted?: (args: { tokenId?
      abi: AI_AUDIT_ABI,
    } as any);
 
-   console.log('=== TOTAL SUPPLY DEBUG ===');
-   console.log('totalSupplyData:', totalSupplyData);
-   console.log('totalSupplyLoading:', totalSupplyLoading);
-   console.log('totalSupplyError:', totalSupplyError);
-   console.log('===========================');
+   // Update last known token ID when total supply changes
+   useEffect(() => {
+     if (totalSupplyData && typeof totalSupplyData === 'bigint') {
+       setLastKnownTokenId(totalSupplyData);
+     }
+   }, [totalSupplyData]);
 
    // Get user's NFT balance
    const { data: userNFTBalance, refetch: refetchNFTBalance } = useReadContract({
@@ -240,24 +242,44 @@ export default function AIAuditMint({ onMinted }: { onMinted?: (args: { tokenId?
       setLastKnownTokenId(expectedTokenId);
       console.log('Set lastMintedTokenId to expected ID:', expectedTokenId.toString());
 
-      // Also set up a fallback check after transaction confirms
+      // Set up verification after transaction broadcast
+      console.log('Transaction sent, setting up verification...');
+        
+      // Initial verification after a short delay for the transaction to propagate
       setTimeout(async () => {
         try {
-          console.log('Double-checking token ID after transaction...');
+          console.log('Performing initial supply verification...');
           await refetchTotalSupply();
           const newTotalSupply = totalSupplyData ? BigInt(totalSupplyData.toString()) : BigInt(0);
-          console.log('New totalSupply:', newTotalSupply.toString());
+          console.log('Initial verified totalSupply:', newTotalSupply.toString());
 
-          // If the totalSupply is higher than expected, update the token ID
           if (newTotalSupply > expectedTokenId) {
-            console.log('TotalSupply higher than expected, updating token ID to:', newTotalSupply.toString());
+            console.log('Supply increased, updating token ID to:', newTotalSupply.toString());
             setLastMintedTokenId(newTotalSupply);
             setLastKnownTokenId(newTotalSupply);
           }
+          
+          // Additional verification after a longer delay
+          setTimeout(async () => {
+            try {
+              console.log('Performing final supply verification...');
+              await refetchTotalSupply();
+              const finalTotalSupply = totalSupplyData ? BigInt(totalSupplyData.toString()) : BigInt(0);
+              console.log('Final verified totalSupply:', finalTotalSupply.toString());
+              
+              if (finalTotalSupply > newTotalSupply) {
+                console.log('Final supply update detected:', finalTotalSupply.toString());
+                setLastMintedTokenId(finalTotalSupply);
+                setLastKnownTokenId(finalTotalSupply);
+              }
+            } catch (error) {
+              console.error('Error in final supply verification:', error);
+            }
+          }, 10000); // 10 seconds for final verification
         } catch (error) {
-          console.error('Error in fallback token ID check:', error);
+          console.error('Error in initial supply verification:', error);
         }
-      }, 5000); // Wait 5 seconds for confirmation
+      }, 3000); // 3 seconds for initial verification
 
       // Clear all messages after successful mint
       setTimeout(() => setAuthMessage(""), 2000);
