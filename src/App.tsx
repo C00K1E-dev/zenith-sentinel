@@ -6,7 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThirdwebProvider, ConnectEmbed } from "thirdweb/react";
 import { createThirdwebClient } from "thirdweb";
 import { WagmiProvider, createConfig, http } from 'wagmi';
-import { bscTestnet } from 'wagmi/chains';
+import { bscTestnet, bsc } from 'wagmi/chains';
 import Index from "./pages/Index";
 import Hub from "./pages/Hub";
 import Documents from "./pages/Documents";
@@ -18,11 +18,12 @@ const client = createThirdwebClient({
   clientId: import.meta.env.VITE_THIRDWEB_CLIENT_ID,
 });
 
-// Wagmi configuration for BSC Testnet
+// Wagmi configuration for BSC Testnet and Mainnet
 const wagmiConfig = createConfig({
-  chains: [bscTestnet],
+  chains: [bscTestnet, bsc],
   transports: {
     [bscTestnet.id]: http(),
+    [bsc.id]: http(),
   },
 });
 

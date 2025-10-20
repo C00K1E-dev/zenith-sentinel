@@ -37,8 +37,8 @@ const CircularProgress: React.FC<CircularProgressProps> = ({
   const color = getColor(score);
 
   return (
-    <div className="relative inline-flex items-center justify-center">
-      <svg width={size} height={size}>
+    <div className="relative inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24">
+      <svg width="100%" height="100%" viewBox={`0 0 ${size} ${size}`}>
         {/* Background circle */}
         <circle
           cx={size / 2}
@@ -70,7 +70,7 @@ const CircularProgress: React.FC<CircularProgressProps> = ({
       {/* Score text in center */}
       <div className="absolute inset-0 flex items-center justify-center">
         <span 
-          className="font-bold text-sm"
+          className="font-bold text-xs sm:text-sm md:text-base"
           style={{ color }}
         >
           {score}/100
@@ -1895,92 +1895,67 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
   }, [code, systemPrompt]);
 
   return (
-    <div className="glass-card p-6">
-      <h1 className="text-3xl font-orbitron font-bold mb-4 neon-glow">AI Audit - Smart Contract Analysis</h1>
-      <div className="space-y-4">
+    <div className="glass-card p-4 sm:p-6">
+      <h1 className="text-2xl sm:text-3xl font-orbitron font-bold mb-4 sm:mb-6 neon-glow">AI Audit - Smart Contract Analysis</h1>
+      <div className="space-y-4 sm:space-y-6">
         {/* AI Training Information */}
-        <div className="audit-training-info" style={{
-          background: '#1f1f1f',
-          border: '1px solid rgba(250, 249, 86, 0.3)',
-          borderRadius: '12px',
-          padding: '20px',
-          marginBottom: '24px',
-          textAlign: 'center',
-          boxShadow: '0 4px 12px rgba(250, 249, 86, 0.1)'
-        }}>
-          <h4 style={{
-            color: 'hsl(var(--primary))',
-            marginBottom: '12px',
-            fontSize: '1.1rem',
-            fontWeight: '600',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px'
-          }}>
-            <span style={{ color: 'hsl(var(--primary))' }}>
-              <Brain size={20} />
-            </span>
+        <div className="audit-training-info bg-[#1f1f1f] border border-yellow-300/30 rounded-lg p-4 sm:p-6 md:p-8 mb-6 text-center shadow-lg shadow-yellow-500/10">
+          <h4 className="text-primary mb-3 sm:mb-4 text-lg sm:text-xl font-semibold flex items-center justify-center gap-2 sm:gap-3">
+            <Brain size={20} className="text-primary" />
             SmartSentinels AI Training
           </h4>
-          <div style={{
-            color: '#ffffff',
-            fontSize: '0.9rem',
-            lineHeight: '1.6',
-            maxWidth: '800px',
-            margin: '0 auto'
-          }}>
-            <p style={{ marginBottom: '12px' }}>
-              <strong style={{ color: 'hsl(var(--primary))' }}>Research-Driven Training:</strong> <span style={{ color: '#ffffff' }}>This AI agent was trained on comprehensive security research from the</span>
+          <div className="text-white text-sm sm:text-base leading-relaxed max-w-4xl mx-auto">
+            <p className="mb-3 sm:mb-4">
+              <strong className="text-primary">Research-Driven Training:</strong> <span>This AI agent was trained on comprehensive security research from the</span>
               <a href="https://entethalliance.github.io/eta-registry/security-levels-spec.html#sec-2-unicode"
                  target="_blank"
                  rel="noopener noreferrer"
-                 style={{ color: 'hsl(var(--primary))', textDecoration: 'underline', marginLeft: '4px' }}>
+                 className="text-primary underline hover:text-yellow-300 ml-1">
                 Ethereum Technical Alliance (ETA) Registry
               </a>
-              <span style={{ color: '#ffffff' }}>, ensuring industry-standard vulnerability detection.</span>
+              <span>, ensuring industry-standard vulnerability detection.</span>
             </p>
-            <p style={{ marginBottom: '12px' }}>
-              <strong style={{ color: 'hsl(var(--primary))' }}>SWC Registry Integration:</strong> <span style={{ color: '#ffffff' }}>Trained on all <span style={{ color: 'hsl(var(--primary))' }}>37 Smart Contract Weakness Classification</span> (SWC) vulnerabilities
+            <p className="mb-3 sm:mb-4">
+              <strong className="text-primary">SWC Registry Integration:</strong> <span>Trained on all <span className="text-primary">37 Smart Contract Weakness Classification</span> (SWC) vulnerabilities
               with detailed analysis patterns and remediation strategies.</span>
             </p>
           </div>
         </div>
         <div>
-          <label className="block text-sm font-medium mb-2 font-orbitron">Paste Solidity Code:</label>
+          <label className="block text-sm sm:text-base font-medium mb-2 font-orbitron">Paste Solidity Code:</label>
           <Textarea
             placeholder="Paste your Solidity code here or upload .sol file..."
             value={code}
             onChange={(e) => setCode(e.target.value)}
-            className="w-full min-h-[200px]"
+            className="w-full min-h-[150px] sm:min-h-[200px] text-sm sm:text-base"
           />
         </div>
         <div className="w-fit">
           <input type="file" id="file-upload-ts" accept=".sol" style={{ display: 'none' }} onChange={handleFileUpload} />
-          <label htmlFor="file-upload-ts" className="flex items-center gap-2 px-4 py-2 border border-input rounded-md bg-background hover:bg-[#f8f422] hover:text-[#1f1f1f] cursor-pointer text-sm font-orbitron">
+          <label htmlFor="file-upload-ts" className="flex items-center gap-2 px-3 sm:px-4 py-2 border border-input rounded-md bg-background hover:bg-[#f8f422] hover:text-[#1f1f1f] cursor-pointer text-sm sm:text-base font-orbitron transition-colors">
             <Upload size={14} />
             Upload .sol File
           </label>
         </div>
         <div className="flex justify-center">
-          <Button variant="hero" className="font-orbitron" onClick={handleSimpleAudit} disabled={isProcessing}>
+          <Button variant="hero" className="font-orbitron text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-3" onClick={handleSimpleAudit} disabled={isProcessing}>
             {isProcessing ? 'Analyzing...' : 'Audit Contract'}
           </Button>
         </div>
 
         {/* Status Message */}
         {statusMessage && (
-          <div className="mt-4 p-4 bg-gray-800 rounded-lg border border-gray-600">
-            <p className="text-center text-gray-300">{statusMessage}</p>
+          <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-gray-800 rounded-lg border border-gray-600">
+            <p className="text-center text-gray-300 text-sm sm:text-base">{statusMessage}</p>
           </div>
         )}
 
         {/* Audit Results */}
         {auditData && (
-          <div className="mt-6 space-y-4">
-            <div className="p-4 bg-gray-800 rounded-lg border border-gray-600">
-              <h3 className="text-lg font-orbitron font-bold mb-2 text-green-400">Audit Results</h3>
-              <div className="grid grid-cols-2 gap-4 mb-4">
+          <div className="mt-6 sm:mt-8 space-y-4 sm:space-y-6">
+            <div className="p-4 sm:p-6 bg-gray-800 rounded-lg border border-gray-600">
+              <h3 className="text-lg sm:text-xl font-orbitron font-bold mb-3 sm:mb-4 text-green-400">Audit Results</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                 <div>
                   <p className="text-sm text-gray-400">Contract Name:</p>
                   <p className="font-mono text-white">{auditData.contractName}</p>
@@ -2000,7 +1975,7 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
 
               <div className="mb-4">
                 <p className="text-sm text-gray-400 mb-2">Vulnerability Breakdown:</p>
-                <div className="grid grid-cols-3 gap-2 text-sm">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm">
                   <div className="text-red-400">Critical: {auditData.vulnerabilityBreakdown.Critical}</div>
                   <div className="text-orange-400">High: {auditData.vulnerabilityBreakdown.High}</div>
                   <div className="text-yellow-400">Medium: {auditData.vulnerabilityBreakdown.Medium}</div>
@@ -2012,13 +1987,13 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
 
               {auditData.vulnerabilities && auditData.vulnerabilities.length > 0 && (
                 <div className="mb-4">
-                  <p className="text-sm text-gray-400 mb-2">Vulnerabilities Found:</p>
-                  <div className="space-y-2">
+                  <p className="text-sm sm:text-base text-gray-400 mb-2">Vulnerabilities Found:</p>
+                  <div className="space-y-2 sm:space-y-3">
                     {auditData.vulnerabilities.slice(0, 3).map((vuln, index) => (
-                      <div key={index} className="p-3 bg-gray-700 rounded border-l-4 border-red-500">
-                        <div className="flex justify-between items-start mb-1">
-                          <h4 className="font-bold text-red-400">{vuln.title}</h4>
-                          <span className={`text-xs px-2 py-1 rounded ${
+                      <div key={index} className="p-3 sm:p-4 bg-gray-700 rounded border-l-4 border-red-500">
+                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-2 gap-2">
+                          <h4 className="font-bold text-red-400 text-sm sm:text-base">{vuln.title}</h4>
+                          <span className={`text-xs px-2 py-1 rounded self-start ${
                             vuln.severity === 'Critical' ? 'bg-red-900 text-red-200' :
                             vuln.severity === 'High' ? 'bg-orange-900 text-orange-200' :
                             vuln.severity === 'Medium' ? 'bg-yellow-900 text-yellow-200' :
@@ -2027,9 +2002,9 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
                             {vuln.severity}
                           </span>
                         </div>
-                        <p className="text-sm text-gray-300">{vuln.description}</p>
+                        <p className="text-sm text-gray-300 leading-relaxed">{vuln.description}</p>
                         {vuln.lineNumbers && vuln.lineNumbers.length > 0 && (
-                          <p className="text-xs text-gray-500 mt-1">Lines: {vuln.lineNumbers.join(', ')}</p>
+                          <p className="text-xs text-gray-500 mt-2">Lines: {vuln.lineNumbers.join(', ')}</p>
                         )}
                       </div>
                     ))}
@@ -2037,8 +2012,8 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
                 </div>
               )}
 
-              <div className="flex justify-center mt-4">
-                <Button variant="outline" onClick={handleViewReport} className="font-orbitron">
+              <div className="flex justify-center mt-4 sm:mt-6">
+                <Button variant="outline" onClick={handleViewReport} className="font-orbitron text-sm sm:text-base">
                   <FileText className="w-4 h-4 mr-2" />
                   View Full Report
                 </Button>

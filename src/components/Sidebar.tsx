@@ -16,7 +16,8 @@ import {
   HardDrive,
 } from 'lucide-react';
 import { createThirdwebClient } from "thirdweb";
-import { useConnectModal, ConnectButton } from "thirdweb/react";
+import { ConnectButton, useActiveAccount } from "thirdweb/react";
+import { bsc, bscTestnet } from "thirdweb/chains";
 import { cn } from '@/lib/utils';
 
 const thirdwebClient = createThirdwebClient({
@@ -26,9 +27,9 @@ const thirdwebClient = createThirdwebClient({
 interface SidebarItem {
   name: string;
   path: string;
-  icon: any;
+  icon: React.ComponentType<{ size?: string | number; className?: string }>;
   badge?: string;
-  state?: any;
+  state?: string;
 }
 
 interface SidebarProps {
@@ -38,11 +39,10 @@ interface SidebarProps {
 
 const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
   const location = useLocation();
-  const { connect } = useConnectModal();
+  const account = useActiveAccount();
 
   const menuItems: SidebarItem[] = [
     { name: 'General Stats', path: '/hub/general-stats', icon: BarChart3 },
-    { name: 'Seed Funding / Token Sale', path: '/hub/funding', icon: DollarSign },
     { name: 'NFTs & iNFTs Hub', path: '/hub/nfts', icon: ImageIcon },
     { name: 'AI Audit - Smart Contract', path: '/hub/audit', icon: Shield },
     { name: 'Device Monitoring', path: '/hub/devices', icon: Monitor, badge: 'Soon' },
@@ -68,8 +68,8 @@ const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
   return (
     <aside
       className={cn(
-        'glass-card border-r border-yellow-400/20 transition-all duration-300 h-screen fixed left-0 top-0 flex flex-col overflow-hidden z-50',
-        collapsed ? 'w-20' : 'w-68'
+        'glass-card border-r border-yellow-400/20 transition-all duration-300 h-screen fixed left-0 top-0 flex flex-col overflow-hidden',
+        collapsed ? 'w-20 z-50' : 'w-72 z-10'
       )}
     >
       {/* Toggle Button */}
@@ -102,39 +102,104 @@ const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
       </div>
 
       {/* Wallet Connection */}
-      <div className="px-4 pt-4 pb-4">
-          {!collapsed ? (
-            <button
-              onClick={async () => {
-                try {
-                  await connect({ client: thirdwebClient });
-                } catch (error) {
-                  console.error('Wallet connection failed:', error);
-                }
+      <div className="px-4 pt-4 pb-4 absolute top-16 left-0 right-0 z-20">
+        {!collapsed && (
+          <ConnectButton
+            client={thirdwebClient}
+            theme="dark"
+            chains={[bsc, bscTestnet]}
+            connectButton={{
+              label: "Connect Wallet",
+              style: {
+                width: "100%",
+                background: "hsl(var(--primary))",
+                color: "hsl(var(--primary-foreground))",
+                border: "none",
+                borderRadius: "0.5rem",
+                padding: "0.75rem 1rem",
+                fontFamily: "'Orbitron', sans-serif",
+                fontWeight: "700",
+                fontSize: "0.875rem",
+                boxShadow: "0 0 20px rgba(248, 244, 66, 0.5)",
+                transition: "all 0.2s ease",
+              },
+            }}
+            connectModal={{
+              size: "compact",
+              welcomeScreen: {
+                title: "Connect to SmartSentinels",
+                subtitle: "Choose your wallet to get started",
+              },
+            }}
+            detailsButton={{
+              style: {
+                width: "100%",
+                background: "rgba(255, 255, 255, 0.05)",
+                border: "1px solid rgba(248, 244, 66, 0.2)",
+                borderRadius: "0.5rem",
+                padding: "0.75rem",
+                fontFamily: "'Orbitron', sans-serif",
+                fontSize: "0.75rem",
+                color: "hsl(var(--foreground))",
+              },
+            }}
+          />
+        )}
+        {collapsed && (
+          <div className="flex justify-center relative overflow-hidden">
+            <ConnectButton
+              client={thirdwebClient}
+              theme="dark"
+              chains={[bsc, bscTestnet]}
+              connectButton={{
+                label: "",
+                style: {
+                  width: "2.5rem",
+                  height: "2.5rem",
+                  background: "hsl(var(--primary))",
+                  color: "hsl(var(--primary-foreground))",
+                  border: "none",
+                  borderRadius: "0.5rem",
+                  padding: "0.5rem",
+                  fontFamily: "'Orbitron', sans-serif",
+                  fontWeight: "700",
+                  boxShadow: "0 0 20px rgba(248, 244, 66, 0.5)",
+                  transition: "all 0.2s ease",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                  position: "relative",
+                  opacity: 0,
+                },
               }}
-              className="w-full flex items-center justify-center px-3 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_20px_rgba(248,244,66,0.5)] hover:shadow-[0_0_30px_rgba(248,244,66,0.7)] font-orbitron font-bold transition-all duration-200"
-            >
-              <span className="text-primary-foreground font-orbitron font-bold text-sm neon-glow">
-                Connect Wallet
-              </span>
-            </button>
-          ) : (
-            <button
-              onClick={async () => {
-                try {
-                  await connect({ client: thirdwebClient });
-                } catch (error) {
-                  console.error('Wallet connection failed:', error);
-                }
+              connectModal={{
+                size: "compact",
+                welcomeScreen: {
+                  title: "Connect to SmartSentinels",
+                  subtitle: "Choose your wallet to get started",
+                },
               }}
-              className="w-full flex items-center justify-center px-3 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_20px_rgba(248,244,66,0.5)] hover:shadow-[0_0_30px_rgba(248,244,66,0.7)] font-orbitron font-bold transition-all duration-200 mb-2">
-              <Wallet size={20} className="text-primary-foreground" />
-            </button>
-          )}
-      </div>
-
-      {/* My Stats Section */}
-      <div className="px-4 pt-3 pb-2">
+              detailsButton={{
+                render: () => (
+                  <div
+                    className="w-10 h-10 bg-primary/20 text-primary border border-primary/30 rounded-lg flex items-center justify-center cursor-pointer hover:bg-primary/30"
+                  >
+                    <Wallet size={20} />
+                  </div>
+                ),
+              }}
+            />
+            {!account && (
+              <Wallet
+                size={20}
+                className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-400 pointer-events-none z-10"
+              />
+            )}
+          </div>
+        )}
+      </div>      {/* My Stats Section */}
+      <div className="px-4 pt-20 pb-2">
         {!collapsed && (
           <h3 className="text-xs font-orbitron font-bold text-primary/70 uppercase tracking-wider mb-2">
             My Stats
@@ -150,7 +215,7 @@ const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
                 key={item.name}
                 to={item.path}
                 className={cn(
-                  'flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 group relative text-sm',
+                  'flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 group relative text-sm font-orbitron',
                   active
                     ? 'bg-primary/20 text-primary border border-primary/30'
                     : 'text-muted-foreground hover:bg-white/5 hover:text-foreground',
@@ -166,7 +231,7 @@ const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
 
                 {/* Tooltip for collapsed state */}
                 {collapsed && (
-                  <div className="absolute left-full ml-2 px-3 py-2 bg-card border border-white/10 rounded-lg text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+                  <div className="absolute left-full ml-2 px-3 py-2 bg-card border border-white/10 rounded-lg text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 font-orbitron">
                     {item.name}
                   </div>
                 )}
@@ -190,7 +255,7 @@ const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
               key={item.name}
               to={item.path}
               className={cn(
-                'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group relative',
+                'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group relative font-orbitron',
                 item.name === 'Seed Funding / Token Sale' && 'mt-1',
                 active
                   ? 'bg-primary/20 text-primary border border-primary/30'
@@ -203,7 +268,7 @@ const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
                 <>
                   <span className="flex-1 text-sm">{item.name}</span>
                   {item.badge && (
-                    <span className="px-2 py-0.5 text-xs rounded-full bg-primary/20 text-primary border border-primary/30">
+                    <span className="px-2 py-0.5 text-xs rounded-full bg-primary/20 text-primary border border-primary/30 font-orbitron">
                       {item.badge}
                     </span>
                   )}
@@ -212,10 +277,10 @@ const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
               
               {/* Tooltip for collapsed state */}
               {collapsed && (
-                <div className="absolute left-full ml-2 px-3 py-2 bg-card border border-white/10 rounded-lg text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+                <div className="absolute left-full ml-2 px-3 py-2 bg-card border border-white/10 rounded-lg text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 font-orbitron">
                   {item.name}
                   {item.badge && (
-                    <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-primary/20 text-primary">
+                    <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-primary/20 text-primary font-orbitron">
                       {item.badge}
                     </span>
                   )}

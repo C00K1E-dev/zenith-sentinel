@@ -2,7 +2,6 @@ import { Routes, Route } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import Sidebar from '@/components/Sidebar';
-import SidebarSeedFundingTokenSale from '@/components/sidebarComponents/sidebarSeedFundingTokenSale';
 import SidebarNFTsiNFTsHub from '@/components/sidebarComponents/sidebarNFTsiNFTsHub';
 import SidebarCreateAgent from '@/components/sidebarComponents/sidebarCreateAgent';
 import SidebarDeviceMonitoring from '@/components/sidebarComponents/sidebarDeviceMonitoring';
@@ -17,15 +16,23 @@ import SidebarStaking from '@/components/sidebarComponents/sidebarStaking';
 
 const Hub = () => {
   const [collapsed, setCollapsed] = useState(window.innerWidth < 1024);
+  const [manualCollapsed, setManualCollapsed] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
-      setCollapsed(window.innerWidth < 1024);
+      if (!manualCollapsed) {
+        setCollapsed(window.innerWidth < 1024);
+      }
     };
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  }, [manualCollapsed]);
+
+  const handleSetCollapsed = (newCollapsed: boolean) => {
+    setManualCollapsed(true);
+    setCollapsed(newCollapsed);
+  };
   return (
     <div className="min-h-screen gradient-animate overflow-x-hidden relative overflow-y-auto">
       {/* Blockchain & AI Themed Background Elements */}
@@ -122,9 +129,9 @@ const Hub = () => {
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-primary/4 to-transparent rounded-full blur-3xl animate-pulse" style={{ animationDelay: '3s' }} />
       </div>
 
-      <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
+      <Sidebar collapsed={collapsed} setCollapsed={handleSetCollapsed} />
 
-      <main className={cn("flex-1 transition-all duration-300", collapsed ? "ml-20" : "ml-64")}>
+      <main className={cn("flex-1 transition-all duration-300", collapsed ? "ml-20" : "ml-72")}>
         <div className="max-w-7xl mx-auto p-6 lg:p-8">
           <Routes>
             <Route index element={<SidebarGeneralStats />} />
@@ -133,7 +140,6 @@ const Hub = () => {
             <Route path="my-devices" element={<SidebarMyDevices />} />
             <Route path="my-rewards" element={<SidebarMyRewards />} />
             <Route path="general-stats" element={<SidebarGeneralStats />} />
-            <Route path="funding" element={<SidebarSeedFundingTokenSale />} />
             <Route path="nfts" element={<SidebarNFTsiNFTsHub />} />
             <Route path="audit" element={<SidebarAIAuditSmartContract />} />
             <Route path="devices" element={<SidebarDeviceMonitoring />} />
