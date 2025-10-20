@@ -3,10 +3,10 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { ThirdwebProvider, ConnectEmbed } from "thirdweb/react";
-import { createThirdwebClient } from "thirdweb";
+import { ThirdwebProvider } from "thirdweb/react";
 import { WagmiProvider, createConfig, http } from 'wagmi';
-import { bscTestnet, bsc } from 'wagmi/chains';
+import { bsc, bscTestnet } from 'wagmi/chains';
+import { injected } from 'wagmi/connectors';
 import Index from "./pages/Index";
 import Hub from "./pages/Hub";
 import Documents from "./pages/Documents";
@@ -14,22 +14,20 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-const client = createThirdwebClient({
-  clientId: import.meta.env.VITE_THIRDWEB_CLIENT_ID,
-});
-
-// Wagmi configuration for BSC Testnet and Mainnet
-const wagmiConfig = createConfig({
-  chains: [bscTestnet, bsc],
+const config = createConfig({
+  chains: [bsc, bscTestnet],
+  connectors: [
+    injected(),
+  ],
   transports: {
-    [bscTestnet.id]: http(),
     [bsc.id]: http(),
+    [bscTestnet.id]: http(),
   },
 });
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <WagmiProvider config={wagmiConfig}>
+    <WagmiProvider config={config}>
       <ThirdwebProvider>
         <TooltipProvider>
           <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>

@@ -1,8 +1,14 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
-import { useAccount, useWriteContract, useWaitForTransactionReceipt, useReadContract } from "wagmi";
-import { bscTestnet } from "wagmi/chains";
-import { AI_AUDIT_ABI, AI_AUDIT_CONTRACT_ADDRESS, AI_AUDIT_CHAIN_ID, SSTL_TOKEN_ADDRESS } from "../contracts/index";
+import { useActiveAccount, useSendTransaction, useReadContract } from "thirdweb/react";
+import { prepareContractCall, getContract, createThirdwebClient, readContract } from "thirdweb";
+import { bscTestnet } from "thirdweb/chains";
+import { AI_AUDIT_ABI, AI_AUDIT_CONTRACT_ADDRESS, AI_AUDIT_CHAIN_ID, SSTL_TOKEN_ADDRESS, SSTL_TOKEN_ABI } from "../contracts/index";
+import MintSuccessOverlay from "./MintSuccessOverlay";
+
+const thirdwebClient = createThirdwebClient({
+  clientId: import.meta.env.VITE_THIRDWEB_CLIENT_ID,
+});
 
 const SSTL_ADDRESS = SSTL_TOKEN_ADDRESS as `0x${string}`; // Use updated address from index
 const MINT_AMOUNT = BigInt(100) * BigInt("1000000000000000000"); // 100 SSTL (matches deployed contract)
@@ -31,42 +37,89 @@ const erc20Abi = [
 ];
 
 export default function AIAuditMint({ onMinted }: { onMinted?: (args: { tokenId?: bigint, txHash?: string, imageUrl?: string }) => void }) {
-  const { isConnected, address, chain } = useAccount();
-  const { writeContractAsync } = useWriteContract();
-  const [authMessage, setAuthMessage] = useState("");
-  const [minting, setMinting] = useState(false);
-  const [approving, setApproving] = useState(false);
-  const [mintTxHash, setMintTxHash] = useState<string | null>(null);
-  const [lastMintedTokenId, setLastMintedTokenId] = useState<bigint | null>(null);
-  const [callbackTriggered, setCallbackTriggered] = useState(false);
+   const account = useActiveAccount();
+   const { mutateAsync: sendTransaction } = useSendTransaction();
+   const [authMessage, setAuthMessage] = useState("");
+   const [minting, setMinting] = useState(false);
+   const [approving, setApproving] = useState(false);
+   const [mintTxHash, setMintTxHash] = useState<string | null>(null);
+   const [lastKnownTokenId, setLastKnownTokenId] = useState<bigint>(BigInt(20)); // Start from 20 since user mentioned minting 20
+   const [lastMintedTokenId, setLastMintedTokenId] = useState<bigint | null>(null);
+   const [callbackTriggered, setCallbackTriggered] = useState(false);
+   const [overlayShown, setOverlayShown] = useState(false);
+   const [metadataImageUrl, setMetadataImageUrl] = useState<string>('');
+   const [showSuccessOverlay, setShowSuccessOverlay] = useState(false);
 
-  // Check SSTL allowance
-  const { data: allowanceData, refetch: refetchAllowance } = useReadContract({
-    address: SSTL_ADDRESS,
-    abi: erc20Abi,
-    functionName: 'allowance',
-    args: address && AI_AUDIT_CONTRACT_ADDRESS ? [address, AI_AUDIT_CONTRACT_ADDRESS] : undefined,
-    chainId: AI_AUDIT_CHAIN_ID,
-    query: { enabled: !!address }
-  });
+   const isConnected = !!account;
+   const address = account?.address;
 
-  // Check SSTL balance
-  const { data: sstlBalanceData } = useReadContract({
-    address: SSTL_ADDRESS,
-    abi: erc20Abi,
-    functionName: 'balanceOf',
-    args: address ? [address] : undefined,
-    chainId: AI_AUDIT_CHAIN_ID,
-    query: { enabled: !!address }
-  });
+   // Get contracts
+   const sstlContract = getContract({
+     address: SSTL_ADDRESS,
+     abi: SSTL_TOKEN_ABI as any,
+     chain: bscTestnet,
+     client: thirdwebClient,
+   } as any);
+
+   const aiAuditContract = getContract({
+     address: AI_AUDIT_CONTRACT_ADDRESS,
+     abi: AI_AUDIT_ABI as any,
+     chain: bscTestnet,
+     client: thirdwebClient,
+   } as any);
+
+   // Check SSTL allowance
+   const { data: allowanceData, refetch: refetchAllowance } = useReadContract({
+     contract: sstlContract,
+     method: 'allowance',
+     params: address && AI_AUDIT_CONTRACT_ADDRESS ? [address, AI_AUDIT_CONTRACT_ADDRESS] : undefined,
+     abi: SSTL_TOKEN_ABI,
+   } as any);
+
+   // Check SSTL balance
+   const { data: sstlBalanceData, isLoading: balanceLoading, error: balanceError } = useReadContract({
+     contract: sstlContract,
+     method: 'balanceOf',
+     params: address ? [address] : undefined,
+     abi: SSTL_TOKEN_ABI,
+   } as any);
+
+   // Get total supply to determine next token ID
+   const { data: totalSupplyData, isLoading: totalSupplyLoading, error: totalSupplyError, refetch: refetchTotalSupply } = useReadContract({
+     contract: aiAuditContract,
+     method: 'totalSupply',
+     abi: AI_AUDIT_ABI,
+   } as any);
+
+   console.log('=== TOTAL SUPPLY DEBUG ===');
+   console.log('totalSupplyData:', totalSupplyData);
+   console.log('totalSupplyLoading:', totalSupplyLoading);
+   console.log('totalSupplyError:', totalSupplyError);
+   console.log('===========================');
+
+   // Get user's NFT balance
+   const { data: userNFTBalance, refetch: refetchNFTBalance } = useReadContract({
+     contract: aiAuditContract,
+     method: 'balanceOf',
+     params: address ? [address] : undefined,
+     abi: AI_AUDIT_ABI,
+   } as any);
+
+   // Get token URI for the minted token
+   const { data: tokenURIData } = useReadContract({
+     contract: aiAuditContract,
+     method: 'tokenURI',
+     params: lastMintedTokenId ? [lastMintedTokenId] : undefined,
+     abi: AI_AUDIT_ABI,
+   } as any);
 
   const handleMint = useCallback(async () => {
     if (!isConnected || !address) {
       setAuthMessage("Please connect your wallet to mint.");
       return;
     }
-    if (chain?.id !== AI_AUDIT_CHAIN_ID) {
-      setAuthMessage(`Please switch to BSC Testnet to mint.`);
+    if (!address) {
+      setAuthMessage(`Please connect your wallet to mint.`);
       return;
     }
 
@@ -74,13 +127,21 @@ export default function AIAuditMint({ onMinted }: { onMinted?: (args: { tokenId?
       setMinting(true);
       setAuthMessage(""); // Clear any previous messages
 
+      // Reset flags for new mint
+      setCallbackTriggered(false);
+      setOverlayShown(false);
+      setLastMintedTokenId(null);
+      setMetadataImageUrl('');
+
       // Check current allowance and balance
-      const currentAllowance = allowanceData ? BigInt(allowanceData.toString()) : BigInt(0);
-      const userBalance = sstlBalanceData ? BigInt(sstlBalanceData.toString()) : BigInt(0);
+      const currentAllowance = allowanceData ? BigInt(allowanceData as any) : BigInt(0);
+      const userBalance = sstlBalanceData ? BigInt(sstlBalanceData as any) : BigInt(0);
 
       // Check if user has enough SSTL to mint
+      const userBalanceFormatted = Number(userBalance) / 1e18;
+      const mintAmountFormatted = Number(MINT_AMOUNT) / 1e18;
       if (userBalance < MINT_AMOUNT) {
-        setAuthMessage(`Insufficient SSTL balance. You need ${MINT_AMOUNT.toString()} SSTL but only have ${userBalance.toString()}.`);
+        setAuthMessage(`Insufficient SSTL balance. You need ${mintAmountFormatted} SSTL but only have ${userBalanceFormatted}.`);
         // Clear error message after 5 seconds
         setTimeout(() => setAuthMessage(""), 5000);
         return;
@@ -96,15 +157,12 @@ export default function AIAuditMint({ onMinted }: { onMinted?: (args: { tokenId?
           ? userBalance
           : MINT_AMOUNT * BigInt(10);
 
-        await writeContractAsync({
-          address: SSTL_ADDRESS,
-          abi: erc20Abi,
-          functionName: 'approve',
-          args: [AI_AUDIT_CONTRACT_ADDRESS, approvalAmount],
-          chainId: AI_AUDIT_CHAIN_ID,
-          chain: bscTestnet,
-          account: address,
-        });
+        const approveTx = prepareContractCall({
+          contract: sstlContract,
+          method: 'approve',
+          params: [AI_AUDIT_CONTRACT_ADDRESS, approvalAmount],
+        } as any);
+        await sendTransaction(approveTx);
 
         setAuthMessage("Approval complete. Minting NFT...");
         // Refetch allowance after approval
@@ -113,18 +171,94 @@ export default function AIAuditMint({ onMinted }: { onMinted?: (args: { tokenId?
         setAuthMessage("Minting NFT...");
       }
 
+      // Calculate expected token ID before minting
+      const currentTotalSupply = totalSupplyData ? BigInt(totalSupplyData.toString()) : BigInt(0);
+      const expectedTokenId = currentTotalSupply + BigInt(1);
+
+      console.log('=== MINT DEBUG ===');
+      console.log('totalSupplyData:', totalSupplyData);
+      console.log('totalSupplyData type:', typeof totalSupplyData);
+      console.log('currentTotalSupply:', currentTotalSupply.toString());
+      console.log('expectedTokenId:', expectedTokenId.toString());
+      console.log('==================');
+
+      // If totalSupply is not available or seems wrong, use fallback
+      if (!totalSupplyData || currentTotalSupply === BigInt(0)) {
+        console.log('totalSupply not available or zero, trying to refetch...');
+        try {
+          await refetchTotalSupply();
+          // Wait a bit for refetch
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          const refetchedTotalSupply = totalSupplyData ? BigInt(totalSupplyData.toString()) : BigInt(0);
+          console.log('Refetched totalSupply:', refetchedTotalSupply.toString());
+
+          if (refetchedTotalSupply > BigInt(0)) {
+            const correctedTokenId = refetchedTotalSupply + BigInt(1);
+            setLastMintedTokenId(correctedTokenId);
+            setLastKnownTokenId(correctedTokenId);
+            console.log('Using refetched totalSupply, token ID:', correctedTokenId.toString());
+          } else {
+            // Still no data, use incremental fallback
+            const fallbackTokenId = lastKnownTokenId + BigInt(1);
+            setLastMintedTokenId(fallbackTokenId);
+            setLastKnownTokenId(fallbackTokenId);
+            console.log('Using incremental fallback token ID:', fallbackTokenId.toString());
+          }
+        } catch (error) {
+          console.error('Error refetching totalSupply:', error);
+          const fallbackTokenId = lastKnownTokenId + BigInt(1);
+          setLastMintedTokenId(fallbackTokenId);
+          setLastKnownTokenId(fallbackTokenId);
+          console.log('Using incremental fallback token ID after error:', fallbackTokenId.toString());
+        }
+      } else {
+        // Set the expected token ID immediately
+        setLastMintedTokenId(expectedTokenId);
+        setLastKnownTokenId(expectedTokenId);
+        console.log('Set lastMintedTokenId to expected ID:', expectedTokenId.toString());
+      }
+
       // Now mint the NFT
-      const txHash = await writeContractAsync({
-        address: AI_AUDIT_CONTRACT_ADDRESS as `0x${string}`,
+      console.log('Attempting to mint NFT...');
+      console.log('User balance:', userBalance.toString());
+      console.log('Allowance:', currentAllowance.toString());
+      console.log('Mint amount needed:', MINT_AMOUNT.toString());
+
+      const mintTx = prepareContractCall({
+        contract: aiAuditContract,
+        method: 'publicMint',
+        params: [],
         abi: AI_AUDIT_ABI,
-        functionName: 'publicMint',
-        args: [],
-        chainId: AI_AUDIT_CHAIN_ID,
-        chain: bscTestnet,
-        account: address,
-      });
+      } as any);
+      console.log('Prepared mint transaction:', mintTx);
+      const txResult = await sendTransaction(mintTx);
+      const txHash = txResult.transactionHash;
 
       setMintTxHash(txHash);
+      // Set the expected token ID immediately
+      setLastMintedTokenId(expectedTokenId);
+      setLastKnownTokenId(expectedTokenId);
+      console.log('Set lastMintedTokenId to expected ID:', expectedTokenId.toString());
+
+      // Also set up a fallback check after transaction confirms
+      setTimeout(async () => {
+        try {
+          console.log('Double-checking token ID after transaction...');
+          await refetchTotalSupply();
+          const newTotalSupply = totalSupplyData ? BigInt(totalSupplyData.toString()) : BigInt(0);
+          console.log('New totalSupply:', newTotalSupply.toString());
+
+          // If the totalSupply is higher than expected, update the token ID
+          if (newTotalSupply > expectedTokenId) {
+            console.log('TotalSupply higher than expected, updating token ID to:', newTotalSupply.toString());
+            setLastMintedTokenId(newTotalSupply);
+            setLastKnownTokenId(newTotalSupply);
+          }
+        } catch (error) {
+          console.error('Error in fallback token ID check:', error);
+        }
+      }, 5000); // Wait 5 seconds for confirmation
+
       // Clear all messages after successful mint
       setTimeout(() => setAuthMessage(""), 2000);
 
@@ -137,92 +271,117 @@ export default function AIAuditMint({ onMinted }: { onMinted?: (args: { tokenId?
       setMinting(false);
       setApproving(false);
     }
-  }, [isConnected, address, chain, writeContractAsync, allowanceData, sstlBalanceData, refetchAllowance]);
+  }, [isConnected, address, sendTransaction, allowanceData, sstlBalanceData, refetchAllowance]);
 
-  const { data: mintReceipt } = useWaitForTransactionReceipt({
-    hash: mintTxHash as `0x${string}` | undefined,
-    query: { enabled: !!mintTxHash }
-  });
+  // The token ID is set immediately in handleMint, no need for additional logic here
 
+  // Fetch metadata when we have tokenURI
   useEffect(() => {
-    if (!mintReceipt || !address) return;
-    try {
-      const logs = (mintReceipt as { logs?: readonly unknown[] })?.logs || [];
-      const transferTopic = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
-      const targetLogs = logs.filter((l) => {
-        const log = l as { address?: string; topics?: readonly string[] };
-        return log.address?.toLowerCase?.() === AI_AUDIT_CONTRACT_ADDRESS.toLowerCase() && log.topics?.[0] === transferTopic;
-      });
-      for (const log of targetLogs) {
-        const typedLog = log as { address?: string; topics?: readonly string[] };
-        const toTopic = typedLog.topics?.[2];
-        const tokenIdTopic = typedLog.topics?.[3];
-        if (toTopic && tokenIdTopic && toTopic.toLowerCase().endsWith(address.slice(2).toLowerCase())) {
-          const tokenId = BigInt(tokenIdTopic);
-          setLastMintedTokenId(tokenId);
-        }
-      }
-    } catch (e) {
-      console.error('Error parsing mint receipt:', e);
-    }
-  }, [mintReceipt, address]);
-
-  // Fetch image URL from metadata and trigger onMinted callback
-  useEffect(() => {
-    if (!lastMintedTokenId || !mintTxHash || callbackTriggered) return;
-
     const fetchMetadata = async () => {
-      try {
-        console.log('Triggering mint callback for token:', lastMintedTokenId.toString());
-        setCallbackTriggered(true);
+      if (tokenURIData && lastMintedTokenId && !metadataImageUrl) {
+        // Only fetch if we haven't set a custom image URL yet
+        const tokenURIString = tokenURIData.toString();
+        console.log('=== METADATA FETCH ===');
+        console.log('Token ID:', lastMintedTokenId.toString());
+        console.log('Token URI:', tokenURIString);
 
-        // Fetch tokenURI from contract
-        const tokenURIResponse = await fetch(`/api/tokenURI?contract=${AI_AUDIT_CONTRACT_ADDRESS}&tokenId=${lastMintedTokenId}&chainId=${AI_AUDIT_CHAIN_ID}`);
-        if (!tokenURIResponse.ok) throw new Error('Failed to fetch tokenURI');
-        const { tokenURI } = await tokenURIResponse.json();
+        // Add a small delay to ensure token exists
+        await new Promise(resolve => setTimeout(resolve, 2000));
 
-        let metadataUrl = tokenURI;
-        if (metadataUrl.startsWith('ipfs://')) {
-          metadataUrl = metadataUrl.replace('ipfs://', 'https://gateway.pinata.cloud/ipfs/');
+        try {
+          // If tokenURI is an IPFS URL or HTTP URL, fetch the metadata
+          if (tokenURIString.startsWith('http') || tokenURIString.startsWith('ipfs://')) {
+            let metadataUrl = tokenURIString;
+            if (tokenURIString.startsWith('ipfs://')) {
+              // Convert IPFS URL to HTTP gateway
+              metadataUrl = tokenURIString.replace('ipfs://', 'https://ipfs.io/ipfs/');
+            }
+
+            console.log('Fetching metadata from:', metadataUrl);
+            const response = await fetch(metadataUrl);
+            const metadata = await response.json();
+            console.log('Fetched metadata:', metadata);
+
+            // Extract image URL from metadata
+            if (metadata.image) {
+              let imageUrl = metadata.image;
+              if (imageUrl.startsWith('ipfs://')) {
+                imageUrl = imageUrl.replace('ipfs://', 'https://ipfs.io/ipfs/');
+              }
+
+              // Only update if we got a valid-looking URL
+              if (imageUrl.startsWith('http') || imageUrl.startsWith('https://')) {
+                setMetadataImageUrl(imageUrl);
+                console.log('Set metadata image URL:', imageUrl);
+              } else {
+                console.log('Invalid image URL in metadata:', imageUrl);
+                // Don't update - keep the fallback
+              }
+            } else {
+              // No image in metadata, keep the fallback
+              console.log('No image in metadata, keeping fallback');
+            }
+          } else {
+            // If it's not a URL, assume it's a data URI or direct image
+            console.log('Token URI is not a URL, using as direct image');
+            setMetadataImageUrl(tokenURIString);
+          }
+        } catch (error) {
+          console.error('Error fetching metadata:', error);
+          // Keep the fallback image
+          console.log('Metadata fetch failed, keeping fallback');
         }
-
-        const response = await fetch(metadataUrl);
-        if (!response.ok) throw new Error('Failed to fetch metadata');
-        const metadata = await response.json();
-
-        const mediaUrl = metadata.animation_url || metadata.image || '';
-
-        if (onMinted) {
-          onMinted({
-            tokenId: lastMintedTokenId,
-            txHash: mintTxHash,
-            imageUrl: mediaUrl
-          });
-        }
-      } catch (e) {
-        console.error('Error in mint callback:', e);
-        // Fallback
-        if (onMinted) {
-          onMinted({
-            tokenId: lastMintedTokenId,
-            txHash: mintTxHash,
-            imageUrl: '/assets/img/hub/smartsentinels-hero.png'
-          });
-        }
+        console.log('=== METADATA FETCH END ===');
+      } else {
+        console.log('Metadata fetch skipped - tokenURIData:', !!tokenURIData, 'lastMintedTokenId:', lastMintedTokenId, 'metadataImageUrl:', metadataImageUrl);
       }
     };
 
-    // Small delay to ensure contract state is updated
-    const timer = setTimeout(fetchMetadata, 1000);
-    return () => clearTimeout(timer);
-  }, [lastMintedTokenId, mintTxHash, callbackTriggered, onMinted]);
+    fetchMetadata();
+  }, [tokenURIData, lastMintedTokenId, metadataImageUrl]);
+
+  // Show success overlay when we have a successful mint (only once)
+  useEffect(() => {
+    if (lastMintedTokenId && mintTxHash && !callbackTriggered && !overlayShown) {
+      console.log('Showing success overlay for token:', lastMintedTokenId.toString());
+      setShowSuccessOverlay(true);
+      setOverlayShown(true);
+
+      // Trigger onMinted callback
+      if (onMinted) {
+        setCallbackTriggered(true);
+        onMinted({
+          tokenId: lastMintedTokenId,
+          txHash: mintTxHash,
+          imageUrl: metadataImageUrl || '/assets/AIAudit.mp4'
+        });
+      }
+    }
+  }, [lastMintedTokenId, mintTxHash, onMinted, callbackTriggered, overlayShown, metadataImageUrl]);
+
+  // Debug showSuccessOverlay state changes
+  useEffect(() => {
+    console.log('showSuccessOverlay changed to:', showSuccessOverlay);
+  }, [showSuccessOverlay]);
 
   // Format SSTL balance for display
   const formatSSTLBalance = () => {
     if (!sstlBalanceData) return '0';
-    const balance = Number(BigInt(sstlBalanceData.toString())) / 1e18;
+    const balance = Number(BigInt(sstlBalanceData as any)) / 1e18;
     return balance.toFixed(2);
   };
+
+  // Debug logging
+  useEffect(() => {
+    console.log('SSTL Balance Data:', sstlBalanceData);
+    console.log('Balance Loading:', balanceLoading);
+    console.log('Balance Error:', balanceError);
+    console.log('Allowance Data:', allowanceData);
+    console.log('MINT_AMOUNT:', MINT_AMOUNT.toString());
+    console.log('Address:', address);
+    console.log('SSTL_ADDRESS:', SSTL_ADDRESS);
+    console.log('AI_AUDIT_CONTRACT_ADDRESS:', AI_AUDIT_CONTRACT_ADDRESS);
+  }, [sstlBalanceData, balanceLoading, balanceError, allowanceData, address]);
 
   return (
     <>
@@ -243,6 +402,18 @@ export default function AIAuditMint({ onMinted }: { onMinted?: (args: { tokenId?
           <p className="text-sm text-destructive">{authMessage}</p>
         </div>
       )}
+
+      <MintSuccessOverlay
+        isOpen={showSuccessOverlay}
+        onClose={() => {
+          console.log('onClose called, setting showSuccessOverlay to false');
+          setShowSuccessOverlay(false);
+        }}
+        tokenId={lastMintedTokenId}
+        txHash={mintTxHash}
+        imageUrl={metadataImageUrl || '/assets/AIAudit.mp4'}
+        collectionName="AI Audit NFT"
+      />
     </>
   );
 }
