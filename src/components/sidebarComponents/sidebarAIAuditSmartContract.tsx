@@ -128,6 +128,7 @@ const BSC_TESTNET_CHAIN_ID = 97;
 const SSTL_CONTRACT = SSTL_TOKEN_ADDRESS as `0x${string}`;
 const PAYMENT_RECIPIENT = '0x46e451d555ebCB4ccE5087555a07F6e69D017b05' as `0x${string}`; // Your Wallet (AI Agent Creator)
 const AUDIT_COST = '1000'; // 1000 SSTL tokens (matches deployed contract)
+const SERVICE_OWNER = '0x46e451d555ebCB4ccE5087555a07F6e69D017b05'; // AI Audit service owner address
 
 // --- HUB-STYLE CSS (Matching SmartSentinels Hub Widgets) ---
 const hubStyles = `
@@ -1449,24 +1450,20 @@ interface AuditFeatureProps {
 }
 
 const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = true, showDescription = true }) => {
+    // Basic state
     const [code, setCode] = useState('');
-    const [auditData, setAuditData] = useState<AuditData | null>(null); // Stores the parsed JSON data
-    const [isLoading, setIsLoading] = useState(false);
+    const [auditData, setAuditData] = useState<AuditData | null>(null);
     const [statusMessage, setStatusMessage] = useState("SmartSentinels AI Audit Agent is here for you! Paste your Solidity code and run the audit.");
     const [remediation, setRemediation] = useState<RemediationState>({ title: '', code: '', loading: false });
-    // Transaction states
-    const [paymentTxHash, setPaymentTxHash] = useState<`0x${string}` | null>(null);
-    const [transactionHash, setTransactionHash] = useState<string | undefined>(undefined);
+    
+    // Processing states
     const [isProcessing, setIsProcessing] = useState(false);
-    const [auditSubmitted, setAuditSubmitted] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    
+    // Transaction states
+    const [approvalTxHash, setApprovalTxHash] = useState<`0x${string}` | undefined>(undefined);
+    const [paymentTxHash, setPaymentTxHash] = useState<`0x${string}` | undefined>(undefined);
     const [currentTransactionType, setCurrentTransactionType] = useState<'approve' | 'payAndRunAudit' | null>(null);
-    
-    // 🔧 FIX #1: Add flag to prevent allowance check interference during approval
-    const isApprovalPending = useRef(false);
-    const [isApprovalPendingState, setIsApprovalPending] = useState(false);
-    
-    // 🔧 FIX #2: Single source of truth for approval status
-    const [isApproved, setIsApproved] = useState(false);
     
     // Messages
     const [approvalMessage, setApprovalMessage] = useState<string | null>(null);
@@ -1520,20 +1517,17 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
                 // Handle error states in sequence to prevent race conditions
                 setStatusMessage('Transaction was cancelled or failed.');
                 setTimeout(() => {
-                    setApprovalMessage('Please try again when ready.');
+                    setStatusMessage('Please try approving again when ready.');
                     setIsProcessing(false);
                     setCurrentTransactionType(null);
-                    setIsApproved(false);
+                    setApprovalTxHash(undefined);
                 }, 100);
-            } else if (isConfirmed) {
-                // Handle success states in sequence to prevent race conditions
+            } else if (isConfirmed && txHash) {
+                // Store approval transaction hash
+                setApprovalTxHash(txHash);
                 setStatusMessage('Approval successful! You can now proceed with payment.');
-                setTimeout(() => {
-                    refetchAllowance();
-                    setIsApproved(true);
-                    setIsProcessing(false);
-                    setCurrentTransactionType(null);
-                }, 100);
+                setIsProcessing(false);
+                setCurrentTransactionType(null);
             }
         } else if (currentTransactionType === 'payAndRunAudit') {
             if (transferError) {
@@ -1544,59 +1538,74 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
                     setIsProcessing(false);
                     setCurrentTransactionType(null);
                 }, 100);
-            } else if (isConfirmed) {
-                // Handle payment success states in sequence
-                setStatusMessage('Payment successful!');
-                setTimeout(() => {
+            } else if (isConfirmed && txHash) {
+                // Store payment transaction hash and start audit
+                setPaymentTxHash(txHash);
+                setStatusMessage('Payment successful! 67 SSTL tokens will be minted. Starting AI Audit...');
+                // Start the audit with the payment transaction hash
+                handleSimpleAudit(txHash);
+                setTimeout(async () => {
                     setApprovalMessage(null);
                     setPaymentMessage('Starting AI audit...');
-                    setPaymentTxHash(txHash as `0x${string}`);
+                    setPaymentTxHash(txHash);
                     setCurrentTransactionType(null);
+                    
+                    // Start the audit process with the payment hash
+                    handleSimpleAudit(txHash);
                 }, 100);
             }
         }
     }, [isConfirmed, transferError, currentTransactionType, refetchAllowance, txHash]);
 
-    // 🔧 FIX #3: Better allowance check - only run when NOT during approval flow
+    // Check if approval was successful by monitoring allowance
     useEffect(() => {
-        // Skip if we're in the middle of approving
-        if (isApprovalPending.current) {
-            console.log('⏸️ Skipping allowance check - approval in progress');
-            return;
-        }
-
-        if (allowance !== undefined && allowance !== null && typeof allowance === 'bigint' && tokenDecimals) {
-            const decimals = Number(tokenDecimals);
-            const requiredAmount = parseUnits(AUDIT_COST, decimals);
-            const hasAllowance = allowance >= requiredAmount;
-            
-            console.log('🔍 Allowance check:', {
-                current: allowance.toString(),
-                required: requiredAmount.toString(),
-                hasAllowance
-            });
-            
-            setIsApproved(hasAllowance);
+        if (currentTransactionType === 'approve' && !isProcessing) {
+            if (allowance !== undefined && allowance !== null && typeof allowance === 'bigint' && tokenDecimals) {
+                const decimals = Number(tokenDecimals);
+                const requiredAmount = parseUnits(AUDIT_COST, decimals);
+                const hasAllowance = allowance >= requiredAmount;
+                
+                console.log('🔍 Allowance check:', {
+                    current: allowance.toString(),
+                    required: requiredAmount.toString(),
+                    hasAllowance
+                });
+                
+                if (hasAllowance) {
+                    setStatusMessage('SSTL tokens approved successfully! You can now proceed with payment.');
+                }
+            }
         }
     }, [allowance, tokenDecimals]);
 
     const handleApproveSSTL = async () => {
         if (!isConnected || !address) {
-            setApprovalMessage('Please connect your wallet first');
+            setStatusMessage('Please connect your wallet first');
+            return;
+        }
+
+        if (!code.trim()) {
+            setStatusMessage('Please upload a smart contract first');
             return;
         }
 
         try {
-            setApprovalMessage('Approving SSTL tokens...');
-            setIsApprovalPending(true);
-            isApprovalPending.current = true;
+            setStatusMessage('Approving SSTL tokens...');
+            setIsProcessing(true);
+            setCurrentTransactionType('approve');
 
             const decimals = Number(tokenDecimals);
             const approvalAmount = parseUnits(AUDIT_COST, decimals);
 
             console.log('🚀 Approving SSTL tokens:', {
                 amount: approvalAmount.toString(),
-                spender: AUDIT_GATEWAY_ADDRESS
+                spender: AUDIT_GATEWAY_ADDRESS,
+                serviceOwner: SERVICE_OWNER
+            });
+
+            console.log('Sending approval transaction:', {
+                spender: AUDIT_GATEWAY_ADDRESS,
+                amount: formatUnits(approvalAmount, decimals),
             });
 
             writeContract({
@@ -1610,36 +1619,63 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
         } catch (error) {
             console.error('❌ Approval error:', error);
             setApprovalMessage('Approval failed: ' + (error as Error).message);
-            setIsApprovalPending(false);
-            isApprovalPending.current = false;
+            setIsProcessing(false);
         }
     };
 
     const handlePayAndRunAudit = async () => {
         if (!isConnected || !address) {
-            setPaymentMessage('Please connect your wallet first');
+            setStatusMessage('Please connect your wallet first');
             return;
         }
 
         if (!code.trim()) {
-            setPaymentMessage('Please upload a smart contract first');
+            setStatusMessage('Please upload a smart contract first');
             return;
         }
 
+        if (!approvalTxHash) {
+            setStatusMessage('Please approve SSTL tokens first');
+            return;
+        }
+
+        // Check if we have enough allowance
+        if (allowance !== undefined && allowance !== null && typeof allowance === 'bigint' && tokenDecimals) {
+            const decimals = Number(tokenDecimals);
+            const requiredAmount = parseUnits(AUDIT_COST, decimals);
+            
+            console.log('Pre-payment allowance check:', {
+                currentAllowance: allowance.toString(),
+                requiredAmount: requiredAmount.toString(),
+                hasEnoughAllowance: allowance >= requiredAmount
+            });
+
+            if (allowance < requiredAmount) {
+                setStatusMessage('Insufficient allowance. Please approve SSTL tokens first.');
+                return;
+            }
+        }
+
         try {
-            setPaymentMessage('Processing payment and starting audit...');
+            setStatusMessage('Processing payment for AI Audit...');
             setCurrentTransactionType('payAndRunAudit');
+
+            const decimals = Number(tokenDecimals);
+            // Use BigInt directly to ensure exact value
+            const amount = BigInt('0x3635c9adc5dea00000'); // Exact amount from successful tx
 
             console.log('💰 Paying for audit:', {
                 gateway: AUDIT_GATEWAY_ADDRESS,
-                amount: AUDIT_COST
+                amount: '1000', // Human readable amount
+                amountWei: amount.toString(), // Full amount in wei
+                serviceOwner: '0x46e451d555ebCB4ccE5087555a07F6e69D017b05'
             });
 
             writeContract({
                 address: AUDIT_GATEWAY_ADDRESS,
                 abi: AUDIT_GATEWAY_ABI as any,
-                functionName: 'payForAudit',
-                args: [code],
+                functionName: 'payAndRunAudit',
+                args: [amount], // Pass the exact BigInt amount
                 chain: chain,
                 account: address
             });
@@ -1670,12 +1706,12 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
                 if (typeof result === 'string') {
                     setCode(result);
                     setAuditData(null);
-                    setAuditSubmitted(false);
-                    setTransactionHash(undefined);
-                    setPaymentMessage(null);
-                    setIsApproved(false);
+                    setApprovalTxHash(undefined);
+                    setPaymentTxHash(undefined);
                     setIsProcessing(false);
+                    setCurrentTransactionType(null);
                     setRemediation({ title: '', code: '', loading: false });
+                    setStatusMessage('Ready for SSTL approval and payment.');
                     // Reset the file input so the same file can be uploaded again
                     event.target.value = '';
                 }
@@ -1747,8 +1783,8 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
     throw new Error("Max retries reached without successful API call.");
   };
 
-    const handleSimpleAudit = async () => {
-        console.log('🎯 handleSimpleAudit called');
+    const handleSimpleAudit = async (paymentTxHash: `0x${string}`) => {
+        console.log('🎯 handleSimpleAudit called with payment:', paymentTxHash);
 
         if (!code.trim()) {
             setStatusMessage('Please upload a smart contract first');
@@ -1757,7 +1793,7 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
 
         setIsProcessing(true);
         setAuditData(null);
-        setStatusMessage('Analyzing smart contract...');
+        setStatusMessage('Payment confirmed. AI Agent analyzing contract...');
 
         try {
             const payload = {
@@ -1766,7 +1802,7 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
             };
 
             const structuredData = await callGeminiApi(payload);
-            structuredData.transactionHash = 'free-audit-' + Date.now(); // Mock transaction hash for free audits
+            structuredData.transactionHash = txHash; // Use actual transaction hash
 
             // Always calculate vulnerability breakdown from vulnerabilities array since AI may not count correctly
             const breakdown = {
@@ -1809,8 +1845,8 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
             };
 
             setAuditData(correctedData);
-            setAuditSubmitted(true);
-            setStatusMessage('Audit completed successfully!');
+            setIsProcessing(false);
+            setStatusMessage(`Audit completed successfully! Transaction: ${txHash}`);
         } catch (error: any) {
             console.error('❌ Audit failed:', error);
             setStatusMessage('Audit failed: ' + error.message);
@@ -1819,14 +1855,31 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
         }
     };
 
+  const startAIAudit = async (contractCode: string, txHash: `0x${string}`) => {
+    try {
+        // Update UI state
+        setIsProcessing(true);
+        setPaymentMessage('Starting AI audit analysis...');
+        
+        // Run the AI audit process
+        await handleRunAudit(txHash);
+        
+        // Success! The handleRunAudit function will update the UI state
+    } catch (error) {
+        console.error('❌ AI Audit failed:', error);
+        setPaymentMessage('AI Audit failed: ' + (error as Error).message);
+        setIsProcessing(false);
+    }
+  };
+
   const handleRunAudit = useCallback(async (txHash: `0x${string}`) => {
-    console.log('🎯 handleRunAudit called');
-    setIsLoading(true);
+    console.log('🎯 handleRunAudit called with tx:', txHash);
+    setIsProcessing(true);
     setStatusMessage("AI Agent analyzing contract...");
 
     if (code.length > 50000) {
         setStatusMessage("Contract code is too long. Please upload a smaller contract (max 50KB).");
-        setIsLoading(false);
+        setIsProcessing(false);
         return;
     }
 
@@ -1880,16 +1933,12 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
         };
 
         setAuditData(correctedData);
-        setIsLoading(false);
         setIsProcessing(false);
-        setAuditSubmitted(true);
-        setPaymentMessage(null);
-        setStatusMessage("Audit complete!");
+        setStatusMessage("Audit complete! You can now view the report.");
         
     } catch (error: any) {
         console.error("Audit error:", error);
         setStatusMessage(`Audit failed: ${error.message}`);
-        setIsLoading(false);
         setIsProcessing(false);
     }
   }, [code, systemPrompt]);
@@ -1937,10 +1986,34 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
             Upload .sol File
           </label>
         </div>
-        <div className="flex justify-center">
-          <Button variant="hero" className="font-orbitron text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-3" onClick={handleSimpleAudit} disabled={isProcessing}>
-            {isProcessing ? 'Analyzing...' : 'Audit Contract'}
-          </Button>
+        <div className="flex flex-col items-center gap-4">
+          {!approvalTxHash ? (
+            <Button 
+              variant="hero" 
+              className="font-orbitron text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-3" 
+              onClick={handleApproveSSTL} 
+              disabled={isProcessing || !code.trim()}
+            >
+              {isProcessing && currentTransactionType === 'approve' ? 'Approving...' : 'Approve 1000 SSTL'}
+            </Button>
+          ) : !paymentTxHash ? (
+            <Button 
+              variant="hero" 
+              className="font-orbitron text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-3" 
+              onClick={handlePayAndRunAudit} 
+              disabled={isProcessing || !code.trim()}
+            >
+              {isProcessing && currentTransactionType === 'payAndRunAudit' ? 'Processing Payment...' : 'Pay 1000 SSTL & Start Audit'}
+            </Button>
+          ) : null}
+          <p className="text-sm text-gray-400 text-center">
+            Payment of 1000 SSTL is required to run the AI Audit.
+            <br />
+            67 SSTL will be minted after successful payment.
+            {approvalTxHash && !paymentTxHash && (
+              <><br /><span className="text-green-400">✓ SSTL Approved</span></>
+            )}
+          </p>
         </div>
 
         {/* Status Message */}

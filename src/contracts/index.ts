@@ -8,7 +8,7 @@ export { default as AI_AUDIT_ABI } from "./SmartSentinelsAIAuditNFT.json";
 
 // PoUW System Contracts - ALL DEPLOYED ✅
 // SSTL Token: 100M max supply (60M initial mint to Treasury, 40M for PoUW over 4 years)
-export const SSTL_TOKEN_ADDRESS = "0xf5450ff4de640b951a95D3aC4f9d6D7AAcACA948"; // SmartSentinelsToken - DEPLOYED ✅
+export const SSTL_TOKEN_ADDRESS = "0x05E72f1e1486f4a7cA422E54516D69252215FcCC"; // SmartSentinelsToken - DEPLOYED ✅
 export const POUW_POOL_ADDRESS = "0x0B5D591a0c929ca7e3BEe23352F9D4825db8EAaE"; // SmartSentinelsPoUW - DEPLOYED ✅
 export const AUDIT_GATEWAY_ADDRESS = "0x50cFfCaa77A4C873b8fE2e6a407e334e599EEF40"; // AIAuditAgentGateway - DEPLOYED ✅
 export { default as SSTL_TOKEN_ABI } from "./SmartSentinelsToken.json";
