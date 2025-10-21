@@ -1,8 +1,90 @@
 import { motion } from 'framer-motion';
-import { HardDrive, Sparkles, Cpu } from 'lucide-react';
+import { HardDrive, Sparkles, Cpu, Monitor, Cloud, Settings, Plus, Play, Pause, Square } from 'lucide-react';
 import StatCard from '@/components/StatCard';
 
+interface DeviceCardProps {
+  name: string;
+  type: string;
+  status: 'running' | 'idle' | 'stopped';
+  earnings: string;
+  icon: React.ComponentType<{ size?: string | number; className?: string }>;
+}
+
+const DeviceCard = ({ name, type, status, earnings, icon: Icon }: DeviceCardProps) => {
+  const statusConfig = {
+    running: { color: 'text-green-400', bgColor: 'bg-green-400/20', icon: Play, label: 'Running' },
+    idle: { color: 'text-yellow-400', bgColor: 'bg-yellow-400/20', icon: Pause, label: 'Idle' },
+    stopped: { color: 'text-red-400', bgColor: 'bg-red-400/20', icon: Square, label: 'Stopped' }
+  };
+
+  const config = statusConfig[status];
+  const StatusIcon = config.icon;
+
+  return (
+    <motion.div
+      whileHover={{ scale: 1.02 }}
+      className="glass-card p-4 cursor-not-allowed opacity-75"
+    >
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-3">
+          <Icon size={24} className="text-primary" />
+          <div>
+            <h3 className="font-orbitron font-semibold text-sm">{name}</h3>
+            <p className="text-xs text-muted-foreground">{type}</p>
+          </div>
+        </div>
+        <div className={`flex items-center gap-1 px-2 py-1 rounded-full ${config.bgColor}`}>
+          <StatusIcon size={12} className={config.color} />
+          <span className={`text-xs font-medium ${config.color}`}>{config.label}</span>
+        </div>
+      </div>
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-xs text-muted-foreground">Earnings (24h)</span>
+        <span className="text-sm font-orbitron font-bold text-primary">{earnings}</span>
+      </div>
+      <div className="flex gap-2">
+        <button
+          disabled
+          className="flex-1 px-3 py-2 bg-primary/20 text-primary/60 border border-primary/30 rounded-lg font-orbitron text-xs cursor-not-allowed"
+        >
+          Manage
+        </button>
+        <button
+          disabled
+          className="px-3 py-2 bg-muted/20 text-muted-foreground/60 border border-muted/30 rounded-lg cursor-not-allowed"
+        >
+          <Settings size={14} />
+        </button>
+      </div>
+    </motion.div>
+  );
+};
+
 const SidebarMyDevices = () => {
+  const myDevices = [
+    {
+      name: 'Gaming Rig Alpha',
+      type: 'AMD Ryzen 9 7950X + RTX 4090',
+      status: 'running' as const,
+      earnings: '45 SSTL',
+      icon: Monitor
+    },
+    {
+      name: 'Jetson Orin NX',
+      type: 'NVIDIA Edge AI Device',
+      status: 'idle' as const,
+      earnings: '12 SSTL',
+      icon: Cpu
+    },
+    {
+      name: 'Cloud Instance Beta',
+      type: 'AWS EC2 P4d (A100)',
+      status: 'running' as const,
+      earnings: '89 SSTL',
+      icon: Cloud
+    }
+  ];
+
   return (
     <div>
       <motion.div
@@ -14,49 +96,103 @@ const SidebarMyDevices = () => {
         <h2 className="text-2xl font-orbitron font-bold mb-4 text-foreground">
           My Devices
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard
-            title="My Devices"
-            value="0"
-            icon={HardDrive}
-            description="Devices registered"
-            delay={0.1}
-          />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div className="opacity-75">
+            <StatCard
+              title="Registered Devices"
+              value="3"
+              icon={HardDrive}
+              description="Active devices"
+              delay={0.1}
+            />
+          </div>
+          <div className="opacity-75">
+            <StatCard
+              title="Total Earnings"
+              value="146 SSTL"
+              icon={Sparkles}
+              description="Last 24 hours"
+              delay={0.2}
+            />
+          </div>
+          <div className="opacity-75">
+            <StatCard
+              title="Active Now"
+              value="2"
+              icon={Play}
+              description="Running devices"
+              delay={0.3}
+            />
+          </div>
+          <div className="opacity-75">
+            <StatCard
+              title="Avg. Uptime"
+              value="94%"
+              icon={Cpu}
+              description="This month"
+              delay={0.4}
+            />
+          </div>
+        </div>
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+        className="space-y-4"
+      >
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-orbitron font-semibold text-primary">
+            Device Management
+          </h3>
+          <button
+            disabled
+            className="flex items-center gap-2 px-4 py-2 bg-primary/20 text-primary/60 border border-primary/30 rounded-lg font-orbitron text-sm cursor-not-allowed"
+          >
+            <Plus size={16} />
+            Add Device
+          </button>
         </div>
 
-        <div className="mt-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="nft-compact-card coming-soon group"
-          >
-            <div className="flex items-center gap-4">
-              <div className="nft-preview">
-                <div className="w-full h-full bg-muted flex items-center justify-center">
-                  <Cpu size={48} className="text-muted-foreground" />
-                </div>
-                {/* Removed redundant hover overlay */}
-              </div>
-              <div className="nft-content">
-                <h3 className="font-orbitron font-bold text-lg mb-2">Device Registration - Coming Soon</h3>
-                <p className="text-muted-foreground text-sm line-clamp-2">
-                  Register and manage your devices to run AI agents, earn rewards through Proof of Useful Work (PoUW), and contribute to network security.
-                </p>
-                <div className="nft-benefits mt-3">
-                  <span className="benefit-tag coming-soon">
-                    <HardDrive className="benefit-icon" />
-                    <span>Device Mining</span>
-                  </span>
-                  <span className="benefit-tag coming-soon">
-                    <Sparkles className="benefit-icon" />
-                    <span>Coming Q4 2025</span>
-                  </span>
-                </div>
-              </div>
-            </div>
-          </motion.div>
+        <div className="grid gap-4">
+          {myDevices.map((device, index) => (
+            <motion.div
+              key={device.name}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.1 }}
+            >
+              <DeviceCard {...device} />
+            </motion.div>
+          ))}
         </div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.6 }}
+          className="glass-card p-6 text-center cursor-not-allowed opacity-75"
+        >
+          <h3 className="font-orbitron font-bold text-lg mb-2">Device Registration</h3>
+          <p className="text-muted-foreground text-sm mb-4">
+            Register and manage your devices to run AI agents, earn rewards through Proof of Useful Work (PoUW), and contribute to network security.
+          </p>
+          <div className="flex flex-wrap gap-2 justify-center">
+            <span className="benefit-tag coming-soon">
+              <HardDrive className="benefit-icon" />
+              <span>Device Mining</span>
+            </span>
+            <span className="benefit-tag coming-soon">
+              <Sparkles className="benefit-icon" />
+              <span>PoUW Rewards</span>
+            </span>
+            <span className="benefit-tag coming-soon">
+              <Sparkles className="benefit-icon" />
+              <span>Coming Q4 2025</span>
+            </span>
+          </div>
+        </motion.div>
       </motion.div>
     </div>
   );

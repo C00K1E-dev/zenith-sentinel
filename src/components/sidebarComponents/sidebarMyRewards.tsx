@@ -1,7 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt, usePublicClient } from "wagmi";
-import { formatEther } from "viem";
+import { useAccount, useReadContract, useWalletClient, usePublicClient } from "wagmi";
+import { formatEther, encodeFunctionData } from "viem";
+import { sendTransaction } from "viem/actions";
 import { Loader, Gift, TrendingUp, CheckCircle, AlertCircle, ExternalLink } from "lucide-react";
 
 // Import contract ABIs and addresses
@@ -27,18 +28,23 @@ export default function SidebarMyRewards({ refreshTrigger = 0 }: RewardsSectionP
   const [userPendingRewards, setUserPendingRewards] = useState(0);
   const [userNFTs, setUserNFTs] = useState<bigint[]>([]);
   const [internalRefreshTrigger, setInternalRefreshTrigger] = useState<number>(0);
+  const [claimTxHash, setClaimTxHash] = useState<string | undefined>();
+  const [isCalculatingRewards, setIsCalculatingRewards] = useState(false);
 
   const publicClient = usePublicClient();
+  const { data: walletClient } = useWalletClient();
 
   // Calculate user earnings and pending rewards
   useEffect(() => {
     if (!address || userNFTs.length === 0 || !publicClient) {
       setUserTotalEarned(0);
       setUserPendingRewards(0);
+      setIsCalculatingRewards(false);
       return;
     }
 
     const calculateUserStats = async () => {
+      setIsCalculatingRewards(true);
       let totalEarned = BigInt(0);
       let totalPending = BigInt(0);
 
@@ -68,6 +74,7 @@ export default function SidebarMyRewards({ refreshTrigger = 0 }: RewardsSectionP
 
       setUserTotalEarned(Number(formatEther(totalEarned)));
       setUserPendingRewards(Number(formatEther(totalPending)));
+      setIsCalculatingRewards(false);
     };
 
     calculateUserStats();
@@ -160,33 +167,10 @@ export default function SidebarMyRewards({ refreshTrigger = 0 }: RewardsSectionP
   }, [totalNFTRewards, address, userNFTs.length]);
 
   // Write contract for claiming rewards
-  const { writeContract, data: claimTxHash, error: claimTxError, isPending: isClaimPending } = useWriteContract();
-
-  // Wait for claim transaction
-  const { isLoading: isClaimConfirming, isSuccess: isClaimConfirmed } = useWaitForTransactionReceipt({
-    hash: claimTxHash,
-  });
+  // Removed useWriteContract since using sendTransaction directly
 
   // Handle claim transaction confirmation
-  useEffect(() => {
-    if (isClaimConfirmed && claimTxHash) {
-      setClaimSuccess(true);
-      setIsClaiming(false);
-      // Trigger refresh of user stats
-      setInternalRefreshTrigger((prev: number) => prev + 1);
-
-      // Reset success message after 5 seconds
-      setTimeout(() => setClaimSuccess(false), 5000);
-    }
-  }, [isClaimConfirmed, claimTxHash]);
-
-  // Handle claim errors
-  useEffect(() => {
-    if (claimTxError) {
-      setClaimError(claimTxError.message);
-      setIsClaiming(false);
-    }
-  }, [claimTxError]);
+  // Removed since handling manually in handleClaimRewards
 
   // Handle claim rewards
   const handleClaimRewards = async () => {
@@ -203,10 +187,10 @@ export default function SidebarMyRewards({ refreshTrigger = 0 }: RewardsSectionP
     try {
       setIsClaiming(true);
       setClaimError(null);
-      console.log('Starting claim process for NFTs:', userNFTs);
+      console.log('Starting batch claim process for NFTs:', userNFTs);
 
-      // Claim rewards for each NFT that has pending rewards
-      let claimedCount = 0;
+      // Collect all NFTs with pending rewards
+      const claimsToProcess = [];
       for (const tokenId of userNFTs) {
         try {
           const pending = await publicClient!.readContract({
@@ -219,24 +203,70 @@ export default function SidebarMyRewards({ refreshTrigger = 0 }: RewardsSectionP
           console.log(`Token ${tokenId}: pending = ${pending}`);
 
           if (pending > BigInt(0)) {
-            console.log(`Claiming for token ${tokenId}...`);
-            const txHash = await writeContract({
-              address: POUW_ADDRESS as `0x${string}`,
-              abi: POUW_POOL_ABI as any,
-              functionName: 'claimReward',
-              args: [tokenId],
-              chain: chain,
-              account: address
-            });
-            console.log(`Claim tx for token ${tokenId}:`, txHash);
-            claimedCount++;
+            claimsToProcess.push(tokenId);
           }
         } catch (error) {
-          console.error('Error claiming for token', tokenId.toString(), error);
+          console.error('Error checking pending for token', tokenId.toString(), error);
         }
       }
 
-      console.log(`Claim process complete. Claimed for ${claimedCount} NFTs`);
+      if (claimsToProcess.length === 0) {
+        alert('No rewards to claim');
+        setIsClaiming(false);
+        return;
+      }
+
+      console.log(`Found ${claimsToProcess.length} NFTs with pending rewards`);
+
+      // Send all claim transactions in parallel
+      const claimPromises = claimsToProcess.map(async (tokenId) => {
+        const txData = encodeFunctionData({
+          abi: POUW_POOL_ABI,
+          functionName: 'claimReward',
+          args: [tokenId],
+        });
+
+        console.log(`Sending claim tx for token ${tokenId}...`);
+        const hash = await walletClient!.sendTransaction({
+          to: POUW_ADDRESS as `0x${string}`,
+          data: txData,
+          account: address as `0x${string}`,
+          chain: undefined,
+          kzg: undefined,
+        });
+        console.log(`Claim tx sent for token ${tokenId}:`, hash);
+        return hash;
+      });
+
+      const claimResults = await Promise.allSettled(claimPromises);
+      const successfulTxs = claimResults.filter(result => result.status === 'fulfilled').map(result => (result as PromiseFulfilledResult<`0x${string}`>).value);
+      const failedTxs = claimResults.filter(result => result.status === 'rejected').map(result => result.reason);
+
+      console.log(`Claims complete: ${successfulTxs.length} successful, ${failedTxs.length} failed`);
+      if (failedTxs.length > 0) {
+        console.error('Failed claims:', failedTxs);
+      }
+
+      if (successfulTxs.length === 0) {
+        throw new Error('All claims failed');
+      }
+
+      // Wait for successful transactions to confirm
+      console.log('Waiting for confirmations of successful transactions...');
+      await Promise.all(successfulTxs.map(hash => publicClient.waitForTransactionReceipt({ hash })));
+      console.log('Successful transactions confirmed');
+
+      // Set the first successful hash for UI purposes
+      setClaimTxHash(successfulTxs[0]);
+      setClaimSuccess(true);
+      setIsClaiming(false);
+
+      // Trigger refresh of user stats
+      setInternalRefreshTrigger((prev: number) => prev + 1);
+
+      // Reset success message after 5 seconds
+      setTimeout(() => setClaimSuccess(false), 5000);
+
     } catch (error: any) {
       console.error('Claim error:', error);
       setClaimError(error.message || 'Failed to claim rewards');
@@ -304,40 +334,47 @@ export default function SidebarMyRewards({ refreshTrigger = 0 }: RewardsSectionP
 
       {isConnected && (
         <>
-          {/* Reward Stats Grid */}
-          <div className="rewards-stats-grid">
-            <div className="reward-stat-card primary">
-              <div className="stat-icon">
-                <TrendingUp size={24} />
-              </div>
-              <div className="stat-content">
-                <span className="stat-label">
-                  Total Earned
-                  <span className="info-tooltip" title="Your total claimed rewards from all your NFTs">ℹ️</span>
-                </span>
-                <span className="stat-value">{formattedTotalEarned} SSTL</span>
-                <span className="stat-subtitle">Your claimed rewards</span>
-              </div>
+          {/* Reward Stats Grid or Loading */}
+          {isCalculatingRewards ? (
+            <div className="rewards-loading">
+              <Loader size={24} className="animate-spin" />
+              <span>Rewards are being calculated!</span>
             </div>
-            {pendingRewards > 0 && (
-              <div className="reward-stat-card secondary">
+          ) : (
+            <div className="rewards-stats-grid">
+              <div className="reward-stat-card primary">
                 <div className="stat-icon">
-                  <Gift size={24} />
+                  <TrendingUp size={24} />
                 </div>
                 <div className="stat-content">
                   <span className="stat-label">
-                    Pending Rewards
-                    <span className="info-tooltip" title="Rewards available to claim from your NFTs">ℹ️</span>
+                    Total Earned
+                    <span className="info-tooltip" title="Your total claimed rewards from all your NFTs">ℹ️</span>
                   </span>
-                  <span className="stat-value">{formattedPendingRewards} SSTL</span>
-                  <span className="stat-subtitle">Available to claim</span>
+                  <span className="stat-value">{formattedTotalEarned} SSTL</span>
+                  <span className="stat-subtitle">Your claimed rewards</span>
                 </div>
               </div>
-            )}
-          </div>
+              {pendingRewards > 0 && (
+                <div className="reward-stat-card secondary">
+                  <div className="stat-icon">
+                    <Gift size={24} />
+                  </div>
+                  <div className="stat-content">
+                    <span className="stat-label">
+                      Pending Rewards
+                      <span className="info-tooltip" title="Rewards available to claim from your NFTs">ℹ️</span>
+                    </span>
+                    <span className="stat-value">{formattedPendingRewards} SSTL</span>
+                    <span className="stat-subtitle">Available to claim</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Claim Rewards Button */}
-          {pendingRewards > 0 && (
+          {pendingRewards > 0 && !isCalculatingRewards && (
             <div className="claim-section">
               <button
                 className="claim-rewards-btn"
@@ -346,7 +383,7 @@ export default function SidebarMyRewards({ refreshTrigger = 0 }: RewardsSectionP
               >
                 {isClaiming ? (
                   <>
-                    <Loader size={16} className="spin" />
+                    <Loader size={16} className="animate-spin" />
                     Claiming...
                   </>
                 ) : (

@@ -1,8 +1,54 @@
 import { motion } from 'framer-motion';
-import { Image as ImageIcon, Bot, HardDrive, TrendingUp } from 'lucide-react';
+import { Image as ImageIcon, Bot, HardDrive, Activity, Coins, Zap, Flame } from 'lucide-react';
+import { useReadContract, useAccount } from 'wagmi';
+import { formatEther } from 'viem';
 import StatCard from '@/components/StatCard';
 
+// Import contract ABIs and addresses
+import { POUW_POOL_ADDRESS, POUW_POOL_ABI } from "../../contracts/index";
+
 const SidebarGeneralStats = () => {
+  const { chain } = useAccount();
+
+  // Read global stats from PoUW contract with real-time updates
+  const { data: totalJobs } = useReadContract({
+    address: POUW_POOL_ADDRESS as `0x${string}`,
+    abi: POUW_POOL_ABI as any,
+    functionName: 'totalJobs',
+    chainId: chain?.id,
+    query: {
+      refetchInterval: 5000, // Refetch every 5 seconds
+      staleTime: 0,
+    },
+  });
+
+  const { data: totalMinted } = useReadContract({
+    address: POUW_POOL_ADDRESS as `0x${string}`,
+    abi: POUW_POOL_ABI as any,
+    functionName: 'totalMinted',
+    chainId: chain?.id,
+    query: {
+      refetchInterval: 5000,
+      staleTime: 0,
+    },
+  });
+
+  const { data: totalNFTRewards } = useReadContract({
+    address: POUW_POOL_ADDRESS as `0x${string}`,
+    abi: POUW_POOL_ABI as any,
+    functionName: 'totalNFTRewards',
+    chainId: chain?.id,
+    query: {
+      refetchInterval: 5000,
+      staleTime: 0,
+    },
+  });
+
+  // Calculate stats
+  const totalAuditsCompleted = totalJobs ? Number(totalJobs) : 0;
+  const totalMintedTokens = totalMinted ? Number(formatEther(totalMinted as bigint)) : 0;
+  const totalDistributed = totalNFTRewards ? Number(formatEther(totalNFTRewards as bigint)) : 0;
+  const totalBurned = totalMintedTokens * 0.1; // 10% burned
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -13,7 +59,7 @@ const SidebarGeneralStats = () => {
       <h2 className="text-2xl font-orbitron font-bold mb-4 text-foreground">
         General Stats
       </h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <StatCard
           title="NFT Collections"
           value="2"
@@ -35,14 +81,49 @@ const SidebarGeneralStats = () => {
           description="Hardware devices"
           delay={0.3}
         />
-        <StatCard
-          title="Total Value"
-          value="$0"
-          icon={TrendingUp}
-          description="Portfolio value"
-          delay={0.4}
-        />
       </div>
+
+      {/* Global PoUW Statistics */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.5 }}
+        className="mt-8"
+      >
+        <h3 className="text-xl font-orbitron font-bold mb-4 text-foreground">
+          Global PoUW Statistics
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <StatCard
+            title="Total Audits Completed"
+            value={totalAuditsCompleted.toString()}
+            icon={Activity}
+            description="AI audits processed"
+            delay={0.6}
+          />
+          <StatCard
+            title="Total SSTL Minted"
+            value={`${totalMintedTokens.toFixed(2)} SSTL`}
+            icon={Coins}
+            description="Tokens created via PoUW"
+            delay={0.7}
+          />
+          <StatCard
+            title="Total Distributed (90%)"
+            value={`${totalDistributed.toFixed(2)} SSTL`}
+            icon={Zap}
+            description="Rewards distributed to NFT holders"
+            delay={0.8}
+          />
+          <StatCard
+            title="Total Burned (10%)"
+            value={`${totalBurned.toFixed(2)} SSTL`}
+            icon={Flame}
+            description="Tokens permanently removed"
+            delay={0.9}
+          />
+        </div>
+      </motion.div>
     </motion.div>
   );
 };

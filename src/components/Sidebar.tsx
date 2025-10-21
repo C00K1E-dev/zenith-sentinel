@@ -222,7 +222,7 @@ const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
                   collapsed && 'justify-center px-2'
                 )}
               >
-                <Icon size={16} className={cn(active && 'text-primary')} />
+                <Icon size={20} className={cn(active && 'text-primary')} />
                 {!collapsed && (
                   <>
                     <span className="flex-1">{item.name}</span>
