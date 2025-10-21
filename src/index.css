@@ -39,7 +39,6 @@
     
     --radius: 1rem;
     
-    /* Glass Effect Variables */
     --glass-bg: rgba(255, 255, 255, 0.05);
     --glass-border: rgba(255, 255, 255, 0.1);
     --glass-blur: 12px;
@@ -47,6 +46,9 @@
     /* Glow Effects */
     --glow-primary: 0 0 20px rgba(248, 244, 66, 0.5);
     --glow-primary-strong: 0 0 30px rgba(248, 244, 66, 0.8);
+    
+    /* Hardware Acceleration */
+    --transform-gpu: translate3d(0, 0, 0);
     
     --sidebar-background: 0 0% 12%;
     --sidebar-foreground: 240 5% 96%;
@@ -100,14 +102,25 @@
 @layer components {
   /* Glassmorphism Card */
   .glass-card {
-    @apply backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl shadow-2xl;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1rem;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    transform: translate3d(0, 0, 0);
+    will-change: transform;
+    contain: layout style;
   }
-  
+
   .glass-card-hover {
-    @apply glass-card transition-all duration-300 hover:bg-white/10 hover:border-primary/30 hover:shadow-[0_0_15px_rgba(248,244,66,0.15)];
+    @apply glass-card transition-all duration-300;
   }
-  
-  /* Neon Glow Effects */
+
+  .glass-card-hover:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(248, 244, 66, 0.3);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 15px rgba(248, 244, 66, 0.15);
+  }  /* Neon Glow Effects */
   .neon-glow {
     text-shadow: 0 0 10px rgba(248, 244, 66, 0.8),
                  0 0 20px rgba(248, 244, 66, 0.6),
@@ -128,6 +141,7 @@
     );
     background-size: 200% 200%;
     animation: gradientShift 15s ease infinite;
+    will-change: background-position;
   }
   
   @keyframes gradientShift {
@@ -139,10 +153,55 @@
   .float-animation {
     animation: float 6s ease-in-out infinite;
   }
+
+  /* Fade In Up Animation */
+  .animate-fade-in-up {
+    animation: fadeInUp 0.8s ease-out forwards;
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  .animation-delay-500 {
+    animation-delay: 0.5s;
+  }
+
+  @keyframes fadeInUp {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
   
   @keyframes float {
     0%, 100% { transform: translateY(0px); }
     50% { transform: translateY(-20px); }
+  }
+  
+  /* Additional Floating Animations */
+  .animate-float {
+    animation: float 8s ease-in-out infinite;
+  }
+  
+  .animate-float-delayed {
+    animation: float 8s ease-in-out infinite;
+    animation-delay: 2s;
+  }
+  
+  .animate-float-slow {
+    animation: float 12s ease-in-out infinite;
+  }
+  
+  .animate-float-reverse {
+    animation: float 10s ease-in-out infinite reverse;
+  }
+  
+  /* Gradient Shift Animations */
+  .animate-gradient-shift {
+    animation: gradientShift 20s ease infinite;
+  }
+  
+  .animate-gradient-shift-reverse {
+    animation: gradientShift 25s ease infinite reverse;
   }
   
   /* Pulse Glow Animation */

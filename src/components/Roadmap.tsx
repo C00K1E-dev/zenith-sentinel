@@ -1,8 +1,9 @@
 import { motion } from 'framer-motion';
 import { Calendar, CheckCircle, Clock, Rocket } from 'lucide-react';
+import { memo } from 'react';
 import road_map_data from '@/data/roadmap';
 
-const Roadmap = () => {
+const Roadmap = memo(() => {
   const getStatusIcon = (index: number) => {
     if (index === 0) return <Clock size={16} className="text-primary" />;
     if (index < 3) return <Rocket size={16} className="text-primary" />;
@@ -111,6 +112,6 @@ const Roadmap = () => {
       </div>
     </section>
   );
-};
+});
 
 export default Roadmap;
