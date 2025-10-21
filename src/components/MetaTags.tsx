@@ -1,4 +1,5 @@
 import { Helmet } from 'react-helmet-async';
+import { memo } from 'react';
 
 interface MetaTagsProps {
   title?: string;
@@ -13,7 +14,7 @@ const DEFAULT_TITLE = 'SmartSentinels - Decentralized AI Agents Powered by Proof
 const DEFAULT_DESCRIPTION = 'SmartSentinels delivers verifiable, low-cost AI services for businesses—from smart contract audits to intelligent assistants—while rewarding contributors with SSTL tokens. Edge-native, deflationary, and built for real impact.';
 const DEFAULT_IMAGE = `${BASE_URL}/assets/og-image.png`;
 
-export const MetaTags = ({
+export const MetaTags = memo(({
   title = DEFAULT_TITLE,
   description = DEFAULT_DESCRIPTION,
   image = DEFAULT_IMAGE,
@@ -26,7 +27,7 @@ export const MetaTags = ({
     <Helmet>
       <title>{title}</title>
       <meta name="description" content={description} />
-      
+
       {/* Open Graph / Facebook */}
       <meta property="og:type" content={type} />
       <meta property="og:url" content={url} />
@@ -46,4 +47,6 @@ export const MetaTags = ({
       <meta name="keywords" content="SmartSentinels, AI Agents, Proof of Useful Work, SSTL tokens, smart contract audits, iNFTs, blockchain, decentralized AI, Web3" />
     </Helmet>
   );
-};
+});
+
+MetaTags.displayName = 'MetaTags';

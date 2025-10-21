@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, memo } from "react";
 import { useActiveAccount, useSendTransaction, useReadContract } from "thirdweb/react";
 import { prepareContractCall, getContract, createThirdwebClient, readContract } from "thirdweb";
 import { bsc } from "thirdweb/chains";
@@ -10,7 +10,7 @@ const thirdwebClient = createThirdwebClient({
   clientId: import.meta.env.VITE_THIRDWEB_CLIENT_ID,
 });
 
-export default function GenesisMint({ onMinted }: { onMinted?: (args: { tokenId?: bigint, txHash?: string, imageUrl?: string }) => void }) {
+const GenesisMint = memo(({ onMinted }: { onMinted?: (args: { tokenId?: bigint, txHash?: string, imageUrl?: string }) => void }) => {
     const account = useActiveAccount();
     const { mutateAsync: sendTransaction } = useSendTransaction();
     const [authMessage, setAuthMessage] = useState("");
@@ -153,4 +153,8 @@ export default function GenesisMint({ onMinted }: { onMinted?: (args: { tokenId?
       )}
     </>
   );
-}
+});
+
+GenesisMint.displayName = 'GenesisMint';
+
+export default GenesisMint;

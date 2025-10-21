@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { Image as ImageIcon, Bot, HardDrive, Activity, Coins, Zap, Flame } from 'lucide-react';
 import { useReadContract, useAccount } from 'wagmi';
 import { formatEther } from 'viem';
+import { useMemo, memo } from 'react';
 import StatCard from '@/components/StatCard';
 
 // Import contract ABIs and addresses
@@ -10,15 +11,15 @@ import { POUW_POOL_ADDRESS, POUW_POOL_ABI } from "../../contracts/index";
 const SidebarGeneralStats = () => {
   const { chain } = useAccount();
 
-  // Read global stats from PoUW contract with real-time updates
+  // Read global stats from PoUW contract with optimized polling
   const { data: totalJobs } = useReadContract({
     address: POUW_POOL_ADDRESS as `0x${string}`,
     abi: POUW_POOL_ABI as any,
     functionName: 'totalJobs',
     chainId: chain?.id,
     query: {
-      refetchInterval: 5000, // Refetch every 5 seconds
-      staleTime: 0,
+      refetchInterval: 30000, // Reduced to 30 seconds
+      staleTime: 10000, // Consider data fresh for 10 seconds
     },
   });
 
@@ -28,8 +29,8 @@ const SidebarGeneralStats = () => {
     functionName: 'totalMinted',
     chainId: chain?.id,
     query: {
-      refetchInterval: 5000,
-      staleTime: 0,
+      refetchInterval: 30000,
+      staleTime: 10000,
     },
   });
 
@@ -39,16 +40,18 @@ const SidebarGeneralStats = () => {
     functionName: 'totalNFTRewards',
     chainId: chain?.id,
     query: {
-      refetchInterval: 5000,
-      staleTime: 0,
+      refetchInterval: 30000,
+      staleTime: 10000,
     },
   });
 
-  // Calculate stats
-  const totalAuditsCompleted = totalJobs ? Number(totalJobs) : 0;
-  const totalMintedTokens = totalMinted ? Number(formatEther(totalMinted as bigint)) : 0;
-  const totalDistributed = totalNFTRewards ? Number(formatEther(totalNFTRewards as bigint)) : 0;
-  const totalBurned = totalMintedTokens * 0.1; // 10% burned
+  // Calculate stats with memoization
+  const stats = useMemo(() => ({
+    totalAuditsCompleted: totalJobs ? Number(totalJobs) : 0,
+    totalMintedTokens: totalMinted ? Number(formatEther(totalMinted as bigint)) : 0,
+    totalDistributed: totalNFTRewards ? Number(formatEther(totalNFTRewards as bigint)) : 0,
+  }), [totalJobs, totalMinted, totalNFTRewards]);
+  const totalBurned = stats.totalMintedTokens * 0.1; // 10% burned
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -96,21 +99,21 @@ const SidebarGeneralStats = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <StatCard
             title="Total Audits Completed"
-            value={totalAuditsCompleted.toString()}
+            value={stats.totalAuditsCompleted.toString()}
             icon={Activity}
             description="AI audits processed"
             delay={0.6}
           />
           <StatCard
             title="Total SSTL Minted"
-            value={`${totalMintedTokens.toFixed(2)} SSTL`}
+            value={`${stats.totalMintedTokens.toFixed(2)} SSTL`}
             icon={Coins}
             description="Tokens created via PoUW"
             delay={0.7}
           />
           <StatCard
             title="Total Distributed (90%)"
-            value={`${totalDistributed.toFixed(2)} SSTL`}
+            value={`${stats.totalDistributed.toFixed(2)} SSTL`}
             icon={Zap}
             description="Rewards distributed to NFT holders"
             delay={0.8}
@@ -128,4 +131,4 @@ const SidebarGeneralStats = () => {
   );
 };
 
-export default SidebarGeneralStats;
+export default memo(SidebarGeneralStats);

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, memo, useMemo, useCallback } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   DollarSign,
@@ -37,7 +37,7 @@ interface SidebarProps {
   setCollapsed: (collapsed: boolean) => void;
 }
 
-const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
+const Sidebar = memo(({ collapsed, setCollapsed }: SidebarProps) => {
   const location = useLocation();
   const account = useActiveAccount();
 
@@ -58,24 +58,28 @@ const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
     { name: 'My Rewards', path: '/hub/my-rewards', icon: Award },
   ];
 
-  const isActive = (path: string) => {
+  const isActive = useCallback((path: string) => {
     if (path === '/hub/general-stats') {
       return location.pathname === '/hub' || location.pathname === '/hub/general-stats';
     }
     return location.pathname === path;
-  };
+  }, [location.pathname]);
+
+  const handleToggle = useCallback(() => {
+    setCollapsed(!collapsed);
+  }, [collapsed, setCollapsed]);
 
   return (
     <aside
       className={cn(
-        'glass-card border-r border-yellow-400/20 transition-all duration-300 h-screen fixed left-0 top-0 flex flex-col overflow-hidden',
+        'glass-card border-r border-yellow-400/20 transition-all duration-150 h-screen fixed left-0 top-0 flex flex-col overflow-hidden',
         collapsed ? 'w-20 z-50' : 'w-72 z-10'
       )}
     >
       {/* Toggle Button */}
       <button
-        onClick={() => setCollapsed(!collapsed)}
-        className="absolute -right-3 top-6 glass-card-hover p-1.5 rounded-full neon-border z-10 hover:shadow-[0_0_30px_rgba(248,244,66,0.8)]"
+        onClick={handleToggle}
+        className="absolute -right-3 top-6 glass-card-hover p-1.5 rounded-full neon-border z-10 hover:shadow-[0_0_30px_rgba(248,244,66,0.8)] transition-all duration-150"
       >
         {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
       </button>
@@ -215,7 +219,7 @@ const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
                 key={item.name}
                 to={item.path}
                 className={cn(
-                  'flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 group relative text-sm font-orbitron',
+                  'flex items-center gap-3 px-3 py-2 rounded-lg transition-colors duration-150 group relative text-sm font-orbitron',
                   active
                     ? 'bg-primary/20 text-primary border border-primary/30'
                     : 'text-muted-foreground hover:bg-white/5 hover:text-foreground',
@@ -231,7 +235,7 @@ const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
 
                 {/* Tooltip for collapsed state */}
                 {collapsed && (
-                  <div className="absolute left-full ml-2 px-3 py-2 bg-card border border-white/10 rounded-lg text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 font-orbitron">
+                  <div className="absolute left-full ml-2 px-3 py-2 bg-card border border-white/10 rounded-lg text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none z-50 font-orbitron">
                     {item.name}
                   </div>
                 )}
@@ -255,7 +259,7 @@ const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
               key={item.name}
               to={item.path}
               className={cn(
-                'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group relative font-orbitron',
+                'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors duration-150 group relative font-orbitron',
                 item.name === 'Seed Funding / Token Sale' && 'mt-1',
                 active
                   ? 'bg-primary/20 text-primary border border-primary/30'
@@ -277,7 +281,7 @@ const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
               
               {/* Tooltip for collapsed state */}
               {collapsed && (
-                <div className="absolute left-full ml-2 px-3 py-2 bg-card border border-white/10 rounded-lg text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 font-orbitron">
+                <div className="absolute left-full ml-2 px-3 py-2 bg-card border border-white/10 rounded-lg text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none z-50 font-orbitron">
                   {item.name}
                   {item.badge && (
                     <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-primary/20 text-primary font-orbitron">
@@ -292,6 +296,6 @@ const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
       </nav>
     </aside>
   );
-};
+});
 
 export default Sidebar;

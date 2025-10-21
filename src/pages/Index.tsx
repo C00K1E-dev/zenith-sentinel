@@ -1,22 +1,26 @@
 import { ArrowRight, Zap, Shield, Cpu, Target } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
+import { Suspense, lazy } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import ContentCard from '@/components/ContentCard';
-import Roadmap from '@/components/Roadmap';
-import Team from '@/components/Team';
-import FAQ from '@/components/FAQ';
+import { Loading } from '@/components/ui/loading';
 import heroImage from '@/assets/ssv2hero.svg';
+
+const Roadmap = lazy(() => import('@/components/Roadmap'));
+const Team = lazy(() => import('@/components/Team'));
+const FAQ = lazy(() => import('@/components/FAQ'));
+const PoweredBy = lazy(() => import('@/components/PoweredBy'));
 
 const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 relative overflow-x-hidden overflow-y-auto">
-      {/* Animated Background Elements */}
+      {/* Optimized Background Elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        {/* Animated Gradient Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-secondary/10 animate-gradient-shift" />
-        <div className="absolute inset-0 bg-gradient-to-tl from-accent/5 via-transparent to-primary/5 animate-gradient-shift-reverse" />
+        {/* Static Gradient Background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-secondary/10" />
+        <div className="absolute inset-0 bg-gradient-to-tl from-accent/5 via-transparent to-primary/5" />
 
         {/* Circuit Pattern */}
         <div className="absolute inset-0 opacity-5">
@@ -33,11 +37,10 @@ const Index = () => {
           </svg>
         </div>
 
-        {/* Animated Floating Elements */}
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/3 rounded-full blur-3xl animate-float" />
-        <div className="absolute top-3/4 right-1/4 w-80 h-80 bg-secondary/2 rounded-full blur-3xl animate-float-delayed" />
-        <div className="absolute bottom-1/4 left-1/3 w-64 h-64 bg-accent/2 rounded-full blur-3xl animate-float-slow" />
-        <div className="absolute top-1/2 right-1/3 w-72 h-72 bg-primary/2 rounded-full blur-3xl animate-float-reverse" />
+        {/* Reduced Floating Elements */}
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/3 rounded-full blur-3xl" />
+        <div className="absolute top-3/4 right-1/4 w-80 h-80 bg-secondary/2 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 left-1/3 w-64 h-64 bg-accent/2 rounded-full blur-3xl" />
       </div>
 
       <Navbar />
@@ -110,13 +113,23 @@ const Index = () => {
         </div>
 
         {/* Roadmap Section */}
-        <Roadmap />
+        <Suspense fallback={<Loading />}>
+          <Roadmap />
+        </Suspense>
 
         {/* Team Section */}
-        <Team />
+        <Suspense fallback={<Loading />}>
+          <Team />
+        </Suspense>
+
+        <Suspense fallback={<Loading />}>
+          <PoweredBy />
+        </Suspense>
 
         {/* FAQ Section */}
-        <FAQ />
+        <Suspense fallback={<Loading />}>
+          <FAQ />
+        </Suspense>
 
         {/* Closing CTA */}
         <div className="glass-card p-12 text-center neon-border">

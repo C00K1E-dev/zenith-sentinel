@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
+import { memo } from 'react';
 
-const PoweredBy = () => {
+const PoweredBy = memo(() => {
   const technologies = [
     { name: 'BNB Chain', logo: '/assets/bnb-chain-logo.svg' },
     { name: 'NVIDIA', logo: '/assets/nvidia-logo.svg' },
@@ -33,7 +34,7 @@ const PoweredBy = () => {
             x: {
               repeat: Infinity,
               repeatType: "loop",
-              duration: 20,
+              duration: 30, // Increased from 20 to 30 for better performance
               ease: "linear",
             },
           }}
@@ -45,10 +46,10 @@ const PoweredBy = () => {
                   <span className="text-sm font-semibold text-primary">{item.name}</span>
                 </div>
               ) : (
-                <img 
-                  src={item.logo} 
-                  alt={item.name} 
-                  className={item.name === 'AMD' ? "h-20 w-20 object-contain -mb-6 -mt-2" : "h-10 w-10 object-contain mb-2"} 
+                <img
+                  src={item.logo}
+                  alt={item.name}
+                  className={item.name === 'AMD' ? "h-20 w-20 object-contain -mb-6 -mt-2" : "h-10 w-10 object-contain mb-2"}
                 />
               )}
               {!item.isText && <span className="text-xs text-muted-foreground font-medium">{item.name}</span>}
@@ -67,6 +68,8 @@ const PoweredBy = () => {
       <Marquee items={partners} direction="right" />
     </section>
   );
-};
+});
+
+PoweredBy.displayName = 'PoweredBy';
 
 export default PoweredBy;

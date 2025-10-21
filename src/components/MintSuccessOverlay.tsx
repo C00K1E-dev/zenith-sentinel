@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import { createPortal } from 'react-dom';
 import { motion } from 'framer-motion';
 import { ExternalLink, X, CheckCircle, Loader } from 'lucide-react';
@@ -13,7 +13,7 @@ interface MintSuccessOverlayProps {
   collectionName?: string;
 }
 
-const MintSuccessOverlay: React.FC<MintSuccessOverlayProps> = ({
+const MintSuccessOverlay: React.FC<MintSuccessOverlayProps> = memo(({
   isOpen,
   onClose,
   onViewNFTs,
@@ -227,6 +227,8 @@ const MintSuccessOverlay: React.FC<MintSuccessOverlayProps> = ({
     ) : null,
     document.body
   );
-};
+});
+
+MintSuccessOverlay.displayName = 'MintSuccessOverlay';
 
 export default MintSuccessOverlay;

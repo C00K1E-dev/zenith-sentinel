@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { ReactNode } from 'react';
+import { ReactNode, memo } from 'react';
 
 interface ContentCardProps {
   title: string;
@@ -8,13 +8,13 @@ interface ContentCardProps {
   icon?: ReactNode;
 }
 
-const ContentCard = ({ title, content, delay = 0, icon }: ContentCardProps) => {
+const ContentCard = memo(({ title, content, delay = 0, icon }: ContentCardProps) => {
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       whileInView={{ opacity: 1, scale: 1 }}
       viewport={{ once: true }}
-      transition={{ duration: 0.5, delay }}
+      transition={{ duration: 0.3, delay }}
       className="glass-card-hover p-8"
     >
       {icon && (
@@ -30,6 +30,8 @@ const ContentCard = ({ title, content, delay = 0, icon }: ContentCardProps) => {
       </p>
     </motion.div>
   );
-};
+});
+
+ContentCard.displayName = 'ContentCard';
 
 export default ContentCard;

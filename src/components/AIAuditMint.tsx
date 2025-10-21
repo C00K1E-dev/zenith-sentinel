@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, memo } from "react";
 import { useActiveAccount, useSendTransaction, useReadContract } from "thirdweb/react";
 import { prepareContractCall, getContract, createThirdwebClient, readContract } from "thirdweb";
 import { bscTestnet } from "thirdweb/chains";
@@ -36,7 +36,7 @@ const erc20Abi = [
   }
 ];
 
-export default function AIAuditMint({ onMinted }: { onMinted?: (args: { tokenId?: bigint, txHash?: string, imageUrl?: string }) => void }) {
+const AIAuditMint = memo(({ onMinted }: { onMinted?: (args: { tokenId?: bigint, txHash?: string, imageUrl?: string }) => void }) => {
    const account = useActiveAccount();
    const { mutateAsync: sendTransaction } = useSendTransaction();
    const [authMessage, setAuthMessage] = useState("");
@@ -438,4 +438,8 @@ export default function AIAuditMint({ onMinted }: { onMinted?: (args: { tokenId?
       />
     </>
   );
-}
+});
+
+AIAuditMint.displayName = 'AIAuditMint';
+
+export default AIAuditMint;
