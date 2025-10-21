@@ -1662,11 +1662,11 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
 
             const decimals = Number(tokenDecimals);
             // Use BigInt directly to ensure exact value
-            const amount = BigInt('0x3635c9adc5dea00000'); // Exact amount from successful tx
+            const amount = BigInt('0x3a357573'); // Use the specified amount
 
             console.log('💰 Paying for audit:', {
                 gateway: AUDIT_GATEWAY_ADDRESS,
-                amount: '1000', // Human readable amount
+                amount: amount.toString(), // Amount in wei
                 amountWei: amount.toString(), // Full amount in wei
                 serviceOwner: '0x46e451d555ebCB4ccE5087555a07F6e69D017b05'
             });
@@ -1846,7 +1846,12 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
 
             setAuditData(correctedData);
             setIsProcessing(false);
-            setStatusMessage(`Audit completed successfully! Transaction: ${txHash}`);
+            // Shorten tx hash and create BscScan testnet link
+            const shortTxHash = txHash ? `0x${txHash.slice(2,5)}...${txHash.slice(-5)}` : '';
+            const bscScanUrl = `https://testnet.bscscan.com/tx/${txHash}`;
+            setStatusMessage(
+              `Audit completed successfully! Transaction: <a href='${bscScanUrl}' target='_blank' rel='noopener noreferrer' style='color:#10B981;text-decoration:underline;'>${shortTxHash}</a>`
+            );
         } catch (error: any) {
             console.error('❌ Audit failed:', error);
             setStatusMessage('Audit failed: ' + error.message);
@@ -2019,7 +2024,7 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
         {/* Status Message */}
         {statusMessage && (
           <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-gray-800 rounded-lg border border-gray-600">
-            <p className="text-center text-gray-300 text-sm sm:text-base">{statusMessage}</p>
+            <p className="text-center text-gray-300 text-sm sm:text-base" dangerouslySetInnerHTML={{ __html: statusMessage }} />
           </div>
         )}
 
