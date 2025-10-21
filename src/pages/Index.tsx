@@ -8,6 +8,7 @@ import ContentCard from '@/components/ContentCard';
 import Roadmap from '@/components/Roadmap';
 import Team from '@/components/Team';
 import FAQ from '@/components/FAQ';
+import PoweredBy from '@/components/PoweredBy';
 import heroImage from '@/assets/ssv2hero.svg';
 
 const Index = () => {
@@ -220,6 +221,9 @@ const Index = () => {
 
         {/* Team Section */}
         <Team />
+
+        {/* Powered By Section */}
+        <PoweredBy />
 
         {/* FAQ Section */}
         <FAQ />

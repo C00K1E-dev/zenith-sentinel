@@ -27,8 +27,8 @@ const road_map_data: DataType[] = [
   {
     id: 4,
     sub_title: "Q3 2026",
-    title: "Launchpad Raise & Token Distribution",
-    desc: "Begin public fundraising via launchpads (e.g., ThenaPad, ChainGPT, Poolz). Enable claim dashboard, vesting portal, and live token metrics for transparency. Begin token liquidity activation.",
+    title: "Platform Expansion & Ecosystem Growth",
+    desc: "Expand our AI agent network through strategic partnerships. Launch enterprise-grade tools for agent deployment and monitoring. Focus on building sustainable revenue streams through premium services and enterprise solutions.",
   },
   {
     id: 5,
