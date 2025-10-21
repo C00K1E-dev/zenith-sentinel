@@ -166,6 +166,12 @@ export default function SidebarMyRewards({ refreshTrigger = 0 }: RewardsSectionP
     }
   }, [totalNFTRewards, address, userNFTs.length]);
 
+  // Write contract for claiming rewards
+  // Removed useWriteContract since using sendTransaction directly
+
+  // Handle claim transaction confirmation
+  // Removed since handling manually in handleClaimRewards
+
   // Handle claim rewards
   const handleClaimRewards = async () => {
     if (!address || !isConnected) {
@@ -299,7 +305,19 @@ export default function SidebarMyRewards({ refreshTrigger = 0 }: RewardsSectionP
   };
 
   return (
-    <div>
+    <div className="rewards-section">
+      <div className="rewards-header">
+        <Gift size={32} className="rewards-icon" />
+        <div>
+          <h3>My Rewards Dashboard</h3>
+          <p className="rewards-subtitle">
+            {holdsNFT 
+              ? "You're eligible for PoUW rewards from completed audits" 
+              : "Mint an AI Audit NFT to start earning rewards"}
+          </p>
+        </div>
+      </div>
+
       {!isConnected && (
         <div className="rewards-message warning">
           <AlertCircle size={20} />
@@ -433,4 +451,4 @@ export default function SidebarMyRewards({ refreshTrigger = 0 }: RewardsSectionP
       )}
     </div>
   );
-};
+}
