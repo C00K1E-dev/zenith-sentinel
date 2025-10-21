@@ -53,12 +53,7 @@ const SidebarGeneralStats = () => {
   }), [totalJobs, totalMinted, totalNFTRewards]);
   const totalBurned = stats.totalMintedTokens * 0.1; // 10% burned
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5, delay: 0.2 }}
-      className="mb-8"
-    >
+    <div className="mb-8">
       <h2 className="text-2xl font-orbitron font-bold mb-4 text-foreground">
         General Stats
       </h2>
@@ -68,31 +63,26 @@ const SidebarGeneralStats = () => {
           value="2"
           icon={ImageIcon}
           description="Active collections"
-          delay={0.1}
+          delay={0}
         />
         <StatCard
           title="Active Agents"
           value="1"
           icon={Bot}
           description="AI agents deployed"
-          delay={0.2}
+          delay={0}
         />
         <StatCard
           title="Connected Devices"
           value="1"
           icon={HardDrive}
           description="Hardware devices"
-          delay={0.3}
+          delay={0}
         />
       </div>
 
       {/* Global PoUW Statistics */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.5 }}
-        className="mt-8"
-      >
+      <div className="mt-8">
         <h3 className="text-xl font-orbitron font-bold mb-4 text-foreground">
           Global PoUW Statistics
         </h3>
@@ -102,32 +92,32 @@ const SidebarGeneralStats = () => {
             value={stats.totalAuditsCompleted.toString()}
             icon={Activity}
             description="AI audits processed"
-            delay={0.6}
+            delay={0}
           />
           <StatCard
             title="Total SSTL Minted"
             value={`${stats.totalMintedTokens.toFixed(2)} SSTL`}
             icon={Coins}
             description="Tokens created via PoUW"
-            delay={0.7}
+            delay={0}
           />
           <StatCard
             title="Total Distributed (90%)"
             value={`${stats.totalDistributed.toFixed(2)} SSTL`}
             icon={Zap}
             description="Rewards distributed to NFT holders"
-            delay={0.8}
+            delay={0}
           />
           <StatCard
             title="Total Burned (10%)"
             value={`${totalBurned.toFixed(2)} SSTL`}
             icon={Flame}
             description="Tokens permanently removed"
-            delay={0.9}
+            delay={0}
           />
         </div>
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
   );
 };
 

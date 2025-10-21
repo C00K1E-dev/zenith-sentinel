@@ -37,30 +37,28 @@ const Hub = () => {
   };
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 relative overflow-x-hidden overflow-y-auto">
-      {/* Optimized Background Elements - Reduced animations */}
+      {/* Optimized Background Elements - Further reduced animations */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         {/* Static Gradient Background */}
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-secondary/10" />
         <div className="absolute inset-0 bg-gradient-to-tl from-accent/5 via-transparent to-primary/5" />
 
-        {/* Simplified Circuit Pattern */}
-        <div className="absolute inset-0 opacity-5">
+        {/* Simplified Circuit Pattern - Reduced complexity */}
+        <div className="absolute inset-0 opacity-3">
           <svg className="w-full h-full" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
             <defs>
-              <pattern id="circuit" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
-                <rect x="0" y="0" width="20" height="20" fill="none"/>
-                <circle cx="10" cy="10" r="1" fill="rgba(248, 244, 66, 0.2)"/>
-                <line x1="10" y1="10" x2="20" y2="10" stroke="rgba(248, 244, 66, 0.1)" strokeWidth="0.5"/>
-                <line x1="10" y1="10" x2="10" y2="0" stroke="rgba(248, 244, 66, 0.1)" strokeWidth="0.5"/>
+              <pattern id="circuit" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+                <circle cx="20" cy="20" r="0.5" fill="rgba(248, 244, 66, 0.1)"/>
+                <line x1="20" y1="20" x2="40" y2="20" stroke="rgba(248, 244, 66, 0.05)" strokeWidth="0.2"/>
+                <line x1="20" y1="20" x2="20" y2="0" stroke="rgba(248, 244, 66, 0.05)" strokeWidth="0.2"/>
               </pattern>
             </defs>
             <rect width="100%" height="100%" fill="url(#circuit)"/>
           </svg>
         </div>
 
-        {/* Reduced Floating Elements */}
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/3 rounded-full blur-3xl" />
-        <div className="absolute top-3/4 right-1/4 w-80 h-80 bg-secondary/2 rounded-full blur-3xl" />
+        {/* Reduced Floating Elements - Only one static element */}
+        <div className="absolute top-1/3 right-1/4 w-64 h-64 bg-primary/2 rounded-full blur-2xl" />
       </div>
 
       <Sidebar collapsed={collapsed} setCollapsed={handleSetCollapsed} />

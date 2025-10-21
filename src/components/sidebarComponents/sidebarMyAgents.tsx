@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion';
 import { Bot, Sparkles, Cpu, Shield, TrendingUp, Play, Pause, Square, Settings, Plus, Zap } from 'lucide-react';
 import StatCard from '@/components/StatCard';
 
@@ -22,10 +21,7 @@ const AgentCard = ({ name, type, status, performance, earnings, icon: Icon }: Ag
   const StatusIcon = config.icon;
 
   return (
-    <motion.div
-      whileHover={{ scale: 1.02 }}
-      className="glass-card p-4 cursor-not-allowed opacity-75"
-    >
+    <div className="glass-card p-4 cursor-not-allowed opacity-75">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
           <Icon size={24} className="text-primary" />
@@ -66,7 +62,7 @@ const AgentCard = ({ name, type, status, performance, earnings, icon: Icon }: Ag
           <Settings size={14} />
         </button>
       </div>
-    </motion.div>
+    </div>
   );
 };
 
@@ -108,12 +104,7 @@ const SidebarMyAgents = () => {
 
   return (
     <div>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
-        className="mb-8"
-      >
+      <div className="mb-8">
         <h2 className="text-2xl font-orbitron font-bold mb-4 text-foreground">
           My Agents
         </h2>
@@ -124,7 +115,6 @@ const SidebarMyAgents = () => {
               value="4"
               icon={Bot}
               description="Running agents"
-              delay={0.1}
             />
           </div>
           <div className="opacity-75">
@@ -133,7 +123,6 @@ const SidebarMyAgents = () => {
               value="190 SSTL"
               icon={Sparkles}
               description="Last 24 hours"
-              delay={0.2}
             />
           </div>
           <div className="opacity-75">
@@ -142,7 +131,6 @@ const SidebarMyAgents = () => {
               value="93.3%"
               icon={TrendingUp}
               description="Success rate"
-              delay={0.3}
             />
           </div>
           <div className="opacity-75">
@@ -151,18 +139,12 @@ const SidebarMyAgents = () => {
               value="1,247"
               icon={Zap}
               description="This month"
-              delay={0.4}
             />
           </div>
         </div>
-      </motion.div>
+      </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-        className="space-y-4"
-      >
+      <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-orbitron font-semibold text-primary">
             Agent Management
@@ -177,24 +159,12 @@ const SidebarMyAgents = () => {
         </div>
 
         <div className="grid gap-4">
-          {myAgents.map((agent, index) => (
-            <motion.div
-              key={agent.name}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.1 }}
-            >
-              <AgentCard {...agent} />
-            </motion.div>
+          {myAgents.map((agent) => (
+            <AgentCard key={agent.name} {...agent} />
           ))}
         </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.6 }}
-          className="glass-card p-6 text-center cursor-not-allowed opacity-75"
-        >
+        <div className="glass-card p-6 text-center cursor-not-allowed opacity-75">
           <h3 className="font-orbitron font-bold text-lg mb-2">AI Agent Creation</h3>
           <p className="text-muted-foreground text-sm mb-4">
             Create and customize your own AI agents to monitor smart contracts, analyze market data, detect threats, and protect your assets through intelligent automation.
@@ -217,8 +187,8 @@ const SidebarMyAgents = () => {
               <span>Coming Q4 2025</span>
             </span>
           </div>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
     </div>
   );
 };

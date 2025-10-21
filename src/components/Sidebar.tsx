@@ -41,7 +41,7 @@ const Sidebar = memo(({ collapsed, setCollapsed }: SidebarProps) => {
   const location = useLocation();
   const account = useActiveAccount();
 
-  const menuItems: SidebarItem[] = [
+  const menuItems: SidebarItem[] = useMemo(() => [
     { name: 'General Stats', path: '/hub/general-stats', icon: BarChart3 },
     { name: 'NFTs & iNFTs Hub', path: '/hub/nfts', icon: ImageIcon },
     { name: 'AI Audit - Smart Contract', path: '/hub/audit', icon: Shield },
@@ -49,14 +49,14 @@ const Sidebar = memo(({ collapsed, setCollapsed }: SidebarProps) => {
     { name: 'Create Agent', path: '/hub/create-agent', icon: Bot, badge: 'Soon' },
     { name: 'Marketplace', path: '/hub/marketplace', icon: Store, badge: 'Soon' },
     { name: 'Staking', path: '/hub/staking', icon: Coins, badge: 'Soon' },
-  ];
+  ], []);
 
-  const myStatsItems: SidebarItem[] = [
+  const myStatsItems: SidebarItem[] = useMemo(() => [
     { name: 'My NFTs', path: '/hub/my-nfts', icon: ImageIcon },
     { name: 'My Agents', path: '/hub/my-agents', icon: Bot },
     { name: 'My Devices', path: '/hub/my-devices', icon: HardDrive },
     { name: 'My Rewards', path: '/hub/my-rewards', icon: Award },
-  ];
+  ], []);
 
   const isActive = useCallback((path: string) => {
     if (path === '/hub/general-stats') {
@@ -68,6 +68,65 @@ const Sidebar = memo(({ collapsed, setCollapsed }: SidebarProps) => {
   const handleToggle = useCallback(() => {
     setCollapsed(!collapsed);
   }, [collapsed, setCollapsed]);
+
+  // Memoize ConnectButton props to prevent unnecessary re-renders
+  const connectButtonProps = useMemo(() => ({
+    client: thirdwebClient,
+    theme: "dark" as const,
+    chains: [bsc, bscTestnet],
+    connectModal: {
+      size: "compact" as const,
+      welcomeScreen: {
+        title: "Connect to SmartSentinels",
+        subtitle: "Choose your wallet to get started",
+      },
+    },
+  }), []);
+
+  const expandedConnectButtonStyle = useMemo(() => ({
+    width: "100%",
+    background: "hsl(var(--primary))",
+    color: "hsl(var(--primary-foreground))",
+    border: "none",
+    borderRadius: "0.5rem",
+    padding: "0.75rem 1rem",
+    fontFamily: "'Orbitron', sans-serif",
+    fontWeight: "700",
+    fontSize: "0.875rem",
+    boxShadow: "0 0 20px rgba(248, 244, 66, 0.5)",
+    transition: "all 0.2s ease",
+  }), []);
+
+  const collapsedConnectButtonStyle = useMemo(() => ({
+    width: "2.5rem",
+    height: "2.5rem",
+    background: "hsl(var(--primary))",
+    color: "hsl(var(--primary-foreground))",
+    border: "none",
+    borderRadius: "0.5rem",
+    padding: "0.5rem",
+    fontFamily: "'Orbitron', sans-serif",
+    fontWeight: "700",
+    boxShadow: "0 0 20px rgba(248, 244, 66, 0.5)",
+    transition: "all 0.2s ease",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    cursor: "pointer",
+    position: "relative" as const,
+    opacity: 0,
+  }), []);
+
+  const detailsButtonStyle = useMemo(() => ({
+    width: "100%",
+    background: "rgba(255, 255, 255, 0.05)",
+    border: "1px solid rgba(248, 244, 66, 0.2)",
+    borderRadius: "0.5rem",
+    padding: "0.75rem",
+    fontFamily: "'Orbitron', sans-serif",
+    fontSize: "0.75rem",
+    color: "hsl(var(--foreground))",
+  }), []);
 
   return (
     <aside
@@ -109,80 +168,23 @@ const Sidebar = memo(({ collapsed, setCollapsed }: SidebarProps) => {
       <div className="px-4 pt-4 pb-4 absolute top-16 left-0 right-0 z-20">
         {!collapsed && (
           <ConnectButton
-            client={thirdwebClient}
-            theme="dark"
-            chains={[bsc, bscTestnet]}
+            {...connectButtonProps}
             connectButton={{
               label: "Connect Wallet",
-              style: {
-                width: "100%",
-                background: "hsl(var(--primary))",
-                color: "hsl(var(--primary-foreground))",
-                border: "none",
-                borderRadius: "0.5rem",
-                padding: "0.75rem 1rem",
-                fontFamily: "'Orbitron', sans-serif",
-                fontWeight: "700",
-                fontSize: "0.875rem",
-                boxShadow: "0 0 20px rgba(248, 244, 66, 0.5)",
-                transition: "all 0.2s ease",
-              },
-            }}
-            connectModal={{
-              size: "compact",
-              welcomeScreen: {
-                title: "Connect to SmartSentinels",
-                subtitle: "Choose your wallet to get started",
-              },
+              style: expandedConnectButtonStyle,
             }}
             detailsButton={{
-              style: {
-                width: "100%",
-                background: "rgba(255, 255, 255, 0.05)",
-                border: "1px solid rgba(248, 244, 66, 0.2)",
-                borderRadius: "0.5rem",
-                padding: "0.75rem",
-                fontFamily: "'Orbitron', sans-serif",
-                fontSize: "0.75rem",
-                color: "hsl(var(--foreground))",
-              },
+              style: detailsButtonStyle,
             }}
           />
         )}
         {collapsed && (
           <div className="flex justify-center relative overflow-hidden">
             <ConnectButton
-              client={thirdwebClient}
-              theme="dark"
-              chains={[bsc, bscTestnet]}
+              {...connectButtonProps}
               connectButton={{
                 label: "",
-                style: {
-                  width: "2.5rem",
-                  height: "2.5rem",
-                  background: "hsl(var(--primary))",
-                  color: "hsl(var(--primary-foreground))",
-                  border: "none",
-                  borderRadius: "0.5rem",
-                  padding: "0.5rem",
-                  fontFamily: "'Orbitron', sans-serif",
-                  fontWeight: "700",
-                  boxShadow: "0 0 20px rgba(248, 244, 66, 0.5)",
-                  transition: "all 0.2s ease",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  cursor: "pointer",
-                  position: "relative",
-                  opacity: 0,
-                },
-              }}
-              connectModal={{
-                size: "compact",
-                welcomeScreen: {
-                  title: "Connect to SmartSentinels",
-                  subtitle: "Choose your wallet to get started",
-                },
+                style: collapsedConnectButtonStyle,
               }}
               detailsButton={{
                 render: () => (

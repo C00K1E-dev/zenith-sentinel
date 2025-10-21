@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAccount, useReadContract } from 'wagmi';
 import { Loader } from 'lucide-react';
-import { motion } from 'framer-motion';
 import {
   GENESIS_CONTRACT_ADDRESS,
   GENESIS_CHAIN_ID,
@@ -74,12 +73,7 @@ const SidebarMyNFTs = ({ onSendNFT }: { onSendNFT?: (tokenId: bigint, tokenName:
   ];
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-      className="mb-8"
-    >
+    <div className="mb-8">
       <h2 className="text-2xl font-orbitron font-bold mb-4 text-foreground">
         My NFTs
       </h2>
@@ -108,7 +102,7 @@ const SidebarMyNFTs = ({ onSendNFT }: { onSendNFT?: (tokenId: bigint, tokenName:
           )
         ))}
       </div>
-    </motion.div>
+    </div>
   );
 };
 
