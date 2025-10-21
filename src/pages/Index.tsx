@@ -1,20 +1,17 @@
 import { ArrowRight, Zap, Shield, Cpu, Target } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { lazy, Suspense } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import ContentCard from '@/components/ContentCard';
-import PoweredBy from '@/components/PoweredBy';
+import Roadmap from '@/components/Roadmap';
+import Team from '@/components/Team';
+import FAQ from '@/components/FAQ';
 import heroImage from '@/assets/ssv2hero.svg';
-
-const Roadmap = lazy(() => import('@/components/Roadmap'));
-const Team = lazy(() => import('@/components/Team'));
-const FAQ = lazy(() => import('@/components/FAQ'));
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 relative">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 relative overflow-x-hidden overflow-y-auto">
       {/* Animated Background Elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         {/* Animated Gradient Background */}
@@ -46,22 +43,11 @@ const Index = () => {
       <Navbar />
       
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
-        {/* Hero Background Image */}
-        <div className="absolute inset-0 overflow-hidden">
-          <img 
-            src={heroImage} 
-            alt="SmartSentinels Hero" 
-            className="absolute inset-0 w-full h-full object-cover opacity-100"
-          />
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
-          <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-primary/4 rounded-full blur-3xl" />
-        </div>
-
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16" style={{ backgroundImage: `url(${heroImage})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Hero Content */}
-            <div className="glass-card p-16 text-center animate-fade-in-up">
+            <div className="glass-card p-16 text-center">
               <h1 className="text-2xl md:text-4xl font-orbitron font-bold mb-6 neon-glow">
                 SmartSentinels
               </h1>
@@ -124,25 +110,16 @@ const Index = () => {
         </div>
 
         {/* Roadmap Section */}
-        <Suspense fallback={<div className="py-16 text-center">Loading...</div>}>
-          <Roadmap />
-        </Suspense>
+        <Roadmap />
 
         {/* Team Section */}
-        <Suspense fallback={<div className="py-16 text-center">Loading...</div>}>
-          <Team />
-        </Suspense>
-
-        {/* Powered By Section */}
-        <PoweredBy />
+        <Team />
 
         {/* FAQ Section */}
-        <Suspense fallback={<div className="py-16 text-center">Loading...</div>}>
-          <FAQ />
-        </Suspense>
+        <FAQ />
 
         {/* Closing CTA */}
-        <div className="glass-card p-12 text-center neon-border animate-fade-in-up animation-delay-500">
+        <div className="glass-card p-12 text-center neon-border">
           <h2 className="text-3xl md:text-4xl font-orbitron font-bold mb-6 neon-glow">
             Join the Decentralized Workforce Revolution
           </h2>
