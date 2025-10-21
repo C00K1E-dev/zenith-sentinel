@@ -7,9 +7,10 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
+import { memo } from 'react';
 import faq_data from '@/data/faq';
 
-const FAQ = () => {
+const FAQ = memo(() => {
   const [activeTab, setActiveTab] = useState('home_1');
 
   // Filter FAQs by active tab
@@ -144,6 +145,6 @@ const FAQ = () => {
       </div>
     </section>
   );
-};
+});
 
 export default FAQ;

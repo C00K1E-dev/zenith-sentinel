@@ -3,9 +3,10 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faXTwitter } from '@fortawesome/free-brands-svg-icons';
 import { Linkedin } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { memo } from 'react';
 import founder_data from '@/data/team';
 
-const Team = () => {
+const Team = memo(() => {
   return (
     <section id="team" className="py-20 px-4">
       <div className="max-w-7xl mx-auto">
@@ -44,6 +45,7 @@ const Team = () => {
                       src={member.thumb}
                       alt={`${member.title} - ${member.designasion}`}
                       className="w-full h-full object-cover"
+                      loading="lazy"
                     />
                   </div>
                   {/* Glow effect */}
@@ -124,6 +126,6 @@ const Team = () => {
       </div>
     </section>
   );
-};
+});
 
 export default Team;
