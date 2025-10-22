@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useActiveAccount, useReadContract } from 'thirdweb/react';
 import { getContract, readContract } from 'thirdweb';
 import { Loader } from 'lucide-react';
@@ -26,19 +26,20 @@ const SidebarMyNFTs = ({ onSendNFT }: { onSendNFT?: (tokenId: bigint, tokenName:
   const address = account?.address;
   const isConnected = !!account;
 
-  // Debug logging for mobile wallet detection
-  useEffect(() => {
-    console.log('🔍 Wallet connection status:', { address, isConnected, isMobile });
-    if (address) {
-      console.log('✅ Connected wallet address:', address);
-    } else {
-      console.log('❌ No wallet address detected');
-    }
-  }, [address, isConnected, isMobile]);
+  // Memoize contracts to prevent recreation on every render
+  const genesisContract = useMemo(() => 
+    getContract({ 
+      client: thirdwebClient, 
+      address: GENESIS_CONTRACT_ADDRESS, 
+      chain: GENESIS_CHAIN_ID === 56 ? bsc : bscTestnet 
+    }), []);
 
-  // Define contracts
-  const genesisContract = getContract({ client: thirdwebClient, address: GENESIS_CONTRACT_ADDRESS, chain: GENESIS_CHAIN_ID === 56 ? bsc : bscTestnet });
-  const aiAuditContract = getContract({ client: thirdwebClient, address: AI_AUDIT_CONTRACT_ADDRESS, chain: AI_AUDIT_CHAIN_ID === 97 ? bscTestnet : bsc });
+  const aiAuditContract = useMemo(() => 
+    getContract({ 
+      client: thirdwebClient, 
+      address: AI_AUDIT_CONTRACT_ADDRESS, 
+      chain: AI_AUDIT_CHAIN_ID === 97 ? bscTestnet : bsc 
+    }), []);
 
   // States for balances and token IDs
   const [genesisBalance, setGenesisBalance] = useState<bigint | null>(null);
@@ -47,103 +48,175 @@ const SidebarMyNFTs = ({ onSendNFT }: { onSendNFT?: (tokenId: bigint, tokenName:
   const [aiAuditBalanceLoading, setAiAuditBalanceLoading] = useState(false);
   const [genesisIds, setGenesisIds] = useState<bigint[]>([]);
   const [aiAuditIds, setAiAuditIds] = useState<bigint[]>([]);
+  const [errorMessages, setErrorMessages] = useState<string[]>([]);
 
-  // Fetch balances first, then token IDs for better compatibility
-  useEffect(() => {
-    if (address) {
-      setGenesisBalanceLoading(true);
-      readContract({
-        contract: genesisContract,
-        method: 'balanceOf',
-        params: [address] as any,
-      } as any).then(result => {
-        const balance = result as unknown as bigint;
-        console.log('✅ Genesis balance fetched:', balance.toString());
-        setGenesisBalance(balance);
+  // Helper function to fetch token IDs with multiple fallback methods
+  const fetchTokenIds = async (
+    contract: any,
+    ownerAddress: string,
+    contractName: string
+  ): Promise<bigint[]> => {
+    console.log(`🔍 Fetching ${contractName} tokens for:`, ownerAddress);
 
-        // Now fetch token IDs if balance > 0
-        if (Number(balance) > 0) {
-          const promises = Array.from({ length: Number(balance) }, (_, i) =>
-            readContract({
-              contract: genesisContract,
-              method: 'tokenOfOwnerByIndex',
-              params: [address, BigInt(i)] as any,
-            } as any)
-          );
-          Promise.all(promises).then(results => {
-            const ids = results.map(r => r as unknown as bigint);
-            console.log('✅ Genesis token IDs fetched:', ids);
-            setGenesisIds(ids);
-          }).catch(error => {
-            console.error('❌ Error fetching Genesis token IDs:', error);
-            setGenesisIds([]);
-          });
-        } else {
-          setGenesisIds([]);
-        }
-        setGenesisBalanceLoading(false);
-      }).catch(error => {
-        console.error('❌ Error fetching Genesis balance:', error);
-        setGenesisBalance(BigInt(0));
-        setGenesisIds([]);
-        setGenesisBalanceLoading(false);
+    // Method 1: Try tokensOfOwner (ERC721Enumerable extension)
+    try {
+      const result = await readContract({
+        contract,
+        method: 'function tokensOfOwner(address owner) view returns (uint256[])',
+        params: [ownerAddress],
       });
-    } else {
-      setGenesisBalance(null);
-      setGenesisIds([]);
-      setGenesisBalanceLoading(false);
+      console.log(`✅ ${contractName} tokensOfOwner succeeded:`, result);
+      return result as bigint[];
+    } catch (error) {
+      console.log(`⚠️ ${contractName} tokensOfOwner failed:`, error);
     }
+
+    // Method 2: Try balanceOf + tokenOfOwnerByIndex
+    try {
+      const balance = await readContract({
+        contract,
+        method: 'function balanceOf(address owner) view returns (uint256)',
+        params: [ownerAddress],
+      });
+      console.log(`✅ ${contractName} balance:`, balance.toString());
+
+      const balanceNum = Number(balance);
+      if (balanceNum === 0) return [];
+
+      const tokenIds: bigint[] = [];
+      const fetchPromises = [];
+
+      for (let i = 0; i < balanceNum; i++) {
+        fetchPromises.push(
+          readContract({
+            contract,
+            method: 'function tokenOfOwnerByIndex(address owner, uint256 index) view returns (uint256)',
+            params: [ownerAddress, BigInt(i)],
+          }).catch(err => {
+            console.error(`❌ ${contractName} tokenOfOwnerByIndex[${i}] failed:`, err);
+            return null;
+          })
+        );
+      }
+
+      const results = await Promise.all(fetchPromises);
+      for (const result of results) {
+        if (result !== null) {
+          tokenIds.push(result as bigint);
+        }
+      }
+
+      console.log(`✅ ${contractName} token IDs via balanceOf:`, tokenIds);
+      return tokenIds;
+    } catch (error) {
+      console.error(`❌ ${contractName} balanceOf method failed:`, error);
+    }
+
+    // Method 3: Try walletOfOwner (alternative method name)
+    try {
+      const result = await readContract({
+        contract,
+        method: 'function walletOfOwner(address owner) view returns (uint256[])',
+        params: [ownerAddress],
+      });
+      console.log(`✅ ${contractName} walletOfOwner succeeded:`, result);
+      return result as bigint[];
+    } catch (error) {
+      console.log(`⚠️ ${contractName} walletOfOwner not available:`, error);
+    }
+
+    console.error(`❌ All methods failed for ${contractName}`);
+    return [];
+  };
+
+  // Fetch Genesis NFTs
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchGenesis = async () => {
+      if (!address) {
+        setGenesisIds([]);
+        setGenesisBalance(null);
+        return;
+      }
+
+      setGenesisBalanceLoading(true);
+      setErrorMessages(prev => prev.filter(msg => !msg.includes('Genesis')));
+
+      try {
+        const ids = await fetchTokenIds(genesisContract, address, 'Genesis');
+        
+        if (isMounted) {
+          setGenesisIds(ids);
+          setGenesisBalance(BigInt(ids.length));
+          console.log(`✅ Genesis NFTs loaded: ${ids.length} tokens`);
+        }
+      } catch (error) {
+        console.error('❌ Genesis fetch error:', error);
+        if (isMounted) {
+          setGenesisIds([]);
+          setGenesisBalance(BigInt(0));
+          setErrorMessages(prev => [...prev, `Genesis: ${error instanceof Error ? error.message : 'Unknown error'}`]);
+        }
+      } finally {
+        if (isMounted) {
+          setGenesisBalanceLoading(false);
+        }
+      }
+    };
+
+    fetchGenesis();
+
+    return () => {
+      isMounted = false;
+    };
   }, [address, genesisContract]);
 
+  // Fetch AI Audit NFTs
   useEffect(() => {
-    if (address) {
-      setAiAuditBalanceLoading(true);
-      readContract({
-        contract: aiAuditContract,
-        method: 'balanceOf',
-        params: [address] as any,
-      } as any).then(result => {
-        const balance = result as unknown as bigint;
-        console.log('✅ AI Audit balance fetched:', balance.toString());
-        setAiAuditBalance(balance);
+    let isMounted = true;
 
-        // Now fetch token IDs if balance > 0
-        if (Number(balance) > 0) {
-          const promises = Array.from({ length: Number(balance) }, (_, i) =>
-            readContract({
-              contract: aiAuditContract,
-              method: 'tokenOfOwnerByIndex',
-              params: [address, BigInt(i)] as any,
-            } as any)
-          );
-          Promise.all(promises).then(results => {
-            const ids = results.map(r => r as unknown as bigint);
-            console.log('✅ AI Audit token IDs fetched:', ids);
-            setAiAuditIds(ids);
-          }).catch(error => {
-            console.error('❌ Error fetching AI Audit token IDs:', error);
-            setAiAuditIds([]);
-          });
-        } else {
-          setAiAuditIds([]);
-        }
-        setAiAuditBalanceLoading(false);
-      }).catch(error => {
-        console.error('❌ Error fetching AI Audit balance:', error);
-        setAiAuditBalance(BigInt(0));
+    const fetchAiAudit = async () => {
+      if (!address) {
         setAiAuditIds([]);
-        setAiAuditBalanceLoading(false);
-      });
-    } else {
-      setAiAuditBalance(null);
-      setAiAuditIds([]);
-      setAiAuditBalanceLoading(false);
-    }
+        setAiAuditBalance(null);
+        return;
+      }
+
+      setAiAuditBalanceLoading(true);
+      setErrorMessages(prev => prev.filter(msg => !msg.includes('AI Audit')));
+
+      try {
+        const ids = await fetchTokenIds(aiAuditContract, address, 'AI Audit');
+        
+        if (isMounted) {
+          setAiAuditIds(ids);
+          setAiAuditBalance(BigInt(ids.length));
+          console.log(`✅ AI Audit NFTs loaded: ${ids.length} tokens`);
+        }
+      } catch (error) {
+        console.error('❌ AI Audit fetch error:', error);
+        if (isMounted) {
+          setAiAuditIds([]);
+          setAiAuditBalance(BigInt(0));
+          setErrorMessages(prev => [...prev, `AI Audit: ${error instanceof Error ? error.message : 'Unknown error'}`]);
+        }
+      } finally {
+        if (isMounted) {
+          setAiAuditBalanceLoading(false);
+        }
+      }
+    };
+
+    fetchAiAudit();
+
+    return () => {
+      isMounted = false;
+    };
   }, [address, aiAuditContract]);
 
-
   // Collection information
-  const collections = [
+  const collections = useMemo(() => [
     {
       name: 'SmartSentinels Genesis',
       contractAddress: GENESIS_CONTRACT_ADDRESS,
@@ -158,62 +231,82 @@ const SidebarMyNFTs = ({ onSendNFT }: { onSendNFT?: (tokenId: bigint, tokenName:
       abi: AI_AUDIT_ABI,
       nfts: aiAuditIds
     }
-  ];
+  ], [genesisIds, aiAuditIds]);
+
+  const totalNFTs = genesisIds.length + aiAuditIds.length;
+  const isLoading = genesisBalanceLoading || aiAuditBalanceLoading;
 
   return (
     <div className="mb-8">
       <h2 className="text-2xl font-orbitron font-bold mb-4 text-foreground">
-        My NFTs
+        My NFTs {totalNFTs > 0 && `(${totalNFTs})`}
       </h2>
 
-      {/* Debug Panel for Mobile Testing */}
+      {/* Debug Panel */}
       {isMobile && (
         <div className="mb-4 p-3 bg-gray-100 dark:bg-gray-800 rounded-lg text-xs font-mono">
-          <div className="font-bold mb-2">🔧 Debug Info (Mobile):</div>
+          <div className="font-bold mb-2">🔧 Debug Info:</div>
           <div>Connected: {isConnected ? '✅' : '❌'}</div>
           <div>Address: {address ? `${address.slice(0, 6)}...${address.slice(-4)}` : 'None'}</div>
-          <div>Genesis Loading: {genesisBalanceLoading ? '⏳' : '✅'}</div>
-          <div>Genesis Balance: {genesisBalance?.toString() || '0'}</div>
-          <div>AI Audit Loading: {aiAuditBalanceLoading ? '⏳' : '✅'}</div>
-          <div>AI Audit Balance: {aiAuditBalance?.toString() || '0'}</div>
-          <div>Genesis NFTs: {genesisIds.length}</div>
-          <div>AI Audit NFTs: {aiAuditIds.length}</div>
+          <div>Loading: {isLoading ? '⏳' : '✅'}</div>
+          <div>Genesis: {genesisIds.length} NFTs</div>
+          <div>AI Audit: {aiAuditIds.length} NFTs</div>
+          {errorMessages.length > 0 && (
+            <div className="mt-2 text-red-600">
+              <div className="font-bold">Errors:</div>
+              {errorMessages.map((msg, i) => <div key={i}>{msg}</div>)}
+            </div>
+          )}
         </div>
       )}
       
       <div className="nft-collections-container">
-        {(!isConnected || !address) && (<div className="hub-placeholder"><p>Connect your wallet to view NFTs</p></div>)}
-        {(genesisBalanceLoading || aiAuditBalanceLoading) && (<div className="hub-placeholder"><p>Loading NFTs...</p></div>)}
-        {address && isConnected && !genesisBalanceLoading && !aiAuditBalanceLoading && collections.every(col => col.nfts.length === 0) && (
+        {!isConnected && (
           <div className="hub-placeholder">
-            <p>No NFTs found</p>
+            <p>Connect your wallet to view NFTs</p>
+          </div>
+        )}
+
+        {isConnected && isLoading && (
+          <div className="hub-placeholder">
+            <Loader className="animate-spin mx-auto mb-2" size={32} />
+            <p>Loading NFTs...</p>
+          </div>
+        )}
+
+        {isConnected && !isLoading && totalNFTs === 0 && (
+          <div className="hub-placeholder">
+            <p className="font-bold mb-2">No NFTs found in this wallet</p>
             <p className="text-sm text-muted-foreground mt-2">
-              If you own SmartSentinels NFTs, make sure they are imported in your wallet app.
-              In MetaMask mobile, go to NFTs tab → Import NFTs → Add the contract addresses:
-              {GENESIS_CONTRACT_ADDRESS} (Genesis on BSC Mainnet) or {AI_AUDIT_CONTRACT_ADDRESS} (AI Audit on BSC Testnet).
+              Connected wallet: <code className="text-xs">{address}</code>
             </p>
             <p className="text-sm text-muted-foreground mt-2">
-              <strong>Debug:</strong> Check if your address owns NFTs from these contracts on BSC Scan:
-              <br />
-              <a href={`https://bscscan.com/token/${GENESIS_CONTRACT_ADDRESS}?a=${address}`} target="_blank" rel="noreferrer" className="text-blue-500 underline">
-                Genesis Contract on Mainnet
+              If you own SmartSentinels NFTs, verify them on the blockchain:
+            </p>
+            <div className="mt-2 space-y-1">
+              <a 
+                href={`https://bscscan.com/token/${GENESIS_CONTRACT_ADDRESS}?a=${address}`} 
+                target="_blank" 
+                rel="noreferrer" 
+                className="block text-blue-500 hover:text-blue-700 underline text-sm"
+              >
+                📋 Genesis on BSC Mainnet
               </a>
-              <br />
-              <a href={`https://testnet.bscscan.com/token/${AI_AUDIT_CONTRACT_ADDRESS}?a=${address}`} target="_blank" rel="noreferrer" className="text-blue-500 underline">
-                AI Audit Contract on Testnet
+              <a 
+                href={`https://testnet.bscscan.com/token/${AI_AUDIT_CONTRACT_ADDRESS}?a=${address}`} 
+                target="_blank" 
+                rel="noreferrer" 
+                className="block text-blue-500 hover:text-blue-700 underline text-sm"
+              >
+                📋 AI Audit on BSC Testnet
               </a>
-            </p>
-            <p className="text-sm text-muted-foreground mt-2">
-              <strong>Mobile Debug Info:</strong>
-              <br />
-              Connected Address: {address}
-              <br />
-              Genesis Balance: {genesisBalance?.toString() || 'Loading...'}
-              <br />
-              AI Audit Balance: {aiAuditBalance?.toString() || 'Loading...'}
-              <br />
-              Is Mobile: {isMobile ? 'Yes' : 'No'}
-            </p>
+            </div>
+            {errorMessages.length > 0 && (
+              <div className="mt-4 p-2 bg-red-50 dark:bg-red-900/20 rounded text-xs text-red-600 dark:text-red-400">
+                <div className="font-bold">Contract Read Errors:</div>
+                {errorMessages.map((msg, i) => <div key={i} className="mt-1">{msg}</div>)}
+              </div>
+            )}
           </div>
         )}
 
@@ -231,7 +324,14 @@ const SidebarMyNFTs = ({ onSendNFT }: { onSendNFT?: (tokenId: bigint, tokenName:
 
               <div className="nft-grid">
                 {collection.nfts.map((id) => (
-                  <NFTCard key={`${collection.contractAddress}-${id.toString()}`} tokenId={id} contractAddress={collection.contractAddress} abi={collection.abi} chainId={collection.chainId} onSendNFT={onSendNFT} />
+                  <NFTCard 
+                    key={`${collection.contractAddress}-${id.toString()}`} 
+                    tokenId={id} 
+                    contractAddress={collection.contractAddress} 
+                    abi={collection.abi} 
+                    chainId={collection.chainId} 
+                    onSendNFT={onSendNFT} 
+                  />
                 ))}
               </div>
             </div>
@@ -242,188 +342,147 @@ const SidebarMyNFTs = ({ onSendNFT }: { onSendNFT?: (tokenId: bigint, tokenName:
   );
 };
 
-const NFTCard = ({ tokenId, contractAddress, abi, chainId, onSendNFT }: { tokenId: bigint; contractAddress: string; abi: any; chainId: number; onSendNFT?: (tokenId: bigint, tokenName: string, imgSrc: string, contractAddress: string, chainId: number, abi: any) => void }) => {
+const NFTCard = ({ tokenId, contractAddress, abi, chainId, onSendNFT }: { 
+  tokenId: bigint; 
+  contractAddress: string; 
+  abi: any; 
+  chainId: number; 
+  onSendNFT?: (tokenId: bigint, tokenName: string, imgSrc: string, contractAddress: string, chainId: number, abi: any) => void 
+}) => {
   const [imgSrc, setImgSrc] = useState<string>('');
   const [tokenName, setTokenName] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(true);
   const [isVideo, setIsVideo] = useState<boolean>(false);
-  const [hasError, setHasError] = useState<boolean>(false);
+  const [gatewayAttempt, setGatewayAttempt] = useState<number>(0);
 
-  const nftContract = getContract({ client: thirdwebClient, address: contractAddress, chain: chainId === 56 ? bsc : bscTestnet });
+  const nftContract = useMemo(() => 
+    getContract({ 
+      client: thirdwebClient, 
+      address: contractAddress, 
+      chain: chainId === 56 ? bsc : bscTestnet 
+    }), [contractAddress, chainId]);
 
   // Fetch token URI from contract
   const { data: tokenURI } = useReadContract({
     contract: nftContract,
-    method: 'tokenURI',
-    params: [tokenId.toString()],
-  } as any);
+    method: 'function tokenURI(uint256 tokenId) view returns (string)',
+    params: [tokenId],
+  });
 
   // Fetch collection name from contract
   const { data: collectionName } = useReadContract({
     contract: nftContract,
-    method: 'name',
+    method: 'function name() view returns (string)',
     params: [],
-  } as any);
+  });
+
+  // IPFS gateway rotation
+  const IPFS_GATEWAYS = [
+    'https://sapphire-peculiar-shark-548.mypinata.cloud/ipfs/',
+    'https://gateway.pinata.cloud/ipfs/',
+    'https://ipfs.io/ipfs/',
+    'https://cloudflare-ipfs.com/ipfs/',
+    'https://gateway.ipfs.io/ipfs/',
+  ];
+
+  const convertIPFSUrl = (url: string, gatewayIndex: number = 0): string => {
+    if (!url.startsWith('ipfs://')) return url;
+    const hash = url.replace('ipfs://', '');
+    return `${IPFS_GATEWAYS[gatewayIndex % IPFS_GATEWAYS.length]}${hash}`;
+  };
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchMetadata = async () => {
       if (!tokenURI) {
-        console.log('❌ No token URI available for token:', tokenId.toString());
         setLoading(false);
         return;
       }
 
       try {
-        console.log('🔍 Fetching metadata from URI:', tokenURI);
-        
-        // Convert IPFS URI to HTTP gateway if needed - using custom Pinata gateway
-        let metadataUrl = tokenURI as unknown as string;
-        if (metadataUrl.startsWith('ipfs://')) {
-          // Use your custom Pinata gateway as primary
-          metadataUrl = metadataUrl.replace('ipfs://', 'https://sapphire-peculiar-shark-548.mypinata.cloud/ipfs/');
-        }
+        const metadataUrl = convertIPFSUrl(tokenURI as string, 0);
+        console.log(`🔍 Fetching metadata for token ${tokenId}:`, metadataUrl);
 
-        console.log('🌐 Converted metadata URL:', metadataUrl);
+        const response = await fetch(metadataUrl);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
-        const response = await fetch(metadataUrl, {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json',
-          },
-        });
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
         const metadata = await response.json();
-        console.log('✅ Metadata fetched for token', tokenId.toString(), ':', metadata);
+        console.log(`✅ Metadata loaded for token ${tokenId}:`, metadata);
 
-        // Set token name from metadata
-        if (metadata.name) {
-          setTokenName(metadata.name);
-        } else {
-          setTokenName(`${collectionName || 'NFT'} #${tokenId.toString()}`);
-        }
+        if (!isMounted) return;
 
-        // Priority: animation_url (video) > image
-        let mediaUrl = '';
-        let isVideoFile = false;
-        
-        if (metadata.animation_url) {
-          mediaUrl = metadata.animation_url;
-          isVideoFile = true;
-          console.log('🎬 Found animation_url (video):', mediaUrl);
-        } else if (metadata.image) {
-          mediaUrl = metadata.image;
-          // Check if image URL is actually a video file (some NFTs incorrectly put videos in image field)
-          isVideoFile = mediaUrl.toLowerCase().includes('.mp4') || 
-                       mediaUrl.toLowerCase().includes('.webm') || 
-                       mediaUrl.toLowerCase().includes('.mov') ||
-                       mediaUrl.toLowerCase().includes('.avi');
-          console.log(isVideoFile ? '🎬 Found video in image field:' : '🖼️ Found image:', mediaUrl);
-        }
+        // Set token name
+        const name = metadata.name || `${collectionName || 'NFT'} #${tokenId.toString()}`;
+        setTokenName(name);
 
-        // Convert IPFS URL to HTTP gateway if needed
-        if (mediaUrl.startsWith('ipfs://')) {
-          mediaUrl = mediaUrl.replace('ipfs://', 'https://sapphire-peculiar-shark-548.mypinata.cloud/ipfs/');
-          console.log('🔄 Converted media URL:', mediaUrl);
-        }
+        // Determine media URL and type
+        let mediaUrl = metadata.animation_url || metadata.image || '';
+        const isVideoFile = 
+          mediaUrl.toLowerCase().includes('.mp4') ||
+          mediaUrl.toLowerCase().includes('.webm') ||
+          mediaUrl.toLowerCase().includes('.mov') ||
+          !!metadata.animation_url;
 
         if (mediaUrl) {
-          console.log('✅ Setting media URL for token', tokenId.toString(), ':', mediaUrl);
+          mediaUrl = convertIPFSUrl(mediaUrl, 0);
           setImgSrc(mediaUrl);
           setIsVideo(isVideoFile);
-          setHasError(false);
+          console.log(`✅ Media set for token ${tokenId}:`, { mediaUrl, isVideoFile });
         } else {
-          console.log('⚠️ No media URL found in metadata for token:', tokenId.toString());
           setImgSrc('/assets/img/hub/smartsentinels-hero.png');
-          setIsVideo(false);
-          setHasError(false);
         }
-        
       } catch (error) {
-        console.error('❌ Error fetching metadata for token', tokenId.toString(), ':', error);
-        setTokenName(`${collectionName || 'NFT'} #${tokenId.toString()}`);
-        setImgSrc('/assets/img/hub/smartsentinels-hero.png');
-        setIsVideo(false);
-        setHasError(true);
+        console.error(`❌ Metadata fetch failed for token ${tokenId}:`, error);
+        if (isMounted) {
+          setTokenName(`${collectionName || 'NFT'} #${tokenId.toString()}`);
+          setImgSrc('/assets/img/hub/smartsentinels-hero.png');
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
 
-    if (tokenURI) {
-      fetchMetadata();
-    } else {
-      setTokenName(`${collectionName || 'NFT'} #${tokenId.toString()}`);
-      setLoading(false);
-    }
+    fetchMetadata();
+
+    return () => {
+      isMounted = false;
+    };
   }, [tokenURI, tokenId, collectionName]);
 
-  const name = tokenName || `${collectionName || 'NFT'} #${tokenId.toString()}`;
-  const explorer = getTokenExplorerUrl(tokenId, chainId, contractAddress);
-
-  const handleVideoError = (e: any) => {
-    console.error('❌ Video failed to load:', imgSrc);
-    console.log('🔄 Trying alternative IPFS gateway...');
+  const handleMediaError = () => {
+    console.error(`❌ Media load failed (attempt ${gatewayAttempt + 1}):`, imgSrc);
     
-    // Try alternative IPFS gateways
-    if (imgSrc.includes('sapphire-peculiar-shark-548.mypinata.cloud')) {
-      const altUrl = imgSrc.replace('sapphire-peculiar-shark-548.mypinata.cloud', 'gateway.pinata.cloud');
-      console.log('🔄 Trying gateway.pinata.cloud:', altUrl);
-      setImgSrc(altUrl);
-    } else if (imgSrc.includes('gateway.pinata.cloud')) {
-      const altUrl = imgSrc.replace('gateway.pinata.cloud', 'ipfs.io');
-      console.log('🔄 Trying ipfs.io gateway:', altUrl);
-      setImgSrc(altUrl);
-    } else if (imgSrc.includes('ipfs.io')) {
-      const altUrl = imgSrc.replace('ipfs.io/ipfs/', 'cf-ipfs.com/ipfs/');
-      console.log('🔄 Trying cf-ipfs.com gateway:', altUrl);
-      setImgSrc(altUrl);
-    } else {
-      console.log('❌ All gateways failed, using fallback image');
-      setIsVideo(false);
-      setImgSrc('/assets/img/hub/smartsentinels-hero.png');
-      setHasError(true);
-    }
-  };
-
-  const handleImageError = (e: any) => {
-    console.error('❌ Image failed to load:', imgSrc);
-    if (!hasError) {
-      console.log('🔄 Trying alternative IPFS gateway...');
+    if (gatewayAttempt < IPFS_GATEWAYS.length - 1) {
+      const newAttempt = gatewayAttempt + 1;
+      setGatewayAttempt(newAttempt);
       
-      // Try alternative IPFS gateways
-      if (imgSrc.includes('sapphire-peculiar-shark-548.mypinata.cloud')) {
-        const altUrl = imgSrc.replace('sapphire-peculiar-shark-548.mypinata.cloud', 'gateway.pinata.cloud');
-        console.log('🔄 Trying gateway.pinata.cloud:', altUrl);
-        setImgSrc(altUrl);
-      } else if (imgSrc.includes('gateway.pinata.cloud')) {
-        const altUrl = imgSrc.replace('gateway.pinata.cloud', 'ipfs.io');
-        console.log('🔄 Trying ipfs.io gateway:', altUrl);
-        setImgSrc(altUrl);
-      } else if (imgSrc.includes('ipfs.io')) {
-        const altUrl = imgSrc.replace('ipfs.io/ipfs/', 'cf-ipfs.com/ipfs/');
-        console.log('🔄 Trying cf-ipfs.com gateway:', altUrl);
-        setImgSrc(altUrl);
+      if (imgSrc.startsWith('ipfs://') || imgSrc.includes('/ipfs/')) {
+        const ipfsHash = imgSrc.split('/ipfs/').pop() || '';
+        const newUrl = `${IPFS_GATEWAYS[newAttempt]}${ipfsHash}`;
+        console.log(`🔄 Trying gateway ${newAttempt}:`, newUrl);
+        setImgSrc(newUrl);
       } else {
-        console.log('❌ All gateways failed, using fallback image');
-        (e.target as HTMLImageElement).src = '/assets/img/hub/smartsentinels-hero.png';
-        setHasError(true);
+        setImgSrc('/assets/img/hub/smartsentinels-hero.png');
+        setIsVideo(false);
       }
     } else {
-      (e.target as HTMLImageElement).src = '/assets/img/hub/smartsentinels-hero.png';
+      console.log('❌ All gateways exhausted, using fallback');
+      setImgSrc('/assets/img/hub/smartsentinels-hero.png');
+      setIsVideo(false);
     }
   };
+
+  const name = tokenName || `Token #${tokenId.toString()}`;
+  const explorer = getTokenExplorerUrl(tokenId, chainId, contractAddress);
 
   return (
     <div className="nft-card">
       <div className="nft-media">
         {loading ? (
           <div className="nft-loading">
-            <Loader className="spin" size={24} />
-            <span>Loading metadata...</span>
+            <Loader className="animate-spin" size={24} />
+            <span>Loading...</span>
           </div>
         ) : isVideo ? (
           <video
@@ -434,30 +493,24 @@ const NFTCard = ({ tokenId, contractAddress, abi, chainId, onSendNFT }: { tokenI
             muted
             playsInline
             preload="metadata"
-            onError={handleVideoError}
-            onLoadStart={() => console.log('🎬 Video loading started for token:', tokenId.toString())}
-            onLoadedData={() => console.log('✅ Video loaded successfully for token:', tokenId.toString())}
+            onError={handleMediaError}
           />
         ) : (
           <img
             src={imgSrc || '/assets/img/hub/smartsentinels-hero.png'}
             className="nft-image"
             alt={name}
-            width={350}
-            height={280}
-            onError={handleImageError}
-            onLoad={() => {
-              console.log('✅ Image loaded successfully for token:', tokenId.toString());
-            }}
+            onError={handleMediaError}
           />
         )}
-        
       </div>
       <div className="nft-info">
         <div className="nft-title">{name}</div>
         <div className="nft-sub">Token ID: {tokenId.toString()}</div>
         <div className="nft-actions">
-          <a href={explorer} target="_blank" rel="noreferrer" className="nft-link">View on Explorer</a>
+          <a href={explorer} target="_blank" rel="noreferrer" className="nft-link">
+            View on Explorer
+          </a>
           {onSendNFT && (
             <button
               className="nft-send-btn"
