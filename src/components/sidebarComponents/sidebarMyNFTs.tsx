@@ -48,55 +48,95 @@ const SidebarMyNFTs = ({ onSendNFT }: { onSendNFT?: (tokenId: bigint, tokenName:
   const [genesisIds, setGenesisIds] = useState<bigint[]>([]);
   const [aiAuditIds, setAiAuditIds] = useState<bigint[]>([]);
 
-  // Fetch token IDs directly using tokensOfOwner for better mobile compatibility
+  // Fetch balances first, then token IDs for better compatibility
   useEffect(() => {
     if (address) {
-      console.log('🔍 Fetching Genesis tokens for address:', address);
+      setGenesisBalanceLoading(true);
       readContract({
         contract: genesisContract,
-        method: 'tokensOfOwner',
+        method: 'balanceOf',
         params: [address] as any,
       } as any).then(result => {
-        const ids = result as unknown as bigint[];
-        console.log('✅ Genesis tokens fetched:', ids);
-        setGenesisIds(ids);
-        setGenesisBalance(BigInt(ids.length));
+        const balance = result as unknown as bigint;
+        console.log('✅ Genesis balance fetched:', balance.toString());
+        setGenesisBalance(balance);
+
+        // Now fetch token IDs if balance > 0
+        if (Number(balance) > 0) {
+          const promises = Array.from({ length: Number(balance) }, (_, i) =>
+            readContract({
+              contract: genesisContract,
+              method: 'tokenOfOwnerByIndex',
+              params: [address, BigInt(i)] as any,
+            } as any)
+          );
+          Promise.all(promises).then(results => {
+            const ids = results.map(r => r as unknown as bigint);
+            console.log('✅ Genesis token IDs fetched:', ids);
+            setGenesisIds(ids);
+          }).catch(error => {
+            console.error('❌ Error fetching Genesis token IDs:', error);
+            setGenesisIds([]);
+          });
+        } else {
+          setGenesisIds([]);
+        }
         setGenesisBalanceLoading(false);
       }).catch(error => {
-        console.error('❌ Error fetching Genesis tokens:', error);
-        setGenesisIds([]);
+        console.error('❌ Error fetching Genesis balance:', error);
         setGenesisBalance(BigInt(0));
+        setGenesisIds([]);
         setGenesisBalanceLoading(false);
       });
     } else {
-      setGenesisIds([]);
       setGenesisBalance(null);
+      setGenesisIds([]);
       setGenesisBalanceLoading(false);
     }
   }, [address, genesisContract]);
 
   useEffect(() => {
     if (address) {
-      console.log('🔍 Fetching AI Audit tokens for address:', address);
+      setAiAuditBalanceLoading(true);
       readContract({
         contract: aiAuditContract,
-        method: 'tokensOfOwner',
+        method: 'balanceOf',
         params: [address] as any,
       } as any).then(result => {
-        const ids = result as unknown as bigint[];
-        console.log('✅ AI Audit tokens fetched:', ids);
-        setAiAuditIds(ids);
-        setAiAuditBalance(BigInt(ids.length));
+        const balance = result as unknown as bigint;
+        console.log('✅ AI Audit balance fetched:', balance.toString());
+        setAiAuditBalance(balance);
+
+        // Now fetch token IDs if balance > 0
+        if (Number(balance) > 0) {
+          const promises = Array.from({ length: Number(balance) }, (_, i) =>
+            readContract({
+              contract: aiAuditContract,
+              method: 'tokenOfOwnerByIndex',
+              params: [address, BigInt(i)] as any,
+            } as any)
+          );
+          Promise.all(promises).then(results => {
+            const ids = results.map(r => r as unknown as bigint);
+            console.log('✅ AI Audit token IDs fetched:', ids);
+            setAiAuditIds(ids);
+          }).catch(error => {
+            console.error('❌ Error fetching AI Audit token IDs:', error);
+            setAiAuditIds([]);
+          });
+        } else {
+          setAiAuditIds([]);
+        }
         setAiAuditBalanceLoading(false);
       }).catch(error => {
-        console.error('❌ Error fetching AI Audit tokens:', error);
-        setAiAuditIds([]);
+        console.error('❌ Error fetching AI Audit balance:', error);
         setAiAuditBalance(BigInt(0));
+        setAiAuditIds([]);
         setAiAuditBalanceLoading(false);
       });
     } else {
-      setAiAuditIds([]);
       setAiAuditBalance(null);
+      setAiAuditIds([]);
       setAiAuditBalanceLoading(false);
     }
   }, [address, aiAuditContract]);
