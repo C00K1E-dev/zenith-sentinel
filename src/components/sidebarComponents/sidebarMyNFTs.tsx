@@ -53,8 +53,8 @@ const SidebarMyNFTs = ({ onSendNFT }: { onSendNFT?: (tokenId: bigint, tokenName:
         readContract({
           contract: genesisContract,
           method: 'tokenOfOwnerByIndex',
-          params: [address, BigInt(i)] as any,
-        })
+          params: [address, BigInt(i)],
+        } as any)
       );
       Promise.all(promises).then(results => {
         setGenesisIds(results.map(r => r as unknown as bigint));
@@ -70,8 +70,8 @@ const SidebarMyNFTs = ({ onSendNFT }: { onSendNFT?: (tokenId: bigint, tokenName:
         readContract({
           contract: aiAuditContract,
           method: 'tokenOfOwnerByIndex',
-          params: [address, BigInt(i)] as any,
-        })
+          params: [address, BigInt(i)],
+        } as any)
       );
       Promise.all(promises).then(results => {
         setAiAuditIds(results.map(r => r as unknown as bigint));
