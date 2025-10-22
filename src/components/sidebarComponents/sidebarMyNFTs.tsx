@@ -30,7 +30,7 @@ const SidebarMyNFTs = ({ onSendNFT }: { onSendNFT?: (tokenId: bigint, tokenName:
     functionName: 'tokensOfOwner',
     args: address ? [address] : undefined,
     chainId: GENESIS_CHAIN_ID,
-    query: { enabled: !!address && isConnected, staleTime: 0, refetchOnWindowFocus: true }
+    query: { enabled: !!address, staleTime: 0, refetchOnWindowFocus: true }
   });
 
   // Fetch tokens for AI Audit
@@ -40,7 +40,7 @@ const SidebarMyNFTs = ({ onSendNFT }: { onSendNFT?: (tokenId: bigint, tokenName:
     functionName: 'tokensOfOwner',
     args: address ? [address] : undefined,
     chainId: AI_AUDIT_CHAIN_ID,
-    query: { enabled: !!address && isConnected, staleTime: 0, refetchOnWindowFocus: true }
+    query: { enabled: !!address, staleTime: 0, refetchOnWindowFocus: true }
   });
 
   // Force refetch when needed (can add refreshKey if needed)
@@ -79,7 +79,16 @@ const SidebarMyNFTs = ({ onSendNFT }: { onSendNFT?: (tokenId: bigint, tokenName:
       </h2>
       <div className="nft-collections-container">
         {(!isConnected || !address) && (<div className="hub-placeholder"><p>Connect your wallet to view NFTs</p></div>)}
-        {address && collections.every(col => col.nfts.length === 0) && (<div className="hub-placeholder"><p>No NFTs found</p></div>)}
+        {address && isConnected && collections.every(col => col.nfts.length === 0) && (
+          <div className="hub-placeholder">
+            <p>No NFTs found</p>
+            <p className="text-sm text-muted-foreground mt-2">
+              If you own SmartSentinels NFTs, make sure they are imported in your wallet app. 
+              In MetaMask mobile, go to NFTs tab → Import NFTs → Add the contract addresses: 
+              {GENESIS_CONTRACT_ADDRESS} (Genesis) or {AI_AUDIT_CONTRACT_ADDRESS} (AI Audit).
+            </p>
+          </div>
+        )}
 
         {collections.map((collection) => (
           collection.nfts.length > 0 && (
