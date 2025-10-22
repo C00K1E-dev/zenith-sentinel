@@ -12,7 +12,7 @@ import {
 import { formatContractAddress, getTokenExplorerUrl } from '@/lib/utils';
 
 const SidebarMyNFTs = ({ onSendNFT }: { onSendNFT?: (tokenId: bigint, tokenName: string, imgSrc: string, contractAddress: string, chainId: number, abi: any) => void }) => {
-  const { address, isConnected, status } = useAccount();
+  const { address, isConnected } = useAccount();
   const [isMobile, setIsMobile] = useState(false);
 
   // Detect mobile screen size
