@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useActiveAccount, useReadContract } from 'thirdweb/react';
-import { getContract } from 'thirdweb';
+import { getContract, readContract } from 'thirdweb';
 import { Loader } from 'lucide-react';
 import { bsc, bscTestnet } from 'thirdweb/chains';
 import { createThirdwebClient } from 'thirdweb';
@@ -29,22 +29,57 @@ const SidebarMyNFTs = ({ onSendNFT }: { onSendNFT?: (tokenId: bigint, tokenName:
   const genesisContract = getContract({ client: thirdwebClient, address: GENESIS_CONTRACT_ADDRESS, chain: GENESIS_CHAIN_ID === 56 ? bsc : bscTestnet });
   const aiAuditContract = getContract({ client: thirdwebClient, address: AI_AUDIT_CONTRACT_ADDRESS, chain: AI_AUDIT_CHAIN_ID === 97 ? bscTestnet : bsc });
 
-  // Fetch tokens for Genesis
-  const { data: genesisTokenIds, isLoading: genesisLoading } = useReadContract({
+  // States for token IDs
+  const [genesisIds, setGenesisIds] = useState<bigint[]>([]);
+  const [aiAuditIds, setAiAuditIds] = useState<bigint[]>([]);
+
+  // Fetch balances
+  const { data: genesisBalance, isLoading: genesisLoading } = useReadContract({
     contract: genesisContract,
-    method: 'tokensOfOwner',
-    params: address ? [address] : [],
+    method: 'balanceOf',
+    params: [address] as any,
   });
 
-  // Fetch tokens for AI Audit
-  const { data: aiAuditTokenIds, isLoading: aiAuditLoading } = useReadContract({
+  const { data: aiAuditBalance, isLoading: aiAuditLoading } = useReadContract({
     contract: aiAuditContract,
-    method: 'tokensOfOwner',
-    params: address ? [address] : [],
+    method: 'balanceOf',
+    params: [address] as any,
   });
 
-  const genesisIds: bigint[] = Array.isArray(genesisTokenIds) ? (genesisTokenIds as bigint[]) : [];
-  const aiAuditIds: bigint[] = Array.isArray(aiAuditTokenIds) ? (aiAuditTokenIds as bigint[]) : [];
+  // Fetch token IDs when balance is available
+  useEffect(() => {
+    if (genesisBalance && address && Number(genesisBalance) > 0) {
+      const promises = Array.from({ length: Number(genesisBalance) }, (_, i) =>
+        readContract({
+          contract: genesisContract,
+          method: 'tokenOfOwnerByIndex',
+          params: [address, BigInt(i)] as any,
+        })
+      );
+      Promise.all(promises).then(results => {
+        setGenesisIds(results.map(r => r as unknown as bigint));
+      }).catch(console.error);
+    } else {
+      setGenesisIds([]);
+    }
+  }, [genesisBalance, address]);
+
+  useEffect(() => {
+    if (aiAuditBalance && address && Number(aiAuditBalance) > 0) {
+      const promises = Array.from({ length: Number(aiAuditBalance) }, (_, i) =>
+        readContract({
+          contract: aiAuditContract,
+          method: 'tokenOfOwnerByIndex',
+          params: [address, BigInt(i)] as any,
+        })
+      );
+      Promise.all(promises).then(results => {
+        setAiAuditIds(results.map(r => r as unknown as bigint));
+      }).catch(console.error);
+    } else {
+      setAiAuditIds([]);
+    }
+  }, [aiAuditBalance, address]);
 
   // Collection information
   const collections = [
@@ -75,8 +110,8 @@ const SidebarMyNFTs = ({ onSendNFT }: { onSendNFT?: (tokenId: bigint, tokenName:
         <p><strong>Debug Info:</strong></p>
         <p>Address: {address || 'Not connected'}</p>
         <p>Connected: {isConnected ? 'Yes' : 'No'}</p>
-        <p>Genesis Loading: {genesisLoading ? 'Yes' : 'No'}</p>
-        <p>AI Audit Loading: {aiAuditLoading ? 'Yes' : 'No'}</p>
+        <p>Genesis Balance: {genesisBalance?.toString() || '0'} | Loading: {genesisLoading ? 'Yes' : 'No'}</p>
+        <p>AI Audit Balance: {aiAuditBalance?.toString() || '0'} | Loading: {aiAuditLoading ? 'Yes' : 'No'}</p>
         <p>Genesis Tokens: {genesisIds.length} ({genesisIds.join(', ')})</p>
         <p>AI Audit Tokens: {aiAuditIds.length} ({aiAuditIds.join(', ')})</p>
       </div>
@@ -134,14 +169,14 @@ const NFTCard = ({ tokenId, contractAddress, abi, chainId, onSendNFT }: { tokenI
     contract: nftContract,
     method: 'tokenURI',
     params: [tokenId.toString()],
-  });
+  } as any);
 
   // Fetch collection name from contract
   const { data: collectionName } = useReadContract({
     contract: nftContract,
     method: 'name',
     params: [],
-  });
+  } as any);
 
   useEffect(() => {
     const fetchMetadata = async () => {
