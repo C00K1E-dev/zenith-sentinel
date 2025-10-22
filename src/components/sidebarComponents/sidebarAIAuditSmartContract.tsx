@@ -2058,8 +2058,11 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
         {/* Status Message */}
         {statusMessage && (
           <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-gray-800 rounded-lg border border-gray-600">
-            <p className="text-center text-gray-300 text-sm sm:text-base">
+            <p className="text-center text-gray-300 text-sm sm:text-base flex items-center justify-center gap-2">
               {statusMessage}
+              {statusMessage === 'Approval confirmed! Verifying allowance on blockchain...' && (
+                <Loader2 className="h-4 w-4 animate-spin text-neon" />
+              )}
               {auditCompletedTxHash && (
                 <a 
                   href={`https://testnet.bscscan.com/tx/${auditCompletedTxHash}`} 
