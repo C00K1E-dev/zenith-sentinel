@@ -3,6 +3,7 @@ import { useState, useEffect, Suspense, lazy } from 'react';
 import { cn } from '@/lib/utils';
 import Sidebar from '@/components/Sidebar';
 import { Loading } from '@/components/ui/loading';
+import { MetaTags } from '@/components/MetaTags';
 
 const SidebarNFTsiNFTsHub = lazy(() => import('@/components/sidebarComponents/sidebarNFTsiNFTsHub'));
 const SidebarCreateAgent = lazy(() => import('@/components/sidebarComponents/sidebarCreateAgent'));
@@ -36,7 +37,12 @@ const Hub = () => {
     setCollapsed(newCollapsed);
   };
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 relative overflow-x-hidden overflow-y-auto">
+    <>
+      <MetaTags 
+        description="Access your SmartSentinels dashboard: manage AI agents, monitor devices, view rewards, and participate in the decentralized workforce."
+        path="/hub"
+      />
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 relative overflow-x-hidden overflow-y-auto">
       {/* Optimized Background Elements - Further reduced animations */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         {/* Static Gradient Background */}
@@ -82,6 +88,7 @@ const Hub = () => {
         </div>
       </main>
     </div>
+    </>
   );
 };
 

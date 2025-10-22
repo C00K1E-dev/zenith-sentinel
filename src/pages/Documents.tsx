@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { FileText, Download, ExternalLink, File } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { MetaTags } from '@/components/MetaTags';
 
 const doc_data = [
 	{ name: 'Pitch Deck', file: '/PitchDeck.html', type: 'html' },
@@ -52,7 +53,12 @@ const Documents = () => {
 	};
 
 	return (
-		<div className="min-h-screen gradient-animate relative">
+		<>
+			<MetaTags 
+				description="Download official SmartSentinels documents: whitepaper, lightpaper, pitch deck, and legal resources for the decentralized AI platform."
+				path="/documents"
+			/>
+			<div className="min-h-screen gradient-animate relative">
 			{/* Blockchain & AI Themed Background Elements */}
 			<div className="fixed inset-0 overflow-hidden pointer-events-none">
 				{/* Circuit Board Pattern */}
@@ -229,6 +235,7 @@ const Documents = () => {
 				<Footer />
 			</div>
 		</div>
+		</>
 	);
 };
 
