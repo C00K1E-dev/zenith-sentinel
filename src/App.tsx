@@ -13,8 +13,6 @@ import Index from "./pages/Index";
 import Hub from "./pages/Hub";
 import Documents from "./pages/Documents";
 import NotFound from "./pages/NotFound";
-import { Analytics } from '@vercel/analytics/react';
-import { SpeedInsights } from '@vercel/speed-insights/react';
 
 const queryClient = new QueryClient();
 
@@ -52,8 +50,6 @@ const App = () => (
       </ThirdwebProvider>
     </WagmiProvider>
   </QueryClientProvider>
-  <Analytics />
-  <SpeedInsights />
   </HelmetProvider>
 );
 
