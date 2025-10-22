@@ -15,6 +15,8 @@ const SidebarMyNFTs = ({ onSendNFT }: { onSendNFT?: (tokenId: bigint, tokenName:
   const { address, isConnected } = useAccount();
   const [isMobile, setIsMobile] = useState(false);
 
+  console.log('SidebarMyNFTs - Address:', address, 'isConnected:', isConnected);
+
   // Detect mobile screen size
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -24,7 +26,7 @@ const SidebarMyNFTs = ({ onSendNFT }: { onSendNFT?: (tokenId: bigint, tokenName:
   }, []);
 
   // Fetch tokens for Genesis
-  const { data: genesisTokenIds, refetch: refetchGenesisTokens } = useReadContract({
+  const { data: genesisTokenIds, isLoading: genesisLoading } = useReadContract({
     address: GENESIS_CONTRACT_ADDRESS as `0x${string}`,
     abi: GENESIS_ABI as any,
     functionName: 'tokensOfOwner',
@@ -34,7 +36,7 @@ const SidebarMyNFTs = ({ onSendNFT }: { onSendNFT?: (tokenId: bigint, tokenName:
   });
 
   // Fetch tokens for AI Audit
-  const { data: aiAuditTokenIds, refetch: refetchAiAuditTokens } = useReadContract({
+  const { data: aiAuditTokenIds, isLoading: aiAuditLoading } = useReadContract({
     address: AI_AUDIT_CONTRACT_ADDRESS as `0x${string}`,
     abi: AI_AUDIT_ABI as any,
     functionName: 'tokensOfOwner',
@@ -43,16 +45,11 @@ const SidebarMyNFTs = ({ onSendNFT }: { onSendNFT?: (tokenId: bigint, tokenName:
     query: { enabled: !!address, staleTime: 0, refetchOnWindowFocus: true }
   });
 
-  // Force refetch when needed (can add refreshKey if needed)
-  useEffect(() => {
-    if (address) {
-      refetchGenesisTokens();
-      refetchAiAuditTokens();
-    }
-  }, [address, refetchGenesisTokens, refetchAiAuditTokens]);
-
   const genesisIds: bigint[] = Array.isArray(genesisTokenIds) ? (genesisTokenIds as bigint[]) : [];
   const aiAuditIds: bigint[] = Array.isArray(aiAuditTokenIds) ? (aiAuditTokenIds as bigint[]) : [];
+
+  console.log('Genesis tokens:', genesisTokenIds, 'IDs:', genesisIds, 'Loading:', genesisLoading);
+  console.log('AI Audit tokens:', aiAuditTokenIds, 'IDs:', aiAuditIds, 'Loading:', aiAuditLoading);
 
   // Collection information
   const collections = [
@@ -79,7 +76,8 @@ const SidebarMyNFTs = ({ onSendNFT }: { onSendNFT?: (tokenId: bigint, tokenName:
       </h2>
       <div className="nft-collections-container">
         {(!isConnected || !address) && (<div className="hub-placeholder"><p>Connect your wallet to view NFTs</p></div>)}
-        {address && isConnected && collections.every(col => col.nfts.length === 0) && (
+        {(genesisLoading || aiAuditLoading) && (<div className="hub-placeholder"><p>Loading NFTs...</p></div>)}
+        {address && isConnected && !genesisLoading && !aiAuditLoading && collections.every(col => col.nfts.length === 0) && (
           <div className="hub-placeholder">
             <p>No NFTs found</p>
             <p className="text-sm text-muted-foreground mt-2">
