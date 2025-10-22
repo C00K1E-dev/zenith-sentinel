@@ -30,7 +30,7 @@ const SidebarMyNFTs = ({ onSendNFT }: { onSendNFT?: (tokenId: bigint, tokenName:
     functionName: 'tokensOfOwner',
     args: address ? [address] : undefined,
     chainId: GENESIS_CHAIN_ID,
-    query: { enabled: status === 'connected', staleTime: 0, refetchOnWindowFocus: true }
+    query: { enabled: !!address && isConnected, staleTime: 0, refetchOnWindowFocus: true }
   });
 
   // Fetch tokens for AI Audit
@@ -40,7 +40,7 @@ const SidebarMyNFTs = ({ onSendNFT }: { onSendNFT?: (tokenId: bigint, tokenName:
     functionName: 'tokensOfOwner',
     args: address ? [address] : undefined,
     chainId: AI_AUDIT_CHAIN_ID,
-    query: { enabled: status === 'connected', staleTime: 0, refetchOnWindowFocus: true }
+    query: { enabled: !!address && isConnected, staleTime: 0, refetchOnWindowFocus: true }
   });
 
   // Force refetch when needed (can add refreshKey if needed)
@@ -78,8 +78,7 @@ const SidebarMyNFTs = ({ onSendNFT }: { onSendNFT?: (tokenId: bigint, tokenName:
         My NFTs
       </h2>
       <div className="nft-collections-container">
-        {status !== 'connected' && (<div className="hub-placeholder"><p>Connect your wallet to view NFTs</p></div>)}
-        {status === 'connected' && !address && (<div className="hub-placeholder"><p>Wallet connected, loading address...</p></div>)}
+        {(!isConnected || !address) && (<div className="hub-placeholder"><p>Connect your wallet to view NFTs</p></div>)}
         {address && collections.every(col => col.nfts.length === 0) && (<div className="hub-placeholder"><p>No NFTs found</p></div>)}
 
         {collections.map((collection) => (
