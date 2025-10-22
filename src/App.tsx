@@ -8,7 +8,7 @@ import { WagmiProvider, createConfig, http } from 'wagmi';
 import { MetaTags } from './components/MetaTags';
 import { HelmetProvider } from 'react-helmet-async';
 import { bsc, bscTestnet } from 'wagmi/chains';
-import { injected, walletConnect } from 'wagmi/connectors';
+import { injected } from 'wagmi/connectors';
 import Index from "./pages/Index";
 import Hub from "./pages/Hub";
 import Documents from "./pages/Documents";
@@ -20,7 +20,6 @@ const config = createConfig({
   chains: [bsc, bscTestnet],
   connectors: [
     injected(),
-    walletConnect({ projectId: 'your-project-id' }), // Add your WalletConnect project ID
   ],
   transports: {
     [bsc.id]: http(),
