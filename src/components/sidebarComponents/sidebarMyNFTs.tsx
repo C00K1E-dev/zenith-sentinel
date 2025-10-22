@@ -242,23 +242,7 @@ const SidebarMyNFTs = ({ onSendNFT }: { onSendNFT?: (tokenId: bigint, tokenName:
         My NFTs {totalNFTs > 0 && `(${totalNFTs})`}
       </h2>
 
-      {/* Debug Panel */}
-      {isMobile && (
-        <div className="mb-4 p-3 bg-gray-100 dark:bg-gray-800 rounded-lg text-xs font-mono">
-          <div className="font-bold mb-2">🔧 Debug Info:</div>
-          <div>Connected: {isConnected ? '✅' : '❌'}</div>
-          <div>Address: {address ? `${address.slice(0, 6)}...${address.slice(-4)}` : 'None'}</div>
-          <div>Loading: {isLoading ? '⏳' : '✅'}</div>
-          <div>Genesis: {genesisIds.length} NFTs</div>
-          <div>AI Audit: {aiAuditIds.length} NFTs</div>
-          {errorMessages.length > 0 && (
-            <div className="mt-2 text-red-600">
-              <div className="font-bold">Errors:</div>
-              {errorMessages.map((msg, i) => <div key={i}>{msg}</div>)}
-            </div>
-          )}
-        </div>
-      )}
+      
       
       <div className="nft-collections-container">
         {!isConnected && (
