@@ -4,6 +4,7 @@ import { getContract, readContract } from 'thirdweb';
 import { Loader } from 'lucide-react';
 import { bsc, bscTestnet } from 'thirdweb/chains';
 import { createThirdwebClient } from 'thirdweb';
+import { useIsMobile } from '@/hooks/use-mobile';
 import {
   GENESIS_CONTRACT_ADDRESS,
   GENESIS_CHAIN_ID,
@@ -20,7 +21,7 @@ const thirdwebClient = createThirdwebClient({
 
 const SidebarMyNFTs = ({ onSendNFT }: { onSendNFT?: (tokenId: bigint, tokenName: string, imgSrc: string, contractAddress: string, chainId: number, abi: any) => void }) => {
   const account = useActiveAccount();
-  const [isMobile, setIsMobile] = useState(false);
+  const isMobile = useIsMobile();
 
   const address = account?.address;
   const isConnected = !!account;
@@ -105,17 +106,6 @@ const SidebarMyNFTs = ({ onSendNFT }: { onSendNFT?: (tokenId: bigint, tokenName:
         My NFTs
       </h2>
       
-      {/* Debug Info - Remove after fixing */}
-      <div className="mb-4 p-4 bg-gray-100 dark:bg-gray-800 rounded text-sm font-mono">
-        <p><strong>Debug Info:</strong></p>
-        <p>Address: {address || 'Not connected'}</p>
-        <p>Connected: {isConnected ? 'Yes' : 'No'}</p>
-        <p>Genesis Balance: {genesisBalance?.toString() || '0'} | Loading: {genesisLoading ? 'Yes' : 'No'}</p>
-        <p>AI Audit Balance: {aiAuditBalance?.toString() || '0'} | Loading: {aiAuditLoading ? 'Yes' : 'No'}</p>
-        <p>Genesis Tokens: {genesisIds.length} ({genesisIds.join(', ')})</p>
-        <p>AI Audit Tokens: {aiAuditIds.length} ({aiAuditIds.join(', ')})</p>
-      </div>
-      
       <div className="nft-collections-container">
         {(!isConnected || !address) && (<div className="hub-placeholder"><p>Connect your wallet to view NFTs</p></div>)}
         {(genesisLoading || aiAuditLoading) && (<div className="hub-placeholder"><p>Loading NFTs...</p></div>)}
@@ -125,7 +115,18 @@ const SidebarMyNFTs = ({ onSendNFT }: { onSendNFT?: (tokenId: bigint, tokenName:
             <p className="text-sm text-muted-foreground mt-2">
               If you own SmartSentinels NFTs, make sure they are imported in your wallet app. 
               In MetaMask mobile, go to NFTs tab → Import NFTs → Add the contract addresses: 
-              {GENESIS_CONTRACT_ADDRESS} (Genesis) or {AI_AUDIT_CONTRACT_ADDRESS} (AI Audit).
+              {GENESIS_CONTRACT_ADDRESS} (Genesis on BSC Mainnet) or {AI_AUDIT_CONTRACT_ADDRESS} (AI Audit on BSC Testnet).
+            </p>
+            <p className="text-sm text-muted-foreground mt-2">
+              <strong>Debug:</strong> Check if your address owns NFTs from these contracts on BSC Scan:
+              <br />
+              <a href={`https://bscscan.com/token/${GENESIS_CONTRACT_ADDRESS}?a=${address}`} target="_blank" rel="noreferrer" className="text-blue-500 underline">
+                Genesis Contract on Mainnet
+              </a>
+              <br />
+              <a href={`https://testnet.bscscan.com/token/${AI_AUDIT_CONTRACT_ADDRESS}?a=${address}`} target="_blank" rel="noreferrer" className="text-blue-500 underline">
+                AI Audit Contract on Testnet
+              </a>
             </p>
           </div>
         )}

@@ -8,7 +8,7 @@ import { WagmiProvider, createConfig, http } from 'wagmi';
 import { MetaTags } from './components/MetaTags';
 import { HelmetProvider } from 'react-helmet-async';
 import { bsc, bscTestnet } from 'wagmi/chains';
-import { injected } from 'wagmi/connectors';
+import { injected, metaMask } from 'wagmi/connectors';
 import Index from "./pages/Index";
 import Hub from "./pages/Hub";
 import Documents from "./pages/Documents";
@@ -20,6 +20,7 @@ const config = createConfig({
   chains: [bsc, bscTestnet],
   connectors: [
     injected(),
+    metaMask(),
   ],
   transports: {
     [bsc.id]: http(),
