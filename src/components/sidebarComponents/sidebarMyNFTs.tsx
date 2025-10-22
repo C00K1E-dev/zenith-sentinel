@@ -12,7 +12,7 @@ import {
 import { formatContractAddress, getTokenExplorerUrl } from '@/lib/utils';
 
 const SidebarMyNFTs = ({ onSendNFT }: { onSendNFT?: (tokenId: bigint, tokenName: string, imgSrc: string, contractAddress: string, chainId: number, abi: any) => void }) => {
-  const { address } = useAccount();
+  const { address, isConnected } = useAccount();
   const [isMobile, setIsMobile] = useState(false);
 
   // Detect mobile screen size
@@ -30,7 +30,7 @@ const SidebarMyNFTs = ({ onSendNFT }: { onSendNFT?: (tokenId: bigint, tokenName:
     functionName: 'tokensOfOwner',
     args: address ? [address] : undefined,
     chainId: GENESIS_CHAIN_ID,
-    query: { enabled: !!address, staleTime: 0, refetchOnWindowFocus: true }
+    query: { enabled: isConnected, staleTime: 0, refetchOnWindowFocus: true }
   });
 
   // Fetch tokens for AI Audit
@@ -40,7 +40,7 @@ const SidebarMyNFTs = ({ onSendNFT }: { onSendNFT?: (tokenId: bigint, tokenName:
     functionName: 'tokensOfOwner',
     args: address ? [address] : undefined,
     chainId: AI_AUDIT_CHAIN_ID,
-    query: { enabled: !!address, staleTime: 0, refetchOnWindowFocus: true }
+    query: { enabled: isConnected, staleTime: 0, refetchOnWindowFocus: true }
   });
 
   // Force refetch when needed (can add refreshKey if needed)
@@ -78,7 +78,7 @@ const SidebarMyNFTs = ({ onSendNFT }: { onSendNFT?: (tokenId: bigint, tokenName:
         My NFTs
       </h2>
       <div className="nft-collections-container">
-        {!address && (<div className="hub-placeholder"><p>Connect your wallet to view NFTs</p></div>)}
+        {!isConnected && (<div className="hub-placeholder"><p>Connect your wallet to view NFTs</p></div>)}
         {address && collections.every(col => col.nfts.length === 0) && (<div className="hub-placeholder"><p>No NFTs found</p></div>)}
 
         {collections.map((collection) => (
