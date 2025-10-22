@@ -13,4 +13,7 @@ Allow: /
 User-agent: *
 Allow: /
 
+# AI Content Signals (experimental, may not be supported by all crawlers)
+# Content-signal: search=yes,ai-train=no
+
 Sitemap: https://smartsentinels.net/sitemap.xml
