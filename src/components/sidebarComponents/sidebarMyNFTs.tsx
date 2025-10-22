@@ -12,10 +12,8 @@ import {
 import { formatContractAddress, getTokenExplorerUrl } from '@/lib/utils';
 
 const SidebarMyNFTs = ({ onSendNFT }: { onSendNFT?: (tokenId: bigint, tokenName: string, imgSrc: string, contractAddress: string, chainId: number, abi: any) => void }) => {
-  const { address, isConnected } = useAccount();
+  const { address, isConnected, chain } = useAccount();
   const [isMobile, setIsMobile] = useState(false);
-
-  console.log('SidebarMyNFTs - Address:', address, 'isConnected:', isConnected);
 
   // Detect mobile screen size
   useEffect(() => {
@@ -48,9 +46,6 @@ const SidebarMyNFTs = ({ onSendNFT }: { onSendNFT?: (tokenId: bigint, tokenName:
   const genesisIds: bigint[] = Array.isArray(genesisTokenIds) ? (genesisTokenIds as bigint[]) : [];
   const aiAuditIds: bigint[] = Array.isArray(aiAuditTokenIds) ? (aiAuditTokenIds as bigint[]) : [];
 
-  console.log('Genesis tokens:', genesisTokenIds, 'IDs:', genesisIds, 'Loading:', genesisLoading);
-  console.log('AI Audit tokens:', aiAuditTokenIds, 'IDs:', aiAuditIds, 'Loading:', aiAuditLoading);
-
   // Collection information
   const collections = [
     {
@@ -74,6 +69,19 @@ const SidebarMyNFTs = ({ onSendNFT }: { onSendNFT?: (tokenId: bigint, tokenName:
       <h2 className="text-2xl font-orbitron font-bold mb-4 text-foreground">
         My NFTs
       </h2>
+      
+      {/* Debug Info - Remove after fixing */}
+      <div className="mb-4 p-4 bg-gray-100 dark:bg-gray-800 rounded text-sm font-mono">
+        <p><strong>Debug Info:</strong></p>
+        <p>Address: {address || 'Not connected'}</p>
+        <p>Connected: {isConnected ? 'Yes' : 'No'}</p>
+        <p>Current Chain: {chain?.name} (ID: {chain?.id})</p>
+        <p>Genesis Loading: {genesisLoading ? 'Yes' : 'No'}</p>
+        <p>AI Audit Loading: {aiAuditLoading ? 'Yes' : 'No'}</p>
+        <p>Genesis Tokens: {genesisIds.length} ({genesisIds.join(', ')})</p>
+        <p>AI Audit Tokens: {aiAuditIds.length} ({aiAuditIds.join(', ')})</p>
+      </div>
+      
       <div className="nft-collections-container">
         {(!isConnected || !address) && (<div className="hub-placeholder"><p>Connect your wallet to view NFTs</p></div>)}
         {(genesisLoading || aiAuditLoading) && (<div className="hub-placeholder"><p>Loading NFTs...</p></div>)}
