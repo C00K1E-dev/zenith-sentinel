@@ -42,19 +42,25 @@ const Footer = () => {
               </p>
               <div className="flex items-center space-x-6">
                 <a
-                  href="#"
+                  href="/documents/Terms and Conditions.pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-sm text-muted-foreground hover:text-primary transition-colors"
                 >
                   Terms and Conditions
                 </a>
                 <a
-                  href="#"
+                  href="/documents/Privacy Policy.pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-sm text-muted-foreground hover:text-primary transition-colors"
                 >
                   Privacy Policy
                 </a>
                 <a
-                  href="#"
+                  href="/documents/Disclaimer.pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-sm text-muted-foreground hover:text-primary transition-colors"
                 >
                   Disclaimer

@@ -5,28 +5,13 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
 const doc_data = [
-	{ name: 'Pitch Deck', file: '/PitchDeck.html', type: 'html' },
-	{
-		name: 'Whitepaper',
-		file: '/assets/documents/smart-sentinels-whitepaper.pdf',
-		type: 'pdf',
-	},
-	{
-		name: 'Lightpaper',
-		file: '/assets/documents/lightpaper.pdf',
-		type: 'pdf',
-	},
-	{
-		name: 'Full Project Presentation',
-		file: '/assets/documents/presentation.pdf',
-		type: 'pdf',
-	},
-	{ name: 'Tech Info', file: '/assets/documents/techinfo.pdf', type: 'pdf' },
-	{
-		name: 'Token Sale Terms',
-		file: '/assets/documents/token-sale-terms.pdf',
-		type: 'pdf',
-	},
+	{ name: 'Whitepaper', file: '/documents/SmartSentinelsWhitepaper v0.2.pdf', type: 'pdf' },
+	{ name: 'Lightpaper', file: '/documents/LightpaperV0.2.pdf', type: 'pdf' },
+	{ name: 'OnePager', file: '/documents/SmartSentinelsOnePager.pdf', type: 'pdf' },
+	{ name: 'Terms and Conditions', file: '/documents/Terms and Conditions.pdf', type: 'pdf' },
+	{ name: 'Privacy Policy', file: '/documents/Privacy Policy.pdf', type: 'pdf' },
+	{ name: 'Disclaimer', file: '/documents/Disclaimer.pdf', type: 'pdf' },
+	{ name: 'Token Sale Terms', file: '/documents/TokenSaleTerms.pdf', type: 'pdf' },
 ];
 
 const Documents = () => {
