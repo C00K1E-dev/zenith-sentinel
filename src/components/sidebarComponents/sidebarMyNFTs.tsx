@@ -79,6 +79,7 @@ const SidebarMyNFTs = ({ onSendNFT }: { onSendNFT?: (tokenId: bigint, tokenName:
       </h2>
       <div className="nft-collections-container">
         {!isConnected && (<div className="hub-placeholder"><p>Connect your wallet to view NFTs</p></div>)}
+        {isConnected && !address && (<div className="hub-placeholder"><p>Wallet connected, loading address...</p></div>)}
         {address && collections.every(col => col.nfts.length === 0) && (<div className="hub-placeholder"><p>No NFTs found</p></div>)}
 
         {collections.map((collection) => (
