@@ -1511,6 +1511,25 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
         hash: txHash,
     });
 
+    // Wait for allowance to update after approval
+    const waitForAllowanceUpdate = async (requiredAmount: bigint, maxAttempts = 10): Promise<boolean> => {
+        for (let i = 0; i < maxAttempts; i++) {
+            await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second between checks
+            const { data: currentAllowance } = await refetchAllowance();
+            
+            console.log(`🔄 Allowance check attempt ${i + 1}/${maxAttempts}:`, {
+                current: currentAllowance?.toString(),
+                required: requiredAmount.toString(),
+                sufficient: currentAllowance && (currentAllowance as bigint) >= requiredAmount
+            });
+            
+            if (currentAllowance && (currentAllowance as bigint) >= requiredAmount) {
+                return true;
+            }
+        }
+        return false;
+    };
+
     // Handle transaction completion and error states
     useEffect(() => {
         if (currentTransactionType === 'approve') {
@@ -1524,11 +1543,28 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
                     setApprovalTxHash(undefined);
                 }, 100);
             } else if (isConfirmed && txHash) {
-                // Store approval transaction hash
-                setApprovalTxHash(txHash);
-                setStatusMessage('Approval successful! You can now proceed with payment.');
-                setIsProcessing(false);
-                setCurrentTransactionType(null);
+                // Store approval transaction hash and wait for allowance to update
+                const verifyAllowance = async () => {
+                    setStatusMessage('Approval confirmed! Verifying allowance on blockchain...');
+                    
+                    const decimals = Number(tokenDecimals);
+                    const requiredAmount = parseUnits(AUDIT_COST, decimals);
+                    
+                    const allowanceUpdated = await waitForAllowanceUpdate(requiredAmount);
+                    
+                    if (allowanceUpdated) {
+                        setApprovalTxHash(txHash);
+                        setStatusMessage('✅ Approval verified! You can now proceed with payment.');
+                        setIsProcessing(false);
+                        setCurrentTransactionType(null);
+                    } else {
+                        setStatusMessage('⚠️ Approval transaction confirmed but allowance not updated yet. Please wait a moment and try again.');
+                        setIsProcessing(false);
+                        setCurrentTransactionType(null);
+                    }
+                };
+                
+                verifyAllowance();
             }
         } else if (currentTransactionType === 'payAndRunAudit') {
             if (transferError) {
