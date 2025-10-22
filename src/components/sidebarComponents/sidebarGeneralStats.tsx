@@ -86,6 +86,7 @@ const SidebarGeneralStats = () => {
         <h3 className="text-xl font-orbitron font-bold mb-4 text-foreground">
           Global PoUW Statistics
         </h3>
+        <p className="text-sm text-muted-foreground mb-4">These statistics are on Testnet</p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <StatCard
             title="Total Audits Completed"

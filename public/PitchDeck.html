@@ -1,0 +1,1503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartSentinels Seed Pitch Deck</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Custom brand colors based on user request */
+        :root {
+            --highlight: #f8f442; /* Bright Yellow */
+            --bg-dark: #1f1f1f; /* Dark Black */
+            --text-light: #e6e6e6; /* Light Grey */
+            --card-bg: #2d2d2d; /* Slightly lighter than background for depth */
+            --dark-text: #000000; /* For text on the bright yellow highlight */
+            --divider: rgba(230, 230, 230, 0.1); /* E6E6E6 with 10% opacity for divider */
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            line-height: 1.6;
+            overflow-y: scroll;
+        }
+        
+        /* Utility classes for colors */
+        .text-highlight { color: var(--highlight); }
+        .bg-highlight { background-color: var(--highlight); }
+        .bg-card { background-color: var(--card-bg); }
+        .text-dark { color: var(--dark-text); }
+        .text-text-light { color: var(--text-light); }
+        .border-highlight { border-color: var(--highlight); }
+        .slide {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem 1rem;
+            border-bottom: 1px solid var(--divider);
+            overflow-y: auto;
+        }
+        /* Enhanced Mobile Responsiveness */
+        @media (max-width: 767px) {
+            .slide {
+                padding: 1rem 0.5rem;
+                min-height: 100vh;
+                height: auto;
+            }
+
+            .slide-container {
+                width: 100%;
+                max-width: none;
+                padding: 0 0.5rem;
+            }
+
+            /* Text scaling for mobile */
+            .text-xs { font-size: 0.625rem; line-height: 1.4; }
+            .text-sm { font-size: 0.75rem; line-height: 1.4; }
+            .text-base { font-size: 0.875rem; line-height: 1.5; }
+            .text-lg { font-size: 1rem; line-height: 1.5; }
+            .text-xl { font-size: 1.125rem; line-height: 1.4; }
+            .text-2xl { font-size: 1.25rem; line-height: 1.3; }
+            .text-3xl { font-size: 1.5rem; line-height: 1.3; }
+            .text-4xl { font-size: 1.75rem; line-height: 1.2; }
+            .text-5xl { font-size: 2rem; line-height: 1.2; }
+
+            /* Spacing adjustments */
+            .space-y-2 > * + * { margin-top: 0.5rem; }
+            .space-y-3 > * + * { margin-top: 0.75rem; }
+            .space-y-4 > * + * { margin-top: 1rem; }
+            .space-y-6 > * + * { margin-top: 1.5rem; }
+            .space-y-8 > * + * { margin-top: 2rem; }
+
+            /* Grid adjustments */
+            .grid-cols-2 { grid-template-columns: 1fr; }
+            .md\:grid-cols-2 { grid-template-columns: 1fr; }
+            .md\:grid-cols-3 { grid-template-columns: 1fr; }
+            .lg\:grid-cols-3 { grid-template-columns: 1fr; }
+
+            /* Padding adjustments */
+            .p-2 { padding: 0.5rem; }
+            .p-3 { padding: 0.75rem; }
+            .p-4 { padding: 1rem; }
+            .p-6 { padding: 1.5rem; }
+            .p-8 { padding: 2rem; }
+
+            /* Margin adjustments */
+            .mb-2 { margin-bottom: 0.5rem; }
+            .mb-3 { margin-bottom: 0.75rem; }
+            .mb-4 { margin-bottom: 1rem; }
+            .mb-6 { margin-bottom: 1.5rem; }
+            .mb-8 { margin-bottom: 2rem; }
+            .mb-12 { margin-bottom: 3rem; }
+
+            /* Gap adjustments */
+            .gap-2 { gap: 0.5rem; }
+            .gap-3 { gap: 0.75rem; }
+            .gap-4 { gap: 1rem; }
+            .gap-6 { gap: 1.5rem; }
+            .md\:gap-6 { gap: 1.5rem; }
+            .md\:gap-8 { gap: 2rem; }
+
+            /* Flex adjustments */
+            .flex-col { flex-direction: column; }
+            .lg\:flex-row { flex-direction: column; }
+
+            /* Icon size adjustments */
+            .text-lg { font-size: 1rem; }
+            .text-xl { font-size: 1.125rem; }
+            .text-2xl { font-size: 1.25rem; }
+            .text-3xl { font-size: 1.5rem; }
+            .text-4xl { font-size: 1.75rem; }
+
+            /* Button adjustments */
+            button, .btn, a[role="button"] {
+                min-height: 44px;
+                padding: 0.75rem 1rem;
+                font-size: 0.875rem;
+            }
+        }
+
+        /* Extra small screens (320px and below) */
+        @media (max-width: 374px) {
+            .slide {
+                padding: 0.75rem 0.25rem;
+            }
+
+            .slide-container {
+                padding: 0 0.25rem;
+            }
+
+            .text-xs { font-size: 0.5625rem; }
+            .text-sm { font-size: 0.6875rem; }
+            .text-base { font-size: 0.8125rem; }
+            .text-lg { font-size: 0.9375rem; }
+            .text-xl { font-size: 1rem; }
+            .text-2xl { font-size: 1.125rem; }
+            .text-3xl { font-size: 1.25rem; }
+            .text-4xl { font-size: 1.375rem; }
+            .text-5xl { font-size: 1.5rem; }
+
+            .p-2 { padding: 0.375rem; }
+            .p-3 { padding: 0.5rem; }
+            .p-4 { padding: 0.75rem; }
+            .p-6 { padding: 1rem; }
+            .p-8 { padding: 1.25rem; }
+        }
+        
+        /* Fix text overlay on logo for 375px to 424px */
+        @media (min-width: 375px) and (max-width: 424px) {
+            #intro p.text-highlight {
+                margin-top: -2rem !important;
+            }
+        }
+        .slide-container {
+            max-width: 1200px;
+            width: 95%;
+            margin: 0 auto;
+        }
+        @media (max-width: 374px) {
+            .slide-container {
+                width: 98%;
+            }
+        }
+        @media (min-width: 1440px) {
+            .slide-container {
+                max-width: 1300px;
+            }
+        }
+        @media (min-width: 2160px) {
+            .slide-container {
+                max-width: 1600px;
+            }
+        }
+        /* Mobile-first responsive text sizes */
+        h1, h2, h3, h4, h5, h6 {
+            line-height: 1.2;
+        }
+        
+        /* Extra small screens */
+        @media (max-width: 374px) {
+            h1 { font-size: 1.5rem; }
+            h2 { font-size: 1.25rem; }
+            h3 { font-size: 1.125rem; }
+            h4 { font-size: 1rem; }
+            p { font-size: 0.8rem; line-height: 1.4; }
+            .text-sm { font-size: 0.7rem; }
+            .text-xs { font-size: 0.65rem; }
+        }
+        
+        /* Small screens - Moto G84 and similar */
+        @media (min-width: 375px) and (max-width: 767px) {
+            h1 { font-size: 1.75rem; }
+            h2 { font-size: 1.5rem; }
+            h3 { font-size: 1.25rem; }
+            h4 { font-size: 1.125rem; }
+            p { font-size: 0.875rem; line-height: 1.5; }
+            .text-base { font-size: 0.875rem; }
+            .text-lg { font-size: 1rem; }
+            .text-xl { font-size: 1.125rem; }
+            .text-2xl { font-size: 1.25rem; }
+            .text-3xl { font-size: 1.5rem; }
+            .text-4xl { font-size: 1.75rem; }
+            .text-5xl { font-size: 2rem; }
+        }
+
+        /* Logo Styling for First Slide: Uses blend mode to hide the JPEG's light background on dark canvas */
+        .logo-image {
+            max-width: 100%;
+            height: 16vh; /* Responsive height based on viewport */
+            object-fit: contain;
+            /* Blend mode: screen ensures dark/gray colors disappear on the black background. */
+            mix-blend-mode: screen; 
+            transition: all 0.3s;
+            image-rendering: -webkit-crisp-edges;
+            image-rendering: crisp-edges;
+        }
+        @media (min-width: 375px) {
+            .logo-image {
+                height: 18vh;
+            }
+        }
+        @media (min-width: 425px) {
+            .logo-image {
+                height: 20vh;
+            }
+        }
+        @media (min-width: 768px) {
+            .logo-image {
+                height: 22vh;
+            }
+        }
+        @media (min-width: 1024px) {
+            .logo-image {
+                max-width: 600px; /* Limit max size on large screens */
+                height: 24vh;
+            }
+        }
+        @media (min-width: 1440px) {
+            .logo-image {
+                max-width: 700px;
+                height: 26vh;
+            }
+        }
+        @media (min-width: 2160px) {
+            .logo-image {
+                max-width: 900px;
+                height: 28vh;
+            }
+        }
+        
+        /* Mobile logo improvements */
+        @media (max-width: 374px) {
+            .logo-image {
+                height: 14vh;
+                max-width: 90vw;
+            }
+        }
+        
+        /* Mobile navigation improvements */
+        @media (max-width: 767px) {
+            .slide-navigation {
+                padding: 0.5rem;
+            }
+            .slide-navigation button {
+                font-size: 0.8rem;
+                padding: 0.5rem 0.75rem;
+            }
+        }
+        
+        /* Ensure proper text contrast on mobile */
+        @media (max-width: 767px) {
+            .text-gray-400 {
+                color: #cccccc !important;
+            }
+            .text-text-light {
+                color: #f0f0f0 !important;
+            }
+        }
+
+        /* Custom Bar Chart CSS */
+        .bar-chart-container {
+            display: flex;
+            align-items: flex-end;
+            height: 200px; /* Base height for mobile */
+            gap: 0.5rem; /* Reduced gap for smaller screens */
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        @media (min-width: 768px) {
+             .bar-chart-container {
+                height: 250px;
+                gap: 1rem;
+                padding-bottom: 2rem;
+            }
+        }
+        .bar-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            width: 33%;
+            height: 100%;
+        }
+        .bar {
+            width: 80%;
+            border-radius: 0.5rem 0.5rem 0 0;
+            transition: height 1s ease-out;
+            position: relative;
+            background-color: var(--highlight); 
+            box-shadow: 0 4px 10px rgba(248, 244, 66, 0.4); 
+        }
+        .bar-label {
+            position: absolute;
+            top: -1.5rem; /* Adjusted for smaller screens */
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-light);
+            text-shadow: 1px 1px 2px #000; 
+        }
+        @media (min-width: 768px) {
+            .bar-label {
+                top: -2.5rem;
+                font-size: 0.875rem;
+            }
+        }
+
+        /* Mobile table improvements */
+        @media (max-width: 767px) {
+            table {
+                font-size: 0.75rem;
+            }
+            th, td {
+                padding: 0.5rem 0.25rem;
+            }
+            th {
+                font-size: 0.6875rem;
+            }
+        }
+        
+        /* Mobile grid improvements */
+        @media (max-width: 767px) {
+            .grid {
+                gap: 0.75rem;
+            }
+            .md\\:grid-cols-2 > * {
+                margin-bottom: 0.75rem;
+            }
+            .md\\:grid-cols-3 > * {
+                margin-bottom: 1rem;
+            }
+        }
+        
+        /* Mobile card improvements */
+        @media (max-width: 767px) {
+            .bg-card {
+                padding: 0.75rem;
+            }
+            .rounded-xl {
+                border-radius: 0.5rem;
+            }
+            .p-4 { padding: 0.75rem !important; }
+            .p-6 { padding: 1rem !important; }
+            .p-8 { padding: 1.25rem !important; }
+            .space-y-6 > * + * { margin-top: 1rem !important; }
+            .space-y-8 > * + * { margin-top: 1.25rem !important; }
+            .mb-6 { margin-bottom: 1rem !important; }
+            .mb-8 { margin-bottom: 1.25rem !important; }
+            .mb-12 { margin-bottom: 1.5rem !important; }
+        }
+        @media (max-width: 374px) {
+            .bg-card {
+                padding: 0.5rem;
+            }
+            .rounded-xl {
+                border-radius: 0.375rem;
+            }
+            .p-4 { padding: 0.5rem !important; }
+            .p-6 { padding: 0.75rem !important; }
+            .p-8 { padding: 1rem !important; }
+        }
+
+        /* Fixed Scroll Button Style */
+        #scroll-down-btn {
+            position: fixed;
+            bottom: 1rem; /* Adjusted for small screen balance */
+            right: 1rem;
+            z-index: 40;
+            background-color: var(--card-bg);
+            border: 2px solid var(--highlight);
+            color: var(--highlight);
+            padding: 0.4rem 0.8rem; /* Extra small for 320px */
+            font-size: 0.75rem;
+            border-radius: 9999px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s ease;
+        }
+        @media (min-width: 375px) {
+            #scroll-down-btn {
+                padding: 0.45rem 0.9rem;
+                font-size: 0.8rem;
+            }
+        }
+        @media (min-width: 425px) {
+            #scroll-down-btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.875rem;
+            }
+        }
+        @media (min-width: 768px) {
+            #scroll-down-btn {
+                bottom: 1.5rem;
+                padding: 0.75rem 1.25rem;
+                font-size: 1rem;
+            }
+        }
+        @media (min-width: 1024px) {
+            #scroll-down-btn {
+                padding: 0.75rem 1.5rem;
+                font-size: 1.1rem;
+            }
+        }
+        @media (min-width: 1440px) {
+            #scroll-down-btn {
+                padding: 0.85rem 1.75rem;
+                font-size: 1.125rem;
+            }
+        }
+        #scroll-down-btn:hover {
+            background-color: var(--highlight);
+            color: var(--dark-text);
+        }
+        
+        /* Scroll to Top Button Style */
+        #scroll-to-top-btn {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            z-index: 40;
+            background-color: var(--highlight);
+            border: 2px solid var(--highlight);
+            color: var(--dark-text);
+            padding: 0.4rem 0.8rem;
+            font-size: 0.75rem;
+            border-radius: 9999px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(248, 244, 66, 0.5);
+            transition: all 0.3s ease;
+            display: none; /* Hidden by default, shown via JS */
+        }
+        @media (min-width: 375px) {
+            #scroll-to-top-btn {
+                padding: 0.45rem 0.9rem;
+                font-size: 0.8rem;
+            }
+        }
+        @media (min-width: 425px) {
+            #scroll-to-top-btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.875rem;
+            }
+        }
+        @media (min-width: 768px) {
+            #scroll-to-top-btn {
+                bottom: 1.5rem;
+                padding: 0.75rem 1.25rem;
+                font-size: 1rem;
+            }
+        }
+        @media (min-width: 1024px) {
+            #scroll-to-top-btn {
+                padding: 0.75rem 1.5rem;
+                font-size: 1.1rem;
+            }
+        }
+        /* Mobile button improvements */
+        @media (max-width: 374px) {
+            #scroll-down-btn, #scroll-to-top-btn {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.7rem;
+                bottom: 0.75rem;
+                right: 0.75rem;
+            }
+            button.inline-block {
+                padding: 0.5rem 1rem;
+                font-size: 0.8rem;
+            }
+        }
+        
+        /* Ensure touch targets are adequate */
+        @media (max-width: 767px) {
+            button {
+                min-height: 44px;
+                min-width: 44px;
+            }
+        }
+        
+        /* Custom styles for 375px screens */
+        @media (min-width: 375px) and (max-width: 424px) {
+            #intro p.text-highlight {
+                font-size: 1.5rem !important; /* Larger title text for 375px */
+                margin-top: -8rem !important; /* Move text more upward */
+            }
+            #intro div.text-gray-400 {
+                font-size: 1rem !important; /* Larger description text for 375px */
+            }
+            /* Slide 2 - The Problem: Larger text for 375px */
+            #problem h2 {
+                font-size: 1.875rem !important; /* 30px */
+            }
+            #problem h3 {
+                font-size: 1.25rem !important; /* 20px */
+            }
+            #problem ul li {
+                font-size: 0.875rem !important; /* 14px */
+            }
+            /* Slide 3 - The Solution: Move content up to avoid video overlay */
+            #solution .slide-container {
+                margin-top: -3rem !important;
+            }
+            /* Slide 6 - Tokenomics: Larger text for 375px */
+            #tokenomics h2 {
+                font-size: 1.875rem !important; /* 30px */
+            }
+            #tokenomics h3 {
+                font-size: 1.125rem !important; /* 18px */
+            }
+            #tokenomics p {
+                font-size: 0.875rem !important; /* 14px */
+            }
+            #tokenomics ul li {
+                font-size: 0.875rem !important; /* 14px */
+            }
+            #tokenomics ul li span.text-highlight {
+                font-size: 0.875rem !important; /* 14px for label */
+            }
+            #tokenomics ul li span.font-black {
+                font-size: 1.25rem !important; /* 20px for percentage */
+            }
+        }
+        
+        
+        /* Prevent slide overlap on mobile */
+        @media (max-width: 767px) {
+            body {
+                scroll-behavior: smooth;
+            }
+            .slide {
+                scroll-snap-align: start;
+                scroll-snap-stop: always;
+            }
+            /* Ensure content doesn't overflow */
+            .slide-container > * {
+                max-width: 100%;
+            }
+            /* Make sure text doesn't get cut off */
+            h1, h2, h3, h4, h5, h6, p, li {
+                word-wrap: break-word;
+                overflow-wrap: break-word;
+            }
+            
+            /* Center specific slides vertically on mobile */
+            #intro .slide-container,
+            #problem .slide-container,
+            #solution .slide-container,
+            #product .slide-container,
+            #market .slide-container,
+            #market-validation .slide-container,
+            #roadmap .slide-container,
+            #traction .slide-container,
+            #tokenomics .slide-container,
+            #ask .slide-container,
+            #team .slide-container {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            }
+            
+            /* Move Business Model and Team slides upward on mobile */
+            #tokenomics .slide-container {
+                margin-top: -5rem;
+            }
+            
+            #team .slide-container {
+                margin-top: -4rem;
+            }
+        }
+        
+        /* 768px screen optimizations */
+        @media (min-width: 768px) and (max-width: 1023px) {
+            /* Slide 1 - Move text up significantly */
+            #intro p.text-highlight {
+                margin-top: -6rem !important;
+            }
+            
+            /* Slide 8 - The Ask: Comprehensive font size adjustments */
+            #ask h2 {
+                font-size: 2rem !important; /* Reduce main title */
+            }
+            #ask h3 {
+                font-size: 2rem !important; /* Reduce $2,500,000 USD significantly */
+            }
+            #ask p.text-base,
+            #ask p.text-xl {
+                font-size: 0.875rem !important; /* Reduce paragraph text */
+            }
+            #ask p.text-xs,
+            #ask p.text-sm {
+                font-size: 0.75rem !important; /* Reduce small text */
+            }
+            #ask li {
+                font-size: 0.875rem !important; /* Reduce list items */
+            }
+            #ask .text-2xl,
+            #ask .text-3xl {
+                font-size: 1.25rem !important; /* Reduce percentages */
+            }
+            #ask .p-6,
+            #ask .p-8 {
+                padding: 1rem !important; /* Reduce padding in cards */
+            }
+        }
+
+        /* Print styles */
+        @media print {
+            #scroll-down-btn, #scroll-to-top-btn {
+                display: none !important;
+            }
+            @page {
+                margin: 0;
+            }
+            html, body {
+                background-color: #1f1f1f !important;
+                -webkit-print-color-adjust: exact;
+                -moz-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .slide {
+                background-color: #1f1f1f !important;
+                -webkit-print-color-adjust: exact;
+                -moz-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Fixed Scroll Down Button (Visibility controlled by JS) -->
+    <button id="scroll-down-btn" onclick="scrollToSlide(currentSlideIndex + 1)">
+        <i class="fas fa-arrow-down mr-1"></i> Next Slide
+    </button>
+
+    <!-- Fixed Scroll to Top Button (Visibility controlled by JS) -->
+    <button id="scroll-to-top-btn" onclick="scrollToSlide(0)">
+        <i class="fas fa-arrow-up mr-1"></i> Back to Start
+    </button>
+
+
+    <!-- Slide 1: Title & Hook (RESPONSIVENESS FIX APPLIED) -->
+    <section class="slide bg-bg-dark" id="intro" data-index="0">
+        <div class="slide-container text-center">
+            <!-- LOGO -->
+            <div class="flex items-center justify-center mb-4 md:mb-6">
+                <img
+                    src="/ss-icon.svg"
+                    alt="SmartSentinels Logo"
+                    class="logo-image w-16 h-16 mr-4"
+                >
+                <span class="text-highlight text-2xl md:text-3xl lg:text-4xl font-bold neon-glow">SmartSentinels</span>
+            </div>
+
+            <!-- Tagline -->
+            <p class="text-xs sm:text-sm md:text-base lg:text-xl xl:text-2xl font-bold text-text-light max-w-2xl mx-auto px-2 mb-4 md:mb-6">
+                AI compute network where AI agents perform verifiable useful work, generating real economic value, not wasted energy.
+            </p>
+
+            <!-- Description -->
+            <div class="text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl text-highlight max-w-2xl mx-auto px-2">
+                AI that works, earns, and proves it.
+            </div>
+        </div>
+    </section>
+    <!-- Slide 2: The Problems -->
+    <section class="slide bg-bg-dark" id="problem" data-index="1">
+        <div class="slide-container">
+            <h2 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-extrabold mb-4 md:mb-6 lg:mb-8 text-center text-highlight">The <span class="text-text-light">Problems</span> <span class="text-highlight">We Solve</span></h2>
+            <div class="space-y-3 md:space-y-4 lg:space-y-6">
+
+                <!-- Problem 1: Opaque AI Monopolies -->
+                <div class="bg-card rounded-lg md:rounded-xl p-3 md:p-4 lg:p-6 shadow-2xl">
+                    <div class="flex items-start mb-2 md:mb-3">
+                        <i class="fas fa-brain text-xl md:text-2xl lg:text-3xl text-highlight mr-3 md:mr-4 flex-shrink-0 mt-1"></i>
+                        <div class="min-w-0 flex-1">
+                            <h3 class="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-highlight mb-1 md:mb-2">Opaque AI Monopolies</h3>
+                            <p class="text-xs sm:text-sm md:text-base text-gray-400 leading-relaxed">
+                                Proprietary models and centralized cloud providers restrict access, inflate costs, and lack transparency.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Problem 2: Wasteful Compute Power -->
+                <div class="bg-card rounded-lg md:rounded-xl p-3 md:p-4 lg:p-6 shadow-2xl">
+                    <div class="flex items-start mb-2 md:mb-3">
+                        <i class="fas fa-server text-xl md:text-2xl lg:text-3xl text-highlight mr-3 md:mr-4 flex-shrink-0 mt-1"></i>
+                        <div class="min-w-0 flex-1">
+                            <h3 class="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-highlight mb-1 md:mb-2">Wasteful Compute Power</h3>
+                            <p class="text-xs sm:text-sm md:text-base text-gray-400 leading-relaxed">
+                                Billions of dollars spent annually on traditional PoW/PoC that generates zero business or social value.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Problem 3: Unsustainable Token Models -->
+                <div class="bg-card rounded-lg md:rounded-xl p-3 md:p-4 lg:p-6 shadow-2xl">
+                    <div class="flex items-start mb-2 md:mb-3">
+                        <i class="fas fa-coins text-xl md:text-2xl lg:text-3xl text-highlight mr-3 md:mr-4 flex-shrink-0 mt-1"></i>
+                        <div class="min-w-0 flex-1">
+                            <h3 class="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-highlight mb-1 md:mb-2">Unsustainable Token Models</h3>
+                            <p class="text-xs sm:text-sm md:text-base text-gray-400 leading-relaxed">
+                                Projects collapse due to inflationary models and insufficient vesting periods, leading to early token dumps.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+                    </p>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 3: The Solution -->
+    <section class="slide bg-bg-dark" id="solution" data-index="2">
+        <div class="slide-container">
+            <h2 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-extrabold mb-4 md:mb-6 lg:mb-8 text-center text-highlight">The <span class="text-text-light">Solution</span>: <span class="text-highlight">PoUW</span></h2>
+            <p class="text-center text-gray-400 text-xs sm:text-sm md:text-base lg:text-lg mb-4 md:mb-6 lg:mb-8 max-w-3xl mx-auto px-2">
+                SmartSentinels is a decentralized AI compute network built on Proof of Useful Work (PoUW) — combining infrastructure (compute layer) with an application protocol (B2B layer) that allows companies to access AI agents for real-world, verifiable tasks.
+            </p>
+            <div class="text-center mb-4 md:mb-6 lg:mb-8">
+                <pre class="inline-block text-gray-400 text-xs sm:text-sm md:text-base font-mono bg-card p-4 rounded-lg">
+[ Application Layer ]  ←  B2B Access / AI Services
+[ Protocol Layer ]      ←  Tokenomics, PoUW Verification
+[ Infrastructure Layer ] ←  AI Compute Nodes / Edge Devices
+                </pre>
+            </div>
+            <div class="bg-card rounded-lg md:rounded-xl p-3 md:p-4 lg:p-6 xl:p-8 shadow-2xl">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 lg:gap-6 text-center">
+                    <div class="flex flex-col items-center p-2 md:p-4">
+                        <div class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-highlight mb-2 md:mb-3"><i class="fas fa-network-wired"></i></div>
+                        <h4 class="text-xs sm:text-sm md:text-base lg:text-lg font-bold mb-1 md:mb-2">DECENTRALIZED COMPUTE</h4>
+                        <p class="text-gray-400 text-xs sm:text-sm leading-relaxed">A peer-to-peer compute layer built on BNB Chain for low latency and cost.</p>
+                    </div>
+                    <div class="flex flex-col items-center p-2 md:p-4">
+                        <div class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-highlight mb-2 md:mb-3"><i class="fas fa-lock"></i></div>
+                        <h4 class="text-xs sm:text-sm md:text-base lg:text-lg font-bold mb-1 md:mb-2">VERIFIABLE VALUE</h4>
+                        <p class="text-gray-400 text-xs sm:text-sm leading-relaxed">Work (e.g., audit report) is cryptographically verified on-chain before tokens are minted.</p>
+                    </div>
+                    <div class="flex flex-col items-center p-2 md:p-4 sm:col-span-2 lg:col-span-1">
+                        <div class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-highlight mb-2 md:mb-3"><i class="fas fa-cubes"></i></div>
+                        <h4 class="text-xs sm:text-sm md:text-base lg:text-lg font-bold mb-1 md:mb-2">iNFT STAKEHOLDERS</h4>
+                        <p class="text-gray-400 text-xs sm:text-sm leading-relaxed">iNFT holders own a stake in the real revenue generated by the AI agent network.</p>
+                    </div>
+                </div>
+                <div class="mt-4 md:mt-6 lg:mt-8 text-center">
+                    <h3 class="text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl font-bold text-highlight mb-3 md:mb-4">PoUW Verification Flow (The Moat)</h3>
+                    <p class="text-gray-400 text-xs sm:text-sm md:text-base mb-3 md:mb-4 leading-relaxed">
+                        <strong>Client Task</strong> → <strong>AI Agent Execution</strong> → <strong>Protocol Verification</strong> → <strong>SSTL Token Minting</strong> → <strong>Rewards Distributed</strong>
+                    </p>
+                    <p class="text-gray-400 text-xs sm:text-sm leading-relaxed">
+                        Our system ensures: Latency &lt; 5 sec / Verification Cost &lt; 1% of Task Value.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 4: The Product -->
+    <section class="slide bg-bg-dark" id="product" data-index="3">
+        <div class="slide-container">
+            <h2 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-extrabold mb-3 md:mb-4 lg:mb-6 text-center text-highlight">We Start With <span class="text-text-light">AI Smart Contract Audits</span></h2>
+            <h3 class="text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl font-bold mb-2 md:mb-3 lg:mb-4 text-center text-highlight">Solving a High-Value Problem First</h3>
+            <p class="text-center text-gray-400 text-xs sm:text-sm md:text-base lg:text-lg mb-4 md:mb-6 lg:mb-8 max-w-3xl mx-auto px-2">
+                Initial focus is a high-demand vertical: delivering fast, verifiable, and affordable security audits for Web3 projects.
+            </p>
+            <div class="bg-card rounded-lg md:rounded-xl p-3 md:p-4 lg:p-6 xl:p-8 shadow-2xl">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 lg:gap-6 text-center">
+                    <div class="flex flex-col items-center p-2 md:p-4">
+                        <div class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-highlight mb-2 md:mb-3"><i class="fas fa-tachometer-alt"></i></div>
+                        <h4 class="font-bold mb-1 md:mb-2 text-xs sm:text-sm md:text-base lg:text-lg">SPEED</h4>
+                        <p class="text-gray-400 text-xs sm:text-sm leading-relaxed">Audits in minutes, not weeks, significantly reducing time-to-market.</p>
+                    </div>
+                    <div class="flex flex-col items-center p-2 md:p-4">
+                        <div class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-highlight mb-2 md:mb-3"><i class="fas fa-dollar-sign"></i></div>
+                        <h4 class="font-bold mb-1 md:mb-2 text-xs sm:text-sm md:text-base lg:text-lg">COST</h4>
+                        <p class="text-gray-400 text-xs sm:text-sm leading-relaxed">Fraction of the price of manual audits ($500 vs $5,000+).</p>
+                    </div>
+                    <div class="flex flex-col items-center p-2 md:p-4 sm:col-span-2 lg:col-span-1">
+                        <div class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-highlight mb-2 md:mb-3"><i class="fas fa-file-pdf"></i></div>
+                        <h4 class="font-bold mb-1 md:mb-2 text-xs sm:text-sm md:text-base lg:text-lg">DELIVERABLE</h4>
+                        <p class="text-gray-400 text-xs sm:text-sm leading-relaxed">AI agent provides a verified, downloadable PDF vulnerability report.</p>
+                    </div>
+                </div>
+                <div class="mt-4 md:mt-6 lg:mt-8">
+                    <h3 class="text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl font-bold text-center text-highlight mb-3 md:mb-4">Expansion Path</h3>
+                    <p class="text-gray-400 text-xs sm:text-sm md:text-base text-center mb-3 md:mb-4 leading-relaxed">
+                        Our plan is to launch agents for these high-value verticals:
+                    </p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 md:gap-3 text-gray-400 text-xs sm:text-sm max-w-2xl mx-auto">
+                        <div class="bg-bg-dark p-2 rounded-lg border border-gray-700">1. AI Audits (Current)</div>
+                        <div class="bg-bg-dark p-2 rounded-lg border border-gray-700">2. AI Customer Support</div>
+                        <div class="bg-bg-dark p-2 rounded-lg border border-gray-700">3. AI Medical Assistants</div>
+                        <div class="bg-bg-dark p-2 rounded-lg border border-gray-700">4. AI Legal Assistants</div>
+                        <div class="bg-bg-dark p-2 rounded-lg border border-gray-700">5. Global Expansion</div>
+                        <div class="bg-bg-dark p-2 rounded-lg border border-gray-700">6. Custom Agent Marketplace</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 5: Market Opportunity (TAM/SAM/SOM) - The Numbers Slide -->
+    <section class="slide bg-bg-dark" id="market" data-index="4">
+        <div class="slide-container text-center">
+            <h2 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-extrabold mb-3 md:mb-4 lg:mb-6 text-highlight">The <span class="text-text-light">Massive</span> Opportunity</h2>
+            <p class="text-xs sm:text-sm md:text-base text-gray-400 mb-4 md:mb-6 lg:mb-8 px-2">AI market projected to exceed $1.8 trillion by 2030. We are targeting the DePIN and utility service sectors within this growth.</p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 lg:gap-6">
+                <!-- TAM -->
+                <div class="p-3 sm:p-4 md:p-5 lg:p-6 rounded-lg md:rounded-xl border-2 border-card bg-card transform hover:scale-105 transition duration-300">
+                    <p class="text-xs font-semibold uppercase text-highlight mb-1">Total Addressable Market</p>
+                    <h3 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black text-text-light">$1.8T+</h3>
+                    <p class="text-gray-400 mt-1 text-xs sm:text-sm">Global AI Services (2030)</p>
+                </div>
+                <!-- SAM -->
+                <div class="p-3 sm:p-4 md:p-5 lg:p-6 rounded-lg md:rounded-xl border-2 border-card bg-card transform hover:scale-105 transition duration-300">
+                    <p class="text-xs font-semibold uppercase text-highlight mb-1">Serviceable Market</p>
+                    <h3 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black text-text-light">$6.0B</h3>
+                    <p class="text-gray-400 mt-1 text-xs sm:text-sm">Initial Utility Verticals (Audits, Support)</p>
+                </div>
+                <!-- SOM -->
+                <div class="p-3 sm:p-4 md:p-5 lg:p-6 rounded-lg md:rounded-xl bg-highlight shadow-lg border-2 border-highlight transform hover:scale-105 transition duration-300 sm:col-span-2 lg:col-span-1">
+                    <p class="text-xs font-semibold uppercase text-dark mb-1">Serviceable Obtainable Market</p>
+                    <h3 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black text-dark">$30M</h3>
+                    <p class="text-dark mt-1 font-bold text-xs sm:text-sm">3-Year Revenue Goal (Bottom-Up)</p>
+                </div>
+            </div>
+            <p class="text-xs sm:text-sm md:text-base text-gray-400 mt-4 md:mt-6 lg:mt-8 px-2">Our obtainable market is based on a realistic <strong>bottom-up projection</strong>: capturing <strong>0.5%</strong> of our initial market segments within <strong>36</strong> months.</p>
+        </div>
+    </section>
+
+    <!-- Slide 6: Competitive Advantage -->
+    <section class="slide bg-bg-dark" id="competitive-advantage" data-index="5">
+        <div class="slide-container text-center">
+            <h2 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-extrabold mb-3 md:mb-4 lg:mb-6 text-highlight">Competitive <span class="text-text-light">Advantage</span></h2>
+
+            <div class="bg-card p-3 md:p-4 lg:p-6 rounded-lg md:rounded-xl shadow-2xl mb-3 md:mb-4 lg:mb-6">
+                <h3 class="text-sm sm:text-base md:text-lg lg:text-xl font-bold mb-3 md:mb-4 lg:mb-6 text-highlight">Competitive Landscape: Decentralization vs. Utility</h3>
+
+                <!-- Quadrant Grid with Proper Axes -->
+                <div class="relative max-w-2xl mx-auto">
+                    <!-- Grid Container -->
+                    <div class="grid grid-cols-2 gap-2 md:gap-4 lg:gap-6 mb-3 md:mb-4">
+                        <!-- Top Left: Low Utility, Low Decentralization -->
+                        <div class="bg-gray-800 p-2 md:p-3 lg:p-4 rounded-lg border border-gray-600 text-center">
+                            <h4 class="text-xs sm:text-sm font-bold text-gray-400 mb-1 md:mb-2">Low Utility<br>Low Decentralization</h4>
+                            <div class="text-red-400 font-semibold text-xs sm:text-sm">Centralized AI</div>
+                            <div class="text-gray-500 text-xs">(AWS, GCP)</div>
+                        </div>
+
+                        <!-- Top Right: Low Utility, High Decentralization -->
+                        <div class="bg-gray-800 p-2 md:p-3 lg:p-4 rounded-lg border border-gray-600 text-center">
+                            <h4 class="text-xs sm:text-sm font-bold text-gray-400 mb-1 md:mb-2">Low Utility<br>High Decentralization</h4>
+                            <div class="text-blue-400 font-semibold text-xs sm:text-sm">Decentralized Storage</div>
+                            <div class="text-gray-500 text-xs">(Filecoin)</div>
+                        </div>
+
+                        <!-- Bottom Left: High Utility, Low Decentralization -->
+                        <div class="bg-gray-800 p-2 md:p-3 lg:p-4 rounded-lg border border-gray-600 text-center">
+                            <h4 class="text-xs sm:text-sm font-bold text-gray-400 mb-1 md:mb-2">High Utility<br>Low Decentralization</h4>
+                            <div class="text-green-400 font-semibold text-xs sm:text-sm">Raw Compute</div>
+                            <div class="text-gray-500 text-xs">(Render, Akash)</div>
+                        </div>
+
+                        <!-- Bottom Right: High Utility, High Decentralization -->
+                        <div class="bg-highlight p-2 md:p-3 lg:p-4 rounded-lg border-2 border-white text-center">
+                            <h4 class="text-xs sm:text-sm font-bold text-dark mb-1 md:mb-2">High Utility<br>High Decentralization</h4>
+                            <div class="text-dark font-bold text-sm md:text-lg">🎯 SmartSentinels</div>
+                            <div class="text-dark font-semibold text-xs sm:text-sm">(PoUW, High Utility)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-card p-3 md:p-4 lg:p-6 rounded-lg md:rounded-xl shadow-2xl">
+                <h3 class="text-sm sm:text-base md:text-lg lg:text-xl font-bold mb-3 md:mb-4 lg:mb-6 text-highlight">Our Technical Moat (Barriers to Entry)</h3>
+                <div class="text-left max-w-4xl mx-auto space-y-2 md:space-y-3 lg:space-y-4">
+                    <div class="flex items-start space-x-2 md:space-x-3">
+                        <i class="fas fa-robot text-highlight mt-1 text-sm sm:text-base"></i>
+                        <div>
+                            <h4 class="font-bold text-highlight text-xs sm:text-sm md:text-base mb-1">Proprietary AI Auditing Engine</h4>
+                            <p class="text-gray-400 text-xs sm:text-sm leading-relaxed">Custom-trained AI models specifically optimized for Solidity smart contract analysis, combining static analysis techniques with advanced NLP for contextual vulnerability detection.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start space-x-2 md:space-x-3">
+                        <i class="fas fa-server text-highlight mt-1 text-sm sm:text-base"></i>
+                        <div>
+                            <h4 class="font-bold text-highlight text-xs sm:text-sm md:text-base mb-1">Decentralized AI Infrastructure</h4>
+                            <p class="text-gray-400 text-xs sm:text-sm leading-relaxed">Self-hosted Ollama AI models running on distributed infrastructure, eliminating dependency on centralized AI providers and ensuring consistent, private analysis capabilities.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start space-x-2 md:space-x-3">
+                        <i class="fas fa-coins text-highlight mt-1 text-sm sm:text-base"></i>
+                        <div>
+                            <h4 class="font-bold text-highlight text-xs sm:text-sm md:text-base mb-1">Automated Reward Distribution System</h4>
+                            <p class="text-gray-400 text-xs sm:text-sm leading-relaxed">Smart contract-based auto-distribution system that triggers token rewards upon audit completion - complex integration of blockchain events, token economics, and business logic.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start space-x-2 md:space-x-3">
+                        <i class="fas fa-code text-highlight mt-1 text-sm sm:text-base"></i>
+                        <div>
+                            <h4 class="font-bold text-highlight text-xs sm:text-sm md:text-base mb-1">Blockchain-Integrated Reward System</h4>
+                            <p class="text-gray-400 text-xs sm:text-sm leading-relaxed">Complex smart contract ecosystem that monitors audit completions and automatically distributes rewards across multiple stakeholders - requires deep blockchain development expertise and economic modeling.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 6: Traction & Roadmap (Key Milestones) -->
+    <section class="slide bg-bg-dark" id="roadmap" data-index="6">
+        <div class="slide-container">
+            <h2 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-extrabold mb-3 md:mb-4 lg:mb-6 text-center text-highlight">The <span class="text-text-light">Scaling</span> Roadmap & Traction</h2>
+
+            <div class="relative max-w-4xl mx-auto">
+                <!-- Timeline Line -->
+                <div class="absolute left-1/2 -ml-0.5 w-1 h-full bg-highlight hidden md:block"></div>
+                
+                <!-- Milestones -->
+                <div class="space-y-3 md:space-y-4 lg:space-y-8">
+                    
+                    <!-- Immediate Goal (Q4 2024 Trigger) -->
+                    <div class="relative md:grid md:grid-cols-2 md:gap-12 items-center">
+                        <div class="md:col-span-1 md:text-right p-2 md:p-3 lg:p-4 bg-card rounded-lg md:rounded-xl shadow-lg border-l-4 border-highlight md:border-r-4 md:border-l-0 text-xs sm:text-sm">
+                            <h4 class="text-xs sm:text-sm md:text-base lg:text-lg font-bold text-highlight">Q4 2025: Testnet Launch</h4>
+                            <p class="text-gray-400">Launch testnet, deploy first audit AI agent, seed fundraising events.</p>
+                        </div>
+                        <div class="hidden md:block absolute left-1/2 transform -translate-x-1/2 w-6 md:w-8 h-6 md:h-8 rounded-full bg-highlight border-4 border-bg-dark flex items-center justify-center text-dark"><i class="fas fa-rocket text-xs md:text-sm ml-1"></i></div>
+                        <div class="md:col-span-1"></div>
+                    </div>
+
+                    <!-- Q4 2025 (New Starting Point) -->
+                    <div class="relative md:grid md:grid-cols-2 md:gap-12 items-center">
+                        <div class="md:col-span-1"></div>
+                        <div class="md:col-span-1 md:text-left p-2 md:p-3 lg:p-4 bg-highlight rounded-lg md:rounded-xl shadow-lg border-l-4 border-dark text-xs sm:text-sm">
+                            <h4 class="text-xs sm:text-sm md:text-base lg:text-lg font-bold text-dark">Q1 2026: MAINNET</h4>
+                            <p class="text-dark font-semibold">Mainnet deployment, launch NFT collections, 10–20 edge agents activated.</p>
+                        </div>
+                        <div class="hidden md:block absolute left-1/2 transform -translate-x-1/2 w-6 md:w-8 h-6 md:h-8 rounded-full bg-text-light border-4 border-bg-dark flex items-center justify-center text-dark"><i class="fas fa-arrow-up text-xs md:text-sm ml-1"></i></div>
+                    </div>
+
+                    <!-- H1 2026 (Future Expansion) -->
+                    <div class="relative md:grid md:grid-cols-2 md:gap-12 items-center">
+                        <div class="md:col-span-1 md:text-right p-2 md:p-3 lg:p-4 bg-card rounded-lg md:rounded-xl shadow-lg border-l-4 border-highlight md:border-r-4 md:border-l-0 text-xs sm:text-sm">
+                            <h4 class="text-xs sm:text-sm md:text-base lg:text-lg font-bold text-highlight">Q2 2026: AGENT MARKETPLACE</h4>
+                            <p class="text-gray-400">Launch beta marketplace, onboard 50+ devices, initiate halving phase H1.</p>
+                        </div>
+                        <div class="hidden md:block absolute left-1/2 transform -translate-x-1/2 w-6 md:w-8 h-6 md:h-8 rounded-full bg-highlight border-4 border-bg-dark flex items-center justify-center text-dark"><i class="fas fa-store text-xs md:text-sm ml-1"></i></div>
+                        <div class="md:col-span-1"></div>
+                    </div>
+
+                    <div class="relative md:grid md:grid-cols-2 md:gap-12 items-center">
+                        <div class="md:col-span-1 md:text-right p-2 md:p-3 lg:p-4 bg-card rounded-lg md:rounded-xl shadow-lg border-l-4 border-highlight md:border-r-4 md:border-l-0 text-xs sm:text-sm">
+                            <h4 class="text-xs sm:text-sm md:text-base lg:text-lg font-bold text-highlight">Q3 2026: SCALE & GOVERNANCE</h4>
+                            <p class="text-gray-400">Scale to 100+ devices, onboard business clients, implement governance tools.</p>
+                        </div>
+                        <div class="hidden md:block absolute left-1/2 transform -translate-x-1/2 w-6 md:w-8 h-6 md:h-8 rounded-full bg-highlight border-4 border-bg-dark flex items-center justify-center text-dark"><i class="fas fa-cogs text-xs md:text-sm ml-1"></i></div>
+                        <div class="md:col-span-1"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-card p-3 md:p-4 lg:p-6 rounded-lg md:rounded-xl shadow-2xl mt-4 md:mt-6 lg:mt-8">
+                <h3 class="text-sm sm:text-base md:text-lg lg:text-xl font-bold mb-3 md:mb-4 lg:mb-6 text-highlight">Proven Progress in AI & Web3</h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 lg:gap-6 text-left">
+                    <div>
+                        <h4 class="text-xs sm:text-sm md:text-base font-bold text-highlight mb-2 md:mb-3">Key Achievements</h4>
+                        <ul class="space-y-1 md:space-y-2 text-gray-400 text-xs sm:text-sm">
+                            <li class="flex items-center"><i class="fas fa-check-circle text-highlight mr-2"></i> BNB Martians founder</li>
+                            <li class="flex items-center"><i class="fas fa-check-circle text-highlight mr-2"></i> First audit agent in testnet</li>
+                            <li class="flex items-center"><i class="fas fa-check-circle text-highlight mr-2"></i> NFT logic tied to devices</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-xs sm:text-sm md:text-base font-bold text-highlight mb-2 md:mb-3">Upcoming Milestones</h4>
+                        <ul class="space-y-1 md:space-y-2 text-gray-400 text-xs sm:text-sm">
+                            <li class="flex items-center"><i class="fas fa-rocket text-highlight mr-2"></i> Q4 2025: Mainnet & clients</li>
+                            <li class="flex items-center"><i class="fas fa-users text-highlight mr-2"></i> Q1 2026: 10-20 edge agents</li>
+                            <li class="flex items-center"><i class="fas fa-globe text-highlight mr-2"></i> Q2 2026: Marketplace beta</li>
+                            <li class="flex items-center"><i class="fas fa-cogs text-highlight mr-2"></i> Q3 2026: 100+ devices</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 7: Tokenomics & Value Flywheel -->
+    <section class="slide bg-bg-dark" id="tokenomics-flywheel" data-index="7">
+        <div class="slide-container text-center">
+            <h2 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-extrabold mb-3 md:mb-4 lg:mb-6 text-highlight">Tokenomics & <span class="text-text-light">Value Flywheel</span></h2>
+
+            <!-- Token Distribution -->
+            <div class="bg-card p-3 md:p-4 lg:p-6 rounded-lg md:rounded-xl shadow-2xl mb-3 md:mb-4 lg:mb-6">
+                <h3 class="text-sm sm:text-base md:text-lg lg:text-xl font-bold mb-3 md:mb-4 lg:mb-6 text-highlight">SSTL Token Distribution</h3>
+
+                <!-- Distribution Bars -->
+                <div class="space-y-2 md:space-y-3 mb-4 md:mb-6">
+                    <div class="flex items-center justify-between text-xs sm:text-sm">
+                        <span class="text-purple-400 font-medium w-20 md:w-24">PoUW Mining</span>
+                        <div class="flex-1 mx-2 md:mx-3">
+                            <div class="h-3 md:h-4 bg-gray-700 rounded-full overflow-hidden">
+                                <div class="h-full bg-purple-500 rounded-full" style="width: 40%"></div>
+                            </div>
+                        </div>
+                        <span class="text-highlight font-bold w-10 md:w-12 text-right">40%</span>
+                    </div>
+
+                    <div class="flex items-center justify-between text-xs sm:text-sm">
+                        <span class="text-green-400 font-medium w-20 md:w-24">Liquidity</span>
+                        <div class="flex-1 mx-2 md:mx-3">
+                            <div class="h-3 md:h-4 bg-gray-700 rounded-full overflow-hidden">
+                                <div class="h-full bg-green-500 rounded-full" style="width: 15%"></div>
+                            </div>
+                        </div>
+                        <span class="text-highlight font-bold w-10 md:w-12 text-right">15%</span>
+                    </div>
+
+                    <div class="flex items-center justify-between text-xs sm:text-sm">
+                        <span class="text-yellow-400 font-medium w-20 md:w-24">Marketing</span>
+                        <div class="flex-1 mx-2 md:mx-3">
+                            <div class="h-3 md:h-4 bg-gray-700 rounded-full overflow-hidden">
+                                <div class="h-full bg-yellow-400 rounded-full" style="width: 15%"></div>
+                            </div>
+                        </div>
+                        <span class="text-highlight font-bold w-10 md:w-12 text-right">15%</span>
+                    </div>
+
+                    <div class="flex items-center justify-between text-xs sm:text-sm">
+                        <span class="text-orange-400 font-medium w-20 md:w-24">Reserve</span>
+                        <div class="flex-1 mx-2 md:mx-3">
+                            <div class="h-3 md:h-4 bg-gray-700 rounded-full overflow-hidden">
+                                <div class="h-full bg-orange-500 rounded-full" style="width: 10%"></div>
+                            </div>
+                        </div>
+                        <span class="text-highlight font-bold w-10 md:w-12 text-right">10%</span>
+                    </div>
+
+                    <div class="flex items-center justify-between text-xs sm:text-sm">
+                        <span class="text-red-400 font-medium w-20 md:w-24">Team</span>
+                        <div class="flex-1 mx-2 md:mx-3">
+                            <div class="h-3 md:h-4 bg-gray-700 rounded-full overflow-hidden">
+                                <div class="h-full bg-red-500 rounded-full" style="width: 10%"></div>
+                            </div>
+                        </div>
+                        <span class="text-highlight font-bold w-10 md:w-12 text-right">10%</span>
+                    </div>
+
+                    <div class="flex items-center justify-between text-xs sm:text-sm">
+                        <span class="text-cyan-400 font-medium w-20 md:w-24">Fundraising</span>
+                        <div class="flex-1 mx-2 md:mx-3">
+                            <div class="h-3 md:h-4 bg-gray-700 rounded-full overflow-hidden">
+                                <div class="h-full bg-cyan-500 rounded-full" style="width: 10%"></div>
+                            </div>
+                        </div>
+                        <span class="text-highlight font-bold w-10 md:w-12 text-right">10%</span>
+                    </div>
+                </div>
+
+                <!-- Vesting Schedule -->
+                <div class="border-t border-gray-700 pt-3 md:pt-4">
+                    <h4 class="text-xs sm:text-sm md:text-base lg:text-lg font-bold text-highlight mb-2 md:mb-3">Vesting Schedule</h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs sm:text-sm">
+                        <div class="bg-gray-800 p-2 rounded">
+                            <span class="text-purple-400 font-medium">PoUW Mining:</span>
+                            <span class="text-gray-300 ml-1">Dynamic minting + 10% burn</span>
+                        </div>
+                        <div class="bg-gray-800 p-2 rounded">
+                            <span class="text-green-400 font-medium">Liquidity:</span>
+                            <span class="text-gray-300 ml-1">3-year lock</span>
+                        </div>
+                        <div class="bg-gray-800 p-2 rounded">
+                            <span class="text-yellow-400 font-medium">Marketing:</span>
+                            <span class="text-gray-300 ml-1">6M cliff + 24M vest</span>
+                        </div>
+                        <div class="bg-gray-800 p-2 rounded">
+                            <span class="text-orange-400 font-medium">Reserve:</span>
+                            <span class="text-gray-300 ml-1">12M cliff + 36M vest</span>
+                        </div>
+                        <div class="bg-gray-800 p-2 rounded">
+                            <span class="text-red-400 font-medium">Team:</span>
+                            <span class="text-gray-300 ml-1">12M cliff + 36M vest</span>
+                        </div>
+                        <div class="bg-gray-800 p-2 rounded">
+                            <span class="text-cyan-400 font-medium">Fundraising:</span>
+                            <span class="text-gray-300 ml-1">6-12M cliff + tiered vest</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Token Info -->
+                <div class="text-center mt-3 md:mt-4 text-xs sm:text-sm text-gray-400">
+                    <strong class="text-highlight">SSTL Token</strong> • BEP-20 • 100M Total Supply • <strong class="text-highlight">Deflationary:</strong> 10% Burn per Emission
+                </div>
+            </div>
+
+            <!-- Value Flywheel -->
+            <div class="bg-card p-4 md:p-6 rounded-xl shadow-2xl">
+                <h3 class="text-base sm:text-lg md:text-xl font-bold mb-4 md:mb-6 text-highlight">The Reflexive Loop: Value Flywheel</h3>
+
+                <div class="text-center">
+                    <div class="inline-block p-4 md:p-6 bg-highlight rounded-full mb-4">
+                        <i class="fas fa-sync-alt text-3xl md:text-4xl text-dark animate-spin" style="animation-duration: 3s;"></i>
+                    </div>
+                    <h4 class="text-lg md:text-xl font-bold text-highlight mb-4">More AI Tasks → More $SSTL Demand → Higher Staking → Token Scarcity</h4>
+                    <p class="text-gray-400 text-sm sm:text-base max-w-2xl mx-auto">
+                        As network usage grows, demand for $SSTL increases for payments and staking, creating scarcity through burns and lockups, driving value appreciation and attracting more participants.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 8: Business Model & Financial Path -->
+    <section class="slide bg-bg-dark" id="tokenomics" data-index="8">
+        <div class="slide-container text-center">
+            <h2 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-extrabold mb-3 md:mb-4 lg:mb-6 text-highlight">The Business <span class="text-text-light">Model</span></h2>
+
+            <div class="bg-card p-3 md:p-4 lg:p-6 rounded-lg md:rounded-xl shadow-2xl mb-3 md:mb-4 lg:mb-6">
+                <h3 class="text-sm sm:text-base md:text-lg lg:text-xl font-bold mb-3 md:mb-4 text-highlight">How We Make Money</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+                    <div class="text-left">
+                        <h4 class="font-bold text-highlight mb-1 md:mb-2 text-xs sm:text-sm md:text-base">Services Sold</h4>
+                        <ul class="text-gray-400 space-y-0.5 text-xs sm:text-sm leading-relaxed">
+                            <li>• NFTs & iNFTs</li>
+                            <li>• Smart contract audits</li>
+                            <li>• AI customer support</li>
+                            <li>• B2B data analysis</li>
+                            <li>• Custom Agent creation</li>
+                        </ul>
+                    </div>
+                    <div class="text-left">
+                        <h4 class="font-bold text-highlight mb-1 md:mb-2 text-xs sm:text-sm md:text-base">Target Clients & Pricing</h4>
+                        <ul class="text-gray-400 space-y-0.5 text-xs sm:text-sm leading-relaxed">
+                            <li>• B2B: Web3 & enterprises</li>
+                            <li>• NFTs/iNFTs: $50-200 each</li>
+                            <li>• Fast AI SC audit: $500</li>
+                            <li>• Monthly packages: $TBD</li>
+                            <li>• AI services: $50-5000</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <h3 class="text-sm sm:text-base md:text-lg lg:text-xl font-bold mb-3 md:mb-4 lg:mb-6 text-highlight">Projected Revenue: <span class="text-text-light">$30M by Year 3</span></h3>
+
+            <div class="bar-chart-container mt-4 md:mt-6 lg:mt-8">
+                <!-- Bar 1 -->
+                <div class="bar-wrapper">
+                    <div class="bar" style="height: 40%;">
+                        <span class="bar-label">$3M</span>
+                    </div>
+                    <p class="text-gray-400 mt-2 text-xs">Year 1</p>
+                </div>
+                <!-- Bar 2 -->
+                <div class="bar-wrapper">
+                    <div class="bar" style="height: 70%;">
+                        <span class="bar-label">$10M</span>
+                    </div>
+                    <p class="text-gray-400 mt-2 text-xs">Year 2</p>
+                </div>
+                <!-- Bar 3 (SOM) -->
+                <div class="bar-wrapper">
+                    <div class="bar" style="height: 100%;">
+                        <span class="bar-label">$30M</span>
+                    </div>
+                    <p class="text-gray-400 mt-2 text-xs">Year 3</p>
+                </div>
+            </div>
+
+            <p class="text-xs sm:text-sm text-gray-400 mt-8 md:mt-10 lg:mt-12 px-2">Unit Economics: 1 Smart Contract Audit @ $500 → 6,000 audits/year = $3M.</p>
+
+            <p class="text-xs sm:text-sm text-gray-400 mt-3 md:mt-4 px-2">
+                Targeting 0.5% market share of SAM within 36 months by leveraging multiple high-value AI utility verticals.
+            </p>
+        </div>
+    </section>
+
+    <!-- Slide 9: The Ask & Use of Funds -->
+    <section class="slide bg-bg-dark" id="financials" data-index="9">
+        <div class="slide-container">
+            <h2 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-extrabold mb-3 md:mb-4 lg:mb-6 text-center text-highlight">The <span class="text-text-light">Ask</span> & Capital Deployment</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 lg:gap-6">
+                <!-- The Ask -->
+                <div class="p-3 md:p-4 lg:p-6 bg-card rounded-lg md:rounded-xl shadow-2xl border-l-4 border-highlight">
+                    <p class="text-xs sm:text-sm font-semibold uppercase text-highlight mb-1 md:mb-2">Raising $7.5M Seed (Equity/Token hybrid) at $100M FDV with 2.5-year vesting</p>
+                    <h3 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-text-light mb-2 md:mb-3">$7.5M USD</h3>
+                    <p class="text-xs sm:text-sm md:text-base text-gray-400 mb-2">
+                        To scale operations and capture early market share over the next 12-18 months.
+                    </p>
+                    <p class="text-xs text-gray-500 mt-2">
+                        Note: AI/Web3 Seed Median Valuation is $17.9M. Our structure ensures investor alignment.
+                    </p>
+                </div>
+                
+                <!-- Use of Funds -->
+                <div class="p-3 md:p-4 lg:p-6 bg-card rounded-lg md:rounded-xl shadow-2xl border-l-4 border-highlight">
+                    <p class="text-xs sm:text-sm font-semibold uppercase text-highlight mb-2 md:mb-3">Capital Deployment</p>
+                    <ul class="space-y-1 md:space-y-2 lg:space-y-3 text-gray-400">
+                        <li class="flex justify-between items-center text-xs sm:text-sm">
+                            <span class="font-bold"><i class="fas fa-server mr-1 sm:mr-2 text-highlight"></i> Hardware Expansion</span>
+                            <span class="text-lg sm:text-xl md:text-2xl lg:text-3xl font-black text-highlight">40%</span>
+                        </li>
+                        <li class="flex justify-between items-center text-xs sm:text-sm">
+                            <span class="font-bold"><i class="fas fa-code mr-1 sm:mr-2 text-highlight"></i> Platform Development</span>
+                            <span class="text-lg sm:text-xl md:text-2xl lg:text-3xl font-black text-highlight">30%</span>
+                        </li>
+                        <li class="flex justify-between items-center text-xs sm:text-sm">
+                            <span class="font-bold"><i class="fas fa-chart-line mr-1 sm:mr-2 text-highlight"></i> Token Listings</span>
+                            <span class="text-lg sm:text-xl md:text-2xl lg:text-3xl font-black text-highlight">15%</span>
+                        </li>
+                        <li class="flex justify-between items-center text-xs sm:text-sm">
+                            <span class="font-bold"><i class="fas fa-bullhorn mr-1 sm:mr-2 text-highlight"></i> Marketing</span>
+                            <span class="text-lg sm:text-xl md:text-2xl lg:text-3xl font-black text-highlight">15%</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 10: The Ask & Use of Funds -->
+    <section class="slide bg-bg-dark" id="ask" data-index="10">
+        <div class="slide-container text-center">
+            <h2 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-extrabold mb-3 md:mb-4 lg:mb-6 text-center text-highlight">The <span class="text-text-light">Super</span> Team</h2>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 lg:gap-6">
+                <!-- Andrei Galea -->
+                <div class="p-3 sm:p-4 md:p-5 lg:p-6 rounded-lg md:rounded-xl bg-card border-t-4 border-highlight">
+                    <img src="/assets/founder-1-1.png" alt="Andrei Galea" class="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-full mx-auto mb-2 md:mb-3 object-cover">
+                    <h3 class="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-text-light">Andrei Galea</h3>
+                    <p class="text-highlight font-semibold mb-1 md:mb-2 text-xs sm:text-sm">Founder & Full-Stack Web3 Visionary</p>
+                    <p class="text-gray-400 text-xs leading-relaxed">4 years in software development, 4 years in blockchain & AI.</p>
+                    <div class="mt-2 flex justify-center space-x-2">
+                        <a href="https://github.com/C00K1E-dev" target="_blank" class="text-highlight hover:text-white text-xs"><i class="fab fa-github"></i></a>
+                        <a href="https://www.linkedin.com/in/andrei-galea" target="_blank" class="text-highlight hover:text-white text-xs"><i class="fab fa-linkedin"></i></a>
+                        <a href="https://x.com/Andrei___G" target="_blank" class="text-highlight hover:text-white text-xs"><i class="fab fa-twitter"></i></a>
+                    </div>
+                </div>
+                <!-- Darius Galea -->
+                <div class="p-3 sm:p-4 md:p-5 lg:p-6 rounded-lg md:rounded-xl bg-card border-t-4 border-highlight">
+                    <img src="/assets/founder-1-2.png" alt="Darius Galea" class="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-full mx-auto mb-2 md:mb-3 object-cover">
+                    <h3 class="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-text-light">Darius Galea</h3>
+                    <p class="text-highlight font-semibold mb-1 md:mb-2 text-xs sm:text-sm">Co-founder & Logistics Operations</p>
+                    <p class="text-gray-400 text-xs leading-relaxed">5 years in operations and logistics. Expertise in hardware procurement and supply chain scaling for DePIN.</p>
+                    <div class="mt-2 flex justify-center space-x-2">
+                        <a href="https://www.linkedin.com/in/darius-galea" target="_blank" class="text-highlight hover:text-white text-xs"><i class="fab fa-linkedin"></i></a>
+                    </div>
+                </div>
+                <!-- David Nagy Elek -->
+                <div class="p-3 sm:p-4 md:p-5 lg:p-6 rounded-lg md:rounded-xl bg-card border-t-4 border-highlight sm:col-span-2 lg:col-span-1">
+                    <img src="/assets/cmo.png" alt="David Nagy Elek" class="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-full mx-auto mb-2 md:mb-3 object-cover">
+                    <h3 class="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-text-light">David Nagy Elek</h3>
+                    <p class="text-highlight font-semibold mb-1 md:mb-2 text-xs sm:text-sm">Business Development & Strategy</p>
+                    <p class="text-gray-400 text-xs leading-relaxed">7 years in B2B development. Strong network in Web3 and enterprise partnerships.</p>
+                    <div class="mt-2 flex justify-center space-x-2">
+                        <a href="https://www.linkedin.com/in/david-nagy-elek" target="_blank" class="text-highlight hover:text-white text-xs"><i class="fab fa-linkedin"></i></a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-card p-3 md:p-4 lg:p-6 rounded-lg md:rounded-xl shadow-2xl mt-3 md:mt-4 lg:mt-6">
+                <h3 class="text-sm sm:text-base md:text-lg lg:text-xl font-bold mb-3 md:mb-4 text-highlight">Partnerships</h3>
+
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3 lg:gap-4">
+                    <div class="bg-bg-dark p-2 sm:p-3 rounded-lg border border-highlight">
+                        <div class="flex items-center justify-center mb-1">
+                            <i class="fab fa-bitcoin text-sm sm:text-base md:text-lg text-highlight mr-1 md:mr-2"></i>
+                            <h4 class="font-bold text-highlight text-xs sm:text-sm">Binance Square</h4>
+                        </div>
+                        <p class="text-gray-400 text-xs mb-1">500+ supporters in 3 weeks</p>
+                    </div>
+                    
+                    <div class="bg-bg-dark p-2 sm:p-3 rounded-lg border border-highlight">
+                        <div class="flex items-center justify-center mb-1">
+                            <i class="fas fa-bullhorn text-sm sm:text-base md:text-lg text-highlight mr-1 md:mr-2"></i>
+                            <h4 class="font-bold text-highlight text-xs sm:text-sm">BNB Chain</h4>
+                        </div>
+                        <p class="text-gray-400 text-xs">Marketing Support upon MAINNET Launch</p>
+                    </div>
+                    
+                    <div class="bg-bg-dark p-2 sm:p-3 rounded-lg border border-highlight">
+                        <div class="flex items-center justify-center mb-1">
+                            <i class="fas fa-user-astronaut text-sm sm:text-base md:text-lg text-highlight mr-1 md:mr-2"></i>
+                            <h4 class="font-bold text-highlight text-xs sm:text-sm">BNB Martians</h4>
+                        </div>
+                        <p class="text-gray-400 text-xs">Founder Member</p>
+                    </div>
+
+                    <div class="bg-bg-dark p-2 sm:p-3 rounded-lg border border-highlight">
+                        <div class="flex items-center justify-center mb-1">
+                            <i class="fas fa-server text-sm sm:text-base md:text-lg text-highlight mr-1 md:mr-2"></i>
+                            <h4 class="font-bold text-highlight text-xs sm:text-sm">Ratio1.ai</h4>
+                        </div>
+                        <p class="text-gray-400 text-xs">Computing Power</p>
+                    </div>
+
+                    <div class="bg-bg-dark p-2 sm:p-3 rounded-lg border border-highlight">
+                        <div class="flex items-center justify-center mb-1">
+                            <i class="fas fa-user-tie text-sm sm:text-base md:text-lg text-highlight mr-1 md:mr-2"></i>
+                            <h4 class="font-bold text-highlight text-xs sm:text-sm">Advisors</h4>
+                        </div>
+                        <p class="text-gray-400 text-xs">Ongoing Discussions</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 11: The Team -->
+    <section class="slide bg-bg-dark" id="team" data-index="11">
+        <div class="slide-container text-center p-4 sm:p-6 md:p-12 rounded-xl shadow-2xl bg-card border-t-8 border-highlight">
+            <h2 class="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-black mb-3 md:mb-4 leading-tight text-text-light">
+                INVEST IN <span class="text-highlight">UTILITY.</span> INVEST IN <span class="text-highlight">VALUE.</span>
+            </h2>
+            <p class="text-xs sm:text-sm md:text-base lg:text-lg text-gray-300 mb-3 md:mb-4 lg:mb-6 xl:mb-8 font-light px-2">
+                The next era of Web3 is driven by real-world value. SmartSentinels is ready to lead.
+            </p>
+            <p class="text-xs sm:text-sm md:text-lg text-gray-300 mb-4 md:mb-8 font-light px-2">
+                The Seed round is live. Join SmartSentinels in building the world’s first deflationary AI mining economy.
+            </p>
+            <a href="mailto:office@smartsentinels.net" onclick="event.stopPropagation();" class="inline-block px-4 py-2 sm:px-6 sm:py-3 md:px-8 md:py-4 text-xs sm:text-sm md:text-base font-bold text-dark bg-highlight rounded-full hover:bg-white transition duration-300 transform hover:scale-105 shadow-xl">
+                SCHEDULE FOLLOW-UP & LIVE DEMO
+            </a>
+
+            <div class="mt-4 pt-3 sm:mt-6 sm:pt-4 md:mt-8 md:pt-6 border-t border-gray-600 text-gray-400">
+                <p class="text-xs sm:text-sm md:text-base font-semibold">www.smartsentinels.net</p>
+                <p class="text-xs">Andrei Galea: +40757349647 | office@smartsentinels.net</p>
+                <div class="space-x-2 sm:space-x-3 mt-2 text-text-light">
+                    <a href="https://x.com/SmartSentinels_" target="_blank" rel="noopener noreferrer" class="inline-block hover:text-highlight transition">
+                        <i class="fab fa-x-twitter text-sm sm:text-base md:text-lg"></i>
+                    </a>
+                    <a href="https://t.me/D3y0o" target="_blank" rel="noopener noreferrer" class="inline-block hover:text-highlight transition">
+                        <i class="fab fa-telegram-plane text-sm sm:text-base md:text-lg"></i>
+                    </a>
+                    <a href="https://www.linkedin.com/in/andrei-galea" target="_blank" rel="noopener noreferrer" class="inline-block hover:text-highlight transition">
+                        <i class="fab fa-linkedin-in text-sm sm:text-base md:text-lg"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+<script>
+    const slides = document.querySelectorAll('.slide');
+    let currentSlideIndex = 0;
+    let isScrolling = false;
+    const scrollDelay = 800; // Time in ms for smooth scroll animation to complete
+
+    /**
+     * Finds the index of the slide currently visible in the viewport.
+     */
+    function getCurrentSlideIndex() {
+        let nearestIndex = 0;
+        let minDistance = Infinity;
+        const viewportCenter = window.innerHeight / 2;
+
+        slides.forEach((slide, index) => {
+            const rect = slide.getBoundingClientRect();
+            // Only consider slides that are fully or mostly on screen
+            if (rect.bottom > 0 && rect.top < window.innerHeight) {
+                const slideCenter = rect.top + rect.height / 2;
+                const distance = Math.abs(slideCenter - viewportCenter);
+
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    nearestIndex = index;
+                }
+            }
+        });
+        return nearestIndex;
+    }
+
+    /**
+     * Programmatically scrolls to a target slide index.
+     * @param {number} targetIndex - The index of the slide to scroll to.
+     */
+    function scrollToSlide(targetIndex) {
+        if (targetIndex >= 0 && targetIndex < slides.length) {
+            isScrolling = true;
+            slides[targetIndex].scrollIntoView({
+                behavior: 'smooth'
+            });
+            currentSlideIndex = targetIndex;
+            
+            // Re-enable scrolling after the animation finishes
+            setTimeout(() => {
+                isScrolling = false;
+                updateScrollButtonVisibility();
+            }, scrollDelay);
+        }
+    }
+
+    /**
+     * Handles the wheel event to navigate slides.
+     * @param {WheelEvent} event 
+     */
+    function handleWheelScroll(event) {
+        event.preventDefault(); 
+        
+        if (isScrolling) {
+            return;
+        }
+
+        const direction = event.deltaY > 0 ? 1 : -1;
+        
+        // Find the index of the slide the user is currently closest to
+        const nearestIndex = getCurrentSlideIndex();
+        
+        let nextIndex = nearestIndex + direction;
+
+        // Clamp the index and scroll
+        if (nextIndex >= 0 && nextIndex < slides.length) {
+            scrollToSlide(nextIndex);
+        }
+    }
+    
+    // Attaches wheel listener
+    window.addEventListener('wheel', handleWheelScroll, { passive: false });
+    
+    // --- Scroll Button Logic ---
+    const scrollButton = document.getElementById('scroll-down-btn');
+    const scrollToTopButton = document.getElementById('scroll-to-top-btn');
+    
+    /**
+     * Updates the visibility of the scroll button based on the current slide.
+     */
+    function updateScrollButtonVisibility() {
+        // Find the closest slide when the scroll stops
+        const nearestIndex = getCurrentSlideIndex();
+        
+        // Hide the next slide button on the last slide (index 9)
+        if (nearestIndex < slides.length - 1) {
+            scrollButton.style.display = 'block';
+            scrollToTopButton.style.display = 'none';
+        } else {
+            scrollButton.style.display = 'none';
+            scrollToTopButton.style.display = 'block'; // Show scroll to top on last slide
+        }
+    }
+
+    // Update visibility on initial load and whenever the scroll event stops
+    window.addEventListener('scroll', () => {
+        // Debounce the scroll end detection to call updateScrollButtonVisibility only once after scrolling stops
+        clearTimeout(window.scrollTimeout);
+        window.scrollTimeout = setTimeout(updateScrollButtonVisibility, 150);
+    });
+
+    window.onload = function() {
+        // Set initial state
+        currentSlideIndex = getCurrentSlideIndex();
+        updateScrollButtonVisibility();
+        
+        // Set up link click handlers for smooth navigation
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    const targetIndex = Array.from(slides).indexOf(targetElement);
+                    scrollToSlide(targetIndex);
+                }
+            });
+        });
+    }
+</script>
+</body>
+</html>

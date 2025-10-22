@@ -1,7 +1,7 @@
-import { ArrowRight, Zap, Shield, Cpu, Target } from 'lucide-react';
+import { ArrowRight, Zap, Shield, Cpu, Target, Copy, ExternalLink, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import ContentCard from '@/components/ContentCard';
@@ -14,6 +14,14 @@ const FAQ = lazy(() => import('@/components/FAQ'));
 const PoweredBy = lazy(() => import('@/components/PoweredBy'));
 
 const Index = () => {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText('0x56317dbCCd647C785883738fac9308ebcA063aca');
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 relative overflow-x-hidden overflow-y-auto">
       {/* Optimized Background Elements */}
@@ -110,6 +118,40 @@ const Index = () => {
             delay={0.3}
             icon={<Target size={40} />}
           />
+        </div>
+
+        {/* Token Information Card */}
+        <div className="mb-16">
+          <div className="glass-card p-6 md:p-8 text-center">
+            <h3 className="text-2xl md:text-3xl font-orbitron font-bold mb-6 neon-glow">
+              SSTL Token
+            </h3>
+            <div className="space-y-4">
+              <div className="flex flex-col sm:flex-row justify-center items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
+                <span className="text-lg font-semibold text-primary">Contract Address:</span>
+                <div className="flex items-center space-x-2 flex-1 sm:flex-none">
+                  <code className="bg-muted px-3 py-1 rounded text-sm font-mono break-all flex-1">
+                    <span className="sm:hidden">0x563...3aca</span>
+                    <span className="hidden sm:inline">0x56317dbCCd647C785883738fac9308ebcA063aca</span>
+                  </code>
+                  <Button onClick={handleCopy} variant="ghost" size="sm" className="p-2 h-8 w-8">
+                    {copied ? <Check size={16} /> : <Copy size={16} />}
+                  </Button>
+                  <Button asChild variant="ghost" size="sm" className="p-2 h-8 w-8">
+                    <a href="https://bscscan.com/address/0x56317dbCCd647C785883738fac9308ebcA063aca" target="_blank" rel="noopener noreferrer">
+                      <ExternalLink size={16} />
+                    </a>
+                  </Button>
+                </div>
+              </div>
+              <div className="text-lg text-muted-foreground">
+                <span className="font-semibold text-primary">Total Supply:</span> 100,000,000 SSTL
+              </div>
+              <div className="text-lg text-muted-foreground">
+                <span className="font-semibold text-primary">Standard:</span> BEP-20 Token
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Roadmap Section */}

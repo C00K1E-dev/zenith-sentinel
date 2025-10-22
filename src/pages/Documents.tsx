@@ -5,6 +5,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
 const doc_data = [
+	{ name: 'Pitch Deck', file: '/PitchDeck.html', type: 'html' },
 	{ name: 'Whitepaper', file: '/documents/SmartSentinelsWhitepaper v0.2.pdf', type: 'pdf' },
 	{ name: 'Lightpaper', file: '/documents/LightpaperV0.2.pdf', type: 'pdf' },
 	{ name: 'OnePager', file: '/documents/SmartSentinelsOnePager.pdf', type: 'pdf' },

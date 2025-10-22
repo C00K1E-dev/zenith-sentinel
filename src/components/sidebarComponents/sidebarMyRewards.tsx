@@ -430,6 +430,7 @@ export default function SidebarMyRewards({ refreshTrigger = 0 }: RewardsSectionP
           {/* Global Stats */}
           <div className="global-stats">
             <h4>Global PoUW Statistics</h4>
+            <p className="text-xs text-muted-foreground mb-2">These statistics are on Testnet</p>
             <div className="global-stat-item">
               <span className="global-stat-label">Total Audits Completed:</span>
               <span className="global-stat-value">{totalAuditsCompleted}</span>

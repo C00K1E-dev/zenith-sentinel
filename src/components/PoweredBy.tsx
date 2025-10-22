@@ -62,9 +62,9 @@ const PoweredBy = memo(() => {
 
   return (
     <section className="py-12">
-      <h2 className="text-center text-2xl font-orbitron font-bold mb-6 text-foreground">Powered By</h2>
+      <h2 className="text-center text-3xl md:text-4xl font-orbitron font-bold mb-6 neon-glow">Powered By</h2>
       <Marquee items={technologies} direction="left" />
-      <h3 className="text-center text-lg font-orbitron font-semibold mt-10 mb-4 text-foreground">Partners</h3>
+      <h3 className="text-center text-xl md:text-2xl font-orbitron font-semibold mt-10 mb-4 neon-glow">Partners</h3>
       <Marquee items={partners} direction="right" />
     </section>
   );
