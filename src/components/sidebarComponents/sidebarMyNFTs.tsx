@@ -26,61 +26,119 @@ const SidebarMyNFTs = ({ onSendNFT }: { onSendNFT?: (tokenId: bigint, tokenName:
   const address = account?.address;
   const isConnected = !!account;
 
+  // Debug logging for mobile wallet detection
+  useEffect(() => {
+    console.log('🔍 Wallet connection status:', { address, isConnected, isMobile });
+    if (address) {
+      console.log('✅ Connected wallet address:', address);
+    } else {
+      console.log('❌ No wallet address detected');
+    }
+  }, [address, isConnected, isMobile]);
+
   // Define contracts
   const genesisContract = getContract({ client: thirdwebClient, address: GENESIS_CONTRACT_ADDRESS, chain: GENESIS_CHAIN_ID === 56 ? bsc : bscTestnet });
   const aiAuditContract = getContract({ client: thirdwebClient, address: AI_AUDIT_CONTRACT_ADDRESS, chain: AI_AUDIT_CHAIN_ID === 97 ? bscTestnet : bsc });
 
-  // States for token IDs
+  // States for balances and token IDs
+  const [genesisBalance, setGenesisBalance] = useState<bigint | null>(null);
+  const [aiAuditBalance, setAiAuditBalance] = useState<bigint | null>(null);
+  const [genesisBalanceLoading, setGenesisBalanceLoading] = useState(false);
+  const [aiAuditBalanceLoading, setAiAuditBalanceLoading] = useState(false);
   const [genesisIds, setGenesisIds] = useState<bigint[]>([]);
   const [aiAuditIds, setAiAuditIds] = useState<bigint[]>([]);
 
-  // Fetch balances
-  const { data: genesisBalance, isLoading: genesisLoading } = useReadContract({
-    contract: genesisContract,
-    method: 'balanceOf',
-    params: [address] as any,
-  });
+  // Fetch balances using readContract for better mobile compatibility
+  useEffect(() => {
+    if (address) {
+      setGenesisBalanceLoading(true);
+      readContract({
+        contract: genesisContract,
+        method: 'balanceOf',
+        params: [address] as any,
+      } as any).then(result => {
+        console.log('✅ Genesis balance fetched:', result);
+        setGenesisBalance(result as unknown as bigint);
+        setGenesisBalanceLoading(false);
+      }).catch(error => {
+        console.error('❌ Error fetching genesis balance:', error);
+        setGenesisBalance(BigInt(0));
+        setGenesisBalanceLoading(false);
+      });
+    } else {
+      setGenesisBalance(null);
+      setGenesisBalanceLoading(false);
+    }
+  }, [address, genesisContract]);
 
-  const { data: aiAuditBalance, isLoading: aiAuditLoading } = useReadContract({
-    contract: aiAuditContract,
-    method: 'balanceOf',
-    params: [address] as any,
-  });
+  useEffect(() => {
+    if (address) {
+      setAiAuditBalanceLoading(true);
+      readContract({
+        contract: aiAuditContract,
+        method: 'balanceOf',
+        params: [address] as any,
+      } as any).then(result => {
+        console.log('✅ AI Audit balance fetched:', result);
+        setAiAuditBalance(result as unknown as bigint);
+        setAiAuditBalanceLoading(false);
+      }).catch(error => {
+        console.error('❌ Error fetching AI Audit balance:', error);
+        setAiAuditBalance(BigInt(0));
+        setAiAuditBalanceLoading(false);
+      });
+    } else {
+      setAiAuditBalance(null);
+      setAiAuditBalanceLoading(false);
+    }
+  }, [address, aiAuditContract]);
 
   // Fetch token IDs when balance is available
   useEffect(() => {
     if (genesisBalance && address && Number(genesisBalance) > 0) {
+      console.log('🔍 Fetching Genesis token IDs for balance:', genesisBalance.toString());
       const promises = Array.from({ length: Number(genesisBalance) }, (_, i) =>
         readContract({
           contract: genesisContract,
           method: 'tokenOfOwnerByIndex',
-          params: [address, BigInt(i)],
+          params: [address, BigInt(i)] as any,
         } as any)
       );
       Promise.all(promises).then(results => {
-        setGenesisIds(results.map(r => r as unknown as bigint));
-      }).catch(console.error);
+        const ids = results.map(r => r as unknown as bigint);
+        console.log('✅ Genesis token IDs fetched:', ids);
+        setGenesisIds(ids);
+      }).catch(error => {
+        console.error('❌ Error fetching Genesis token IDs:', error);
+        setGenesisIds([]);
+      });
     } else {
       setGenesisIds([]);
     }
-  }, [genesisBalance, address]);
+  }, [genesisBalance, address, genesisContract]);
 
   useEffect(() => {
     if (aiAuditBalance && address && Number(aiAuditBalance) > 0) {
+      console.log('🔍 Fetching AI Audit token IDs for balance:', aiAuditBalance.toString());
       const promises = Array.from({ length: Number(aiAuditBalance) }, (_, i) =>
         readContract({
           contract: aiAuditContract,
           method: 'tokenOfOwnerByIndex',
-          params: [address, BigInt(i)],
+          params: [address, BigInt(i)] as any,
         } as any)
       );
       Promise.all(promises).then(results => {
-        setAiAuditIds(results.map(r => r as unknown as bigint));
-      }).catch(console.error);
+        const ids = results.map(r => r as unknown as bigint);
+        console.log('✅ AI Audit token IDs fetched:', ids);
+        setAiAuditIds(ids);
+      }).catch(error => {
+        console.error('❌ Error fetching AI Audit token IDs:', error);
+        setAiAuditIds([]);
+      });
     } else {
       setAiAuditIds([]);
     }
-  }, [aiAuditBalance, address]);
+  }, [aiAuditBalance, address, aiAuditContract]);
 
   // Collection information
   const collections = [
@@ -105,16 +163,31 @@ const SidebarMyNFTs = ({ onSendNFT }: { onSendNFT?: (tokenId: bigint, tokenName:
       <h2 className="text-2xl font-orbitron font-bold mb-4 text-foreground">
         My NFTs
       </h2>
+
+      {/* Debug Panel for Mobile Testing */}
+      {isMobile && (
+        <div className="mb-4 p-3 bg-gray-100 dark:bg-gray-800 rounded-lg text-xs font-mono">
+          <div className="font-bold mb-2">🔧 Debug Info (Mobile):</div>
+          <div>Connected: {isConnected ? '✅' : '❌'}</div>
+          <div>Address: {address ? `${address.slice(0, 6)}...${address.slice(-4)}` : 'None'}</div>
+          <div>Genesis Loading: {genesisBalanceLoading ? '⏳' : '✅'}</div>
+          <div>Genesis Balance: {genesisBalance?.toString() || '0'}</div>
+          <div>AI Audit Loading: {aiAuditBalanceLoading ? '⏳' : '✅'}</div>
+          <div>AI Audit Balance: {aiAuditBalance?.toString() || '0'}</div>
+          <div>Genesis NFTs: {genesisIds.length}</div>
+          <div>AI Audit NFTs: {aiAuditIds.length}</div>
+        </div>
+      )}
       
       <div className="nft-collections-container">
         {(!isConnected || !address) && (<div className="hub-placeholder"><p>Connect your wallet to view NFTs</p></div>)}
-        {(genesisLoading || aiAuditLoading) && (<div className="hub-placeholder"><p>Loading NFTs...</p></div>)}
-        {address && isConnected && !genesisLoading && !aiAuditLoading && collections.every(col => col.nfts.length === 0) && (
+        {(genesisBalanceLoading || aiAuditBalanceLoading) && (<div className="hub-placeholder"><p>Loading NFTs...</p></div>)}
+        {address && isConnected && !genesisBalanceLoading && !aiAuditBalanceLoading && collections.every(col => col.nfts.length === 0) && (
           <div className="hub-placeholder">
             <p>No NFTs found</p>
             <p className="text-sm text-muted-foreground mt-2">
-              If you own SmartSentinels NFTs, make sure they are imported in your wallet app. 
-              In MetaMask mobile, go to NFTs tab → Import NFTs → Add the contract addresses: 
+              If you own SmartSentinels NFTs, make sure they are imported in your wallet app.
+              In MetaMask mobile, go to NFTs tab → Import NFTs → Add the contract addresses:
               {GENESIS_CONTRACT_ADDRESS} (Genesis on BSC Mainnet) or {AI_AUDIT_CONTRACT_ADDRESS} (AI Audit on BSC Testnet).
             </p>
             <p className="text-sm text-muted-foreground mt-2">
@@ -127,6 +200,17 @@ const SidebarMyNFTs = ({ onSendNFT }: { onSendNFT?: (tokenId: bigint, tokenName:
               <a href={`https://testnet.bscscan.com/token/${AI_AUDIT_CONTRACT_ADDRESS}?a=${address}`} target="_blank" rel="noreferrer" className="text-blue-500 underline">
                 AI Audit Contract on Testnet
               </a>
+            </p>
+            <p className="text-sm text-muted-foreground mt-2">
+              <strong>Mobile Debug Info:</strong>
+              <br />
+              Connected Address: {address}
+              <br />
+              Genesis Balance: {genesisBalance?.toString() || 'Loading...'}
+              <br />
+              AI Audit Balance: {aiAuditBalance?.toString() || 'Loading...'}
+              <br />
+              Is Mobile: {isMobile ? 'Yes' : 'No'}
             </p>
           </div>
         )}
