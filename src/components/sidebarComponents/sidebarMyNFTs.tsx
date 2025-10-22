@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
-import { useAccount, useReadContract } from 'wagmi';
+import { useActiveAccount, useReadContract } from 'thirdweb/react';
+import { getContract } from 'thirdweb';
 import { Loader } from 'lucide-react';
+import { bsc, bscTestnet } from 'thirdweb/chains';
+import { createThirdwebClient } from 'thirdweb';
 import {
   GENESIS_CONTRACT_ADDRESS,
   GENESIS_CHAIN_ID,
@@ -11,36 +14,33 @@ import {
 } from '@/contracts';
 import { formatContractAddress, getTokenExplorerUrl } from '@/lib/utils';
 
+const thirdwebClient = createThirdwebClient({
+  clientId: import.meta.env.VITE_THIRDWEB_CLIENT_ID,
+});
+
 const SidebarMyNFTs = ({ onSendNFT }: { onSendNFT?: (tokenId: bigint, tokenName: string, imgSrc: string, contractAddress: string, chainId: number, abi: any) => void }) => {
-  const { address, isConnected, chain } = useAccount();
+  const account = useActiveAccount();
   const [isMobile, setIsMobile] = useState(false);
 
-  // Detect mobile screen size
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+  const address = account?.address;
+  const isConnected = !!account;
+
+  // Define contracts
+  const genesisContract = getContract({ client: thirdwebClient, address: GENESIS_CONTRACT_ADDRESS, chain: GENESIS_CHAIN_ID === 56 ? bsc : bscTestnet });
+  const aiAuditContract = getContract({ client: thirdwebClient, address: AI_AUDIT_CONTRACT_ADDRESS, chain: AI_AUDIT_CHAIN_ID === 97 ? bscTestnet : bsc });
 
   // Fetch tokens for Genesis
   const { data: genesisTokenIds, isLoading: genesisLoading } = useReadContract({
-    address: GENESIS_CONTRACT_ADDRESS as `0x${string}`,
-    abi: GENESIS_ABI as any,
-    functionName: 'tokensOfOwner',
-    args: address ? [address] : undefined,
-    chainId: GENESIS_CHAIN_ID,
-    query: { enabled: !!address, staleTime: 0, refetchOnWindowFocus: true }
+    contract: genesisContract,
+    method: 'tokensOfOwner',
+    params: address ? [address] : [],
   });
 
   // Fetch tokens for AI Audit
   const { data: aiAuditTokenIds, isLoading: aiAuditLoading } = useReadContract({
-    address: AI_AUDIT_CONTRACT_ADDRESS as `0x${string}`,
-    abi: AI_AUDIT_ABI as any,
-    functionName: 'tokensOfOwner',
-    args: address ? [address] : undefined,
-    chainId: AI_AUDIT_CHAIN_ID,
-    query: { enabled: !!address, staleTime: 0, refetchOnWindowFocus: true }
+    contract: aiAuditContract,
+    method: 'tokensOfOwner',
+    params: address ? [address] : [],
   });
 
   const genesisIds: bigint[] = Array.isArray(genesisTokenIds) ? (genesisTokenIds as bigint[]) : [];
@@ -75,7 +75,6 @@ const SidebarMyNFTs = ({ onSendNFT }: { onSendNFT?: (tokenId: bigint, tokenName:
         <p><strong>Debug Info:</strong></p>
         <p>Address: {address || 'Not connected'}</p>
         <p>Connected: {isConnected ? 'Yes' : 'No'}</p>
-        <p>Current Chain: {chain?.name} (ID: {chain?.id})</p>
         <p>Genesis Loading: {genesisLoading ? 'Yes' : 'No'}</p>
         <p>AI Audit Loading: {aiAuditLoading ? 'Yes' : 'No'}</p>
         <p>Genesis Tokens: {genesisIds.length} ({genesisIds.join(', ')})</p>
@@ -128,21 +127,20 @@ const NFTCard = ({ tokenId, contractAddress, abi, chainId, onSendNFT }: { tokenI
   const [isVideo, setIsVideo] = useState<boolean>(false);
   const [hasError, setHasError] = useState<boolean>(false);
 
+  const nftContract = getContract({ client: thirdwebClient, address: contractAddress, chain: chainId === 56 ? bsc : bscTestnet });
+
   // Fetch token URI from contract
   const { data: tokenURI } = useReadContract({
-    address: contractAddress as `0x${string}`,
-    abi: abi as any,
-    functionName: 'tokenURI',
-    args: [tokenId],
-    chainId: chainId,
+    contract: nftContract,
+    method: 'tokenURI',
+    params: [tokenId.toString()],
   });
 
   // Fetch collection name from contract
   const { data: collectionName } = useReadContract({
-    address: contractAddress as `0x${string}`,
-    abi: abi as any,
-    functionName: 'name',
-    chainId: chainId,
+    contract: nftContract,
+    method: 'name',
+    params: [],
   });
 
   useEffect(() => {
@@ -157,7 +155,7 @@ const NFTCard = ({ tokenId, contractAddress, abi, chainId, onSendNFT }: { tokenI
         console.log('🔍 Fetching metadata from URI:', tokenURI);
         
         // Convert IPFS URI to HTTP gateway if needed - using custom Pinata gateway
-        let metadataUrl = tokenURI as string;
+        let metadataUrl = tokenURI as unknown as string;
         if (metadataUrl.startsWith('ipfs://')) {
           // Use your custom Pinata gateway as primary
           metadataUrl = metadataUrl.replace('ipfs://', 'https://sapphire-peculiar-shark-548.mypinata.cloud/ipfs/');
