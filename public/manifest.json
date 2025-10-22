@@ -1,0 +1,22 @@
+{
+  "name": "SmartSentinels - Decentralized AI Agents",
+  "short_name": "SmartSentinels",
+  "description": "SmartSentinels delivers verifiable AI services powered by Proof of Useful Work. Join the decentralized workforce revolution.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1f1f1f",
+  "theme_color": "#f8f442",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "16x16 32x32 48x48",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/ss-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
