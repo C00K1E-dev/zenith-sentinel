@@ -48,24 +48,28 @@ const SidebarMyNFTs = ({ onSendNFT }: { onSendNFT?: (tokenId: bigint, tokenName:
   const [genesisIds, setGenesisIds] = useState<bigint[]>([]);
   const [aiAuditIds, setAiAuditIds] = useState<bigint[]>([]);
 
-  // Fetch balances using readContract for better mobile compatibility
+  // Fetch token IDs directly using tokensOfOwner for better mobile compatibility
   useEffect(() => {
     if (address) {
-      setGenesisBalanceLoading(true);
+      console.log('🔍 Fetching Genesis tokens for address:', address);
       readContract({
         contract: genesisContract,
-        method: 'balanceOf',
+        method: 'tokensOfOwner',
         params: [address] as any,
       } as any).then(result => {
-        console.log('✅ Genesis balance fetched:', result);
-        setGenesisBalance(result as unknown as bigint);
+        const ids = result as unknown as bigint[];
+        console.log('✅ Genesis tokens fetched:', ids);
+        setGenesisIds(ids);
+        setGenesisBalance(BigInt(ids.length));
         setGenesisBalanceLoading(false);
       }).catch(error => {
-        console.error('❌ Error fetching genesis balance:', error);
+        console.error('❌ Error fetching Genesis tokens:', error);
+        setGenesisIds([]);
         setGenesisBalance(BigInt(0));
         setGenesisBalanceLoading(false);
       });
     } else {
+      setGenesisIds([]);
       setGenesisBalance(null);
       setGenesisBalanceLoading(false);
     }
@@ -73,72 +77,30 @@ const SidebarMyNFTs = ({ onSendNFT }: { onSendNFT?: (tokenId: bigint, tokenName:
 
   useEffect(() => {
     if (address) {
-      setAiAuditBalanceLoading(true);
+      console.log('🔍 Fetching AI Audit tokens for address:', address);
       readContract({
         contract: aiAuditContract,
-        method: 'balanceOf',
+        method: 'tokensOfOwner',
         params: [address] as any,
       } as any).then(result => {
-        console.log('✅ AI Audit balance fetched:', result);
-        setAiAuditBalance(result as unknown as bigint);
+        const ids = result as unknown as bigint[];
+        console.log('✅ AI Audit tokens fetched:', ids);
+        setAiAuditIds(ids);
+        setAiAuditBalance(BigInt(ids.length));
         setAiAuditBalanceLoading(false);
       }).catch(error => {
-        console.error('❌ Error fetching AI Audit balance:', error);
+        console.error('❌ Error fetching AI Audit tokens:', error);
+        setAiAuditIds([]);
         setAiAuditBalance(BigInt(0));
         setAiAuditBalanceLoading(false);
       });
     } else {
+      setAiAuditIds([]);
       setAiAuditBalance(null);
       setAiAuditBalanceLoading(false);
     }
   }, [address, aiAuditContract]);
 
-  // Fetch token IDs when balance is available
-  useEffect(() => {
-    if (genesisBalance && address && Number(genesisBalance) > 0) {
-      console.log('🔍 Fetching Genesis token IDs for balance:', genesisBalance.toString());
-      const promises = Array.from({ length: Number(genesisBalance) }, (_, i) =>
-        readContract({
-          contract: genesisContract,
-          method: 'tokenOfOwnerByIndex',
-          params: [address, BigInt(i)] as any,
-        } as any)
-      );
-      Promise.all(promises).then(results => {
-        const ids = results.map(r => r as unknown as bigint);
-        console.log('✅ Genesis token IDs fetched:', ids);
-        setGenesisIds(ids);
-      }).catch(error => {
-        console.error('❌ Error fetching Genesis token IDs:', error);
-        setGenesisIds([]);
-      });
-    } else {
-      setGenesisIds([]);
-    }
-  }, [genesisBalance, address, genesisContract]);
-
-  useEffect(() => {
-    if (aiAuditBalance && address && Number(aiAuditBalance) > 0) {
-      console.log('🔍 Fetching AI Audit token IDs for balance:', aiAuditBalance.toString());
-      const promises = Array.from({ length: Number(aiAuditBalance) }, (_, i) =>
-        readContract({
-          contract: aiAuditContract,
-          method: 'tokenOfOwnerByIndex',
-          params: [address, BigInt(i)] as any,
-        } as any)
-      );
-      Promise.all(promises).then(results => {
-        const ids = results.map(r => r as unknown as bigint);
-        console.log('✅ AI Audit token IDs fetched:', ids);
-        setAiAuditIds(ids);
-      }).catch(error => {
-        console.error('❌ Error fetching AI Audit token IDs:', error);
-        setAiAuditIds([]);
-      });
-    } else {
-      setAiAuditIds([]);
-    }
-  }, [aiAuditBalance, address, aiAuditContract]);
 
   // Collection information
   const collections = [
