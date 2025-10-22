@@ -1468,6 +1468,7 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
     // Messages
     const [approvalMessage, setApprovalMessage] = useState<string | null>(null);
     const [paymentMessage, setPaymentMessage] = useState<string | null>(null);
+    const [auditCompletedTxHash, setAuditCompletedTxHash] = useState<`0x${string}` | null>(null);
 
     const systemPrompt = useAuditPrompt();
     
@@ -1793,6 +1794,7 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
 
         setIsProcessing(true);
         setAuditData(null);
+        setAuditCompletedTxHash(null); // Reset previous completed tx hash
         setStatusMessage('Payment confirmed. AI Agent analyzing contract...');
 
         try {
@@ -1846,7 +1848,8 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
 
             setAuditData(correctedData);
             setIsProcessing(false);
-            setStatusMessage(`Audit completed successfully! Transaction: ${txHash}`);
+            setStatusMessage("Audit completed successfully! Transaction: ");
+            setAuditCompletedTxHash(txHash);
         } catch (error: any) {
             console.error('❌ Audit failed:', error);
             setStatusMessage('Audit failed: ' + error.message);
@@ -2019,7 +2022,19 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
         {/* Status Message */}
         {statusMessage && (
           <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-gray-800 rounded-lg border border-gray-600">
-            <p className="text-center text-gray-300 text-sm sm:text-base">{statusMessage}</p>
+            <p className="text-center text-gray-300 text-sm sm:text-base">
+              {statusMessage}
+              {auditCompletedTxHash && (
+                <a 
+                  href={`https://testnet.bscscan.com/tx/${auditCompletedTxHash}`} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="text-neon hover:underline ml-1"
+                >
+                  0x{auditCompletedTxHash.slice(2, 5)}...{auditCompletedTxHash.slice(-5)}
+                </a>
+              )}
+            </p>
           </div>
         )}
 
