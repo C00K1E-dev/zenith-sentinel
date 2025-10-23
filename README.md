@@ -1,6 +1,6 @@
 # SmartSentinels - Decentralized AI Agents Platform
 
-A futuristic web application for SmartSentinels, featuring decentralized AI agents powered by Proof of Useful Work. Built with React, TypeScript, TailwindCSS, and integrated with Thirdweb for Web3 functionality.
+A futuristic web application for SmartSentinels, featuring decentralized AI agents powered by Proof of Useful Work on BNB Chain. Built with React, TypeScript, TailwindCSS, and integrated with Thirdweb for Web3 functionality.
 
 ![SmartSentinels](https://img.shields.io/badge/Status-Active-success)
 ![React](https://img.shields.io/badge/React-18.3.1-blue)
