@@ -1,0 +1,564 @@
+/* Styles for the generated audit report HTML */
+
+* { box-sizing: border-box; }
+body {
+    background-color: #1F1F1F;
+    color: #E0E0E0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+.text-neon { color: #F8F442; }
+
+/* Responsive Logo */
+.logo-img {
+    height: 50px;
+    width: auto;
+    max-width: 200px;
+    object-fit: contain;
+}
+
+@media (min-width: 640px) {
+    .logo-img { height: 60px; max-width: 220px; }
+}
+
+@media (min-width: 768px) {
+    .logo-img { height: 70px; max-width: 250px; }
+}
+
+@media (min-width: 1024px) {
+    .logo-img { height: 80px; max-width: 280px; }
+}
+
+.header-bg {
+    background-color: #0d0d0d;
+    padding: 1rem;
+}
+
+@media (min-width: 640px) {
+    .header-bg { padding: 1.5rem; }
+}
+
+/* Print-specific optimizations for page 1 */
+@media print {
+    .header-bg {
+        padding: 0.5rem !important;
+        margin-bottom: 1rem !important;
+    }
+
+    .logo-img {
+        height: 90px !important;
+        max-height: 90px !important;
+        margin-bottom: 0.25rem !important;
+    }
+
+    .report-title {
+        font-size: 1.5rem !important;
+        margin: 0.5rem 0 !important;
+        line-height: 1.2 !important;
+    }
+
+    .container-responsive {
+        padding-left: 0.75rem !important;
+        padding-right: 0.75rem !important;
+    }
+
+    /* Tighter spacing for Project Details and Security Score */
+    .grid.grid-cols-1.lg\\:grid-cols-3 {
+        gap: 1rem !important;
+        margin-bottom: 1.5rem !important;
+    }
+
+    .bg-gray-800,
+    .score-box {
+        padding: 1rem !important;
+    }
+
+    .section-header {
+        margin-bottom: 0.75rem !important;
+        font-size: 1rem !important;
+    }
+
+    .score-circle {
+        width: 130px !important;
+        height: 130px !important;
+        font-size: 2rem !important;
+        border-width: 6px !important;
+    }
+
+    .text-gray-300.text-xs.sm\\:text-sm {
+        font-size: 0.8rem !important;
+        line-height: 1.4 !important;
+    }
+}
+
+/* SmartSentinels Seal/Holo - Footer */
+.ss-seal {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    opacity: 0.85;
+    filter: drop-shadow(0 0 8px rgba(248, 244, 66, 0.3));
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.ss-seal:hover {
+    opacity: 1;
+    transform: scale(1.05);
+    filter: drop-shadow(0 0 12px rgba(248, 244, 66, 0.5));
+}
+
+@media (min-width: 640px) {
+    .ss-seal { width: 100px; height: 100px; }
+}
+
+@media (min-width: 768px) {
+    .ss-seal { width: 120px; height: 120px; }
+}
+
+@media (min-width: 1024px) {
+    .ss-seal { width: 140px; height: 140px; }
+}
+
+/* Neon text shadow for headers */
+.neon-header { text-shadow: 0 0 10px #F8F442; }
+.score-box { background-color: #0d0d0d; border-radius: 1rem; }
+
+/* Responsive Typography */
+.report-title {
+    font-size: 1.25rem;
+    line-height: 1.3;
+}
+
+@media (min-width: 640px) {
+    .report-title { font-size: 1.5rem; }
+}
+
+@media (min-width: 768px) {
+    .report-title { font-size: 2rem; }
+}
+
+@media (min-width: 1024px) {
+    .report-title { font-size: 2.5rem; }
+}
+
+/* Inline Logo */
+.inline-logo {
+    height: 1.25rem;
+    width: auto;
+    object-fit: contain;
+}
+
+@media (min-width: 640px) {
+    .inline-logo { height: 1.5rem; }
+}
+
+@media (min-width: 768px) {
+    .inline-logo { height: 2rem; }
+}
+
+@media (min-width: 1024px) {
+    .inline-logo { height: 2.5rem; }
+}
+
+/* Responsive Section Headers */
+.section-header {
+    font-size: 1.125rem;
+}
+
+@media (min-width: 640px) {
+    .section-header { font-size: 1.25rem; }
+}
+
+@media (min-width: 768px) {
+    .section-header { font-size: 1.5rem; }
+}
+
+/* Ensure containers don't overflow */
+.container-responsive {
+    max-width: 100%;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+@media (min-width: 640px) {
+    .container-responsive { padding-left: 1.5rem; padding-right: 1.5rem; }
+}
+
+@media (min-width: 1024px) {
+    .container-responsive { max-width: 1280px; margin: 0 auto; }
+}
+
+/* Responsive Pill Sizing */
+.pill-container {
+    padding: 0.5rem;
+}
+
+@media (min-width: 640px) {
+    .pill-container { padding: 0.75rem; }
+}
+
+@media (min-width: 768px) {
+    .pill-container { padding: 1rem; }
+}
+
+/* Score status badge responsive */
+.score-status {
+    font-size: 0.625rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.5rem;
+    background: rgba(255,255,255,0.1);
+    display: inline-block;
+    margin-top: 0.5rem;
+}
+
+@media (min-width: 640px) {
+    .score-status { font-size: 0.75rem; }
+}
+
+/* Ensure images and content don't overflow */
+img { max-width: 100%; height: auto; }
+
+/* Download PDF Button - Static in footer, not fixed */
+.download-pdf-container {
+    text-align: center;
+    margin-top: 2rem;
+    padding-bottom: 1rem;
+}
+
+.download-pdf-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #F8F442 0%, #D4C93D 100%);
+    color: #000;
+    border: none;
+    padding: 14px 28px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(248, 244, 66, 0.4);
+    transition: all 0.3s ease;
+    font-family: 'Inter', sans-serif;
+}
+
+.download-pdf-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(248, 244, 66, 0.6);
+    background: linear-gradient(135deg, #FFE84D 0%, #E0D442 100%);
+}
+
+.download-pdf-btn:active {
+    transform: translateY(0px);
+}
+
+@media (max-width: 768px) {
+    .download-pdf-btn {
+        padding: 12px 20px;
+        font-size: 0.9rem;
+    }
+}
+
+/* ===== PRINT STYLES - Perfect Document Printing ===== */
+@media print {
+    /* Hide the download button when printing */
+    .download-pdf-container,
+    .download-pdf-btn {
+        display: none !important;
+    }
+
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    body {
+        background-color: #1F1F1F !important;
+        color: #E0E0E0 !important;
+        margin: 0;
+        padding: 0;
+    }
+
+    /* Ensure full page background */
+    html {
+        background-color: #1F1F1F !important;
+    }
+
+    /* Remove white margins */
+    @page {
+        size: auto;
+        margin: 0.75in 0.5in;
+    }
+
+    body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #1F1F1F;
+        z-index: -1;
+    }
+
+    /* Custom page headers and footers */
+    @page {
+        margin: 0.75in 0.5in;
+        background-color: #1F1F1F;
+        @top-left {
+            content: "";
+        }
+        @top-center {
+            content: "";
+        }
+        @top-right {
+            content: "";
+        }
+        @bottom-left {
+            content: "smartsentinels.net/hub/audit-result";
+            font-size: 9pt;
+            color: #E6E6E6;
+            font-family: 'Inter', sans-serif;
+        }
+        @bottom-center {
+            content: "";
+        }
+        @bottom-right {
+            content: counter(page) " / " counter(pages);
+            font-size: 9pt;
+            color: #E6E6E6;
+            font-family: 'Inter', sans-serif;
+        }
+    }
+
+    /* Prevent page breaks inside critical elements */
+    .audit-dashboard-widget,
+    .pill-container,
+    .score-box,
+    header {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
+
+    /* Ensure Threat Summary starts on new page */
+    section[style*="page-break-before"] {
+        page-break-before: always !important;
+        break-before: page !important;
+    }
+
+    /* Control page breaks before/after sections */
+    section {
+        page-break-inside: auto !important;
+        break-inside: auto !important;
+    }
+
+    /* Individual findings can break if necessary */
+    .bg-gray-800.p-3 {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        margin-bottom: 0.75rem !important;
+    }
+
+    /* Section headers should stay with at least one finding */
+    section h2 {
+        page-break-after: avoid !important;
+        break-after: avoid !important;
+        page-break-inside: avoid !important;
+    }
+
+    /* Keep header with first content */
+    header {
+        page-break-after: avoid !important;
+        break-after: avoid !important;
+    }
+
+    /* Footer should break naturally if needed */
+    footer {
+        page-break-before: auto !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        margin-top: 2rem !important;
+        padding-bottom: 1rem !important;
+    }
+
+    /* Handle long content gracefully */
+    .container-responsive {
+        max-width: 100% !important;
+        padding: 1rem !important;
+    }
+
+    /* Maintain grid layout for pills in print */
+    .grid {
+        display: grid !important;
+    }
+
+    .grid-cols-2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+
+    @media print and (min-width: 640px) {
+        .sm\\:grid-cols-3 {
+            grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        }
+    }
+
+    @media print and (min-width: 1024px) {
+        .lg\\:grid-cols-6 {
+            grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+        }
+    }
+
+    .pill-container {
+        margin-bottom: 0 !important;
+        padding: 0.5rem !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        min-height: 60px !important;
+    }
+
+    /* Adjust logo for print */
+    .logo-img {
+        max-height: 45px !important;
+        margin-bottom: 1rem !important;
+    }
+
+    /* Ensure score circle prints properly */
+    .score-circle {
+        border: 4px solid #000 !important;
+        page-break-inside: avoid !important;
+    }
+
+    /* Make text readable in print */
+    h1, h2, h3, h4, h5, h6 {
+        color: #E0E0E0 !important;
+    }
+
+    .text-neon {
+        color: #F8F442 !important;
+        text-shadow: 0 0 10px rgba(248, 244, 66, 0.3) !important;
+    }
+
+    .neon-header {
+        text-shadow: 0 0 10px rgba(248, 244, 66, 0.3) !important;
+    }
+
+    /* Adjust backgrounds for print - Keep dark theme */
+    .bg-gray-800,
+    .score-box,
+    .header-bg {
+        background-color: #0d0d0d !important;
+        border: 1px solid rgba(255,255,255,0.1) !important;
+    }
+
+    .text-gray-300,
+    .text-gray-400 {
+        color: #b0b0b0 !important;
+    }
+
+    /* Severity badges - ensure colors print */
+    .bg-red-700 { background-color: #b91c1c !important; }
+    .bg-orange-600 { background-color: #ea580c !important; }
+    .bg-yellow-500 { background-color: #eab308 !important; }
+    .bg-blue-500 { background-color: #3b82f6 !important; }
+    .bg-gray-500 { background-color: #6b7280 !important; }
+    .bg-cyan-500 { background-color: #06b6d4 !important; }
+
+    /* Ensure text remains readable on colored backgrounds */
+    .pill-container,
+    .bg-red-700,
+    .bg-orange-600,
+    .bg-yellow-500,
+    .bg-blue-500,
+    .bg-gray-500,
+    .bg-cyan-500 {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    /* Print disclaimer clearly */
+    footer p {
+        color: #b0b0b0 !important;
+        font-size: 10pt !important;
+    }
+
+    /* SmartSentinels seal positioning for print */
+    .ss-seal {
+        position: static !important;
+        display: block !important;
+        margin: 0 !important;
+        opacity: 0.7 !important;
+        width: 80px !important;
+        height: 80px !important;
+    }
+
+    /* Footer should contain seal properly */
+    footer {
+        position: relative !important;
+    }
+
+    footer .flex {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 1rem !important;
+    }
+
+    footer .flex-1 {
+        flex: 1 !important;
+    }
+
+    footer .flex-shrink-0 {
+        flex-shrink: 0 !important;
+    }
+
+    /* Hide download button container in print */
+    .download-pdf-container {
+        display: none !important;
+    }
+
+    /* Border colors for print */
+    .border-gray-700,
+    .border-l-4 {
+        border-color: rgba(255,255,255,0.1) !important;
+    }
+
+    .border-red-500 { border-color: #ef4444 !important; }
+    .border-orange-500 { border-color: #f97316 !important; }
+    .border-yellow-500 { border-color: #eab308 !important; }
+
+    /* Handle very long reports - allow natural breaks in findings list */
+    section:last-of-type {
+        page-break-inside: auto !important;
+        break-inside: auto !important;
+    }
+
+    section:last-of-type .bg-gray-800 {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
+
+    /* If there are many findings, allow section to span multiple pages */
+    section:last-of-type > div {
+        page-break-inside: auto !important;
+    }
+
+    /* Orphan/widow control */
+    p, h1, h2, h3, h4, h5, h6 {
+        orphans: 3;
+        widows: 3;
+    }
+
+    /* Shadow removal for print clarity */
+    .score-box,
+    .pill-container {
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+    }
+}
+
+/* ===== END PRINT STYLES ===== */

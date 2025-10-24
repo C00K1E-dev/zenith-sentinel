@@ -183,7 +183,7 @@ const SidebarNFTsiNFTsHub = () => {
                 </div>
               </div>
 
-              <p className="text-sm md:text-base text-muted-foreground mb-3 line-clamp-2">
+              <p className="text-sm md:text-base text-muted-foreground mb-3">
                 Get access to our AI Agent that performs smart contract auditing services. This AI Agent runs on our device infrastructure and conducts professional audit work across the blockchain ecosystem. When the AI Agent audits smart contracts and generates tokens, these tokens are automatically distributed among all NFT holders from this collection.
               </p>
 
